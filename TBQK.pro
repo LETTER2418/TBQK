@@ -12,10 +12,12 @@ CONFIG += c++17
 SOURCES += \
     button.cpp \
     main.cpp \
+    start.cpp \
     widget.cpp
 
 HEADERS += \
     button.h \
+    start.h \
     widget.h
 
 FORMS += \

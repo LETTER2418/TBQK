@@ -19,7 +19,7 @@ class button : public QPushButton
 
 public:
     // 构造函数，接收按钮文字和音频文件路径（可选）
-    explicit button(const QString &text, const QString &soundFilePath = ":/sound/button.ogg", QWidget *parent = nullptr);
+    explicit button(const QString &text, const QString &soundFilePath = "../../sound/button.ogg", QWidget *parent = nullptr);
 
 protected:
     // 重写paintEvent实现自定义绘制

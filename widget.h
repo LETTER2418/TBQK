@@ -2,6 +2,7 @@
 #define WIDGET_H
 
 #include <QWidget>
+#include <QStackedWidget>
 #include "button.h"
 
 QT_BEGIN_NAMESPACE
@@ -20,6 +21,7 @@ public:
 
 private:
     Ui::Widget *ui;
+    QStackedWidget *stack;
     button *startButton;
     button *aboutButton;
     button *settingsButton;
