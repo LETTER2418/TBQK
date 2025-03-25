@@ -16,7 +16,9 @@ public:
 
     button *backButton;
 private:
-
+    button *loginButton;
+    button *registerButton;
+    button *guestButton;
 };
 
 #endif // START_H

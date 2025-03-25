@@ -12,6 +12,7 @@ CONFIG += c++17
 SOURCES += \
     Widget.cpp \
     WindowManager.cpp \
+    about.cpp \
     button.cpp \
     main.cpp \
     start.cpp
@@ -19,6 +20,7 @@ SOURCES += \
 HEADERS += \
     Widget.h \
     WindowManager.h \
+    about.h \
     button.h \
     start.h
 

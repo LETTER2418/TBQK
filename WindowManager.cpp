@@ -1,6 +1,7 @@
 #include "WindowManager.h"
 #include "button.h"
 #include "start.h"
+#include "about.h"
 
 WindowManager::WindowManager(Widget *parent) : Widget(parent), stack(new QStackedWidget(this))
 
@@ -38,24 +39,30 @@ WindowManager::WindowManager(Widget *parent) : Widget(parent), stack(new QStacke
     page1Layout->addStretch();   // 下方弹性空间
     page1->setLayout(page1Layout);
 
-    // 创建其他页面
     start *page2 = new start();
+    connect(page2->backButton, &QPushButton::clicked, [this, page1]() {
+        this->stack->setCurrentWidget(page1);
+    });
+
+    about *page3 = new about();
+    connect(page3->backButton, &QPushButton::clicked, [this, page1]() {
+        this->stack->setCurrentWidget(page1);
+    });
+
+    connect(startButton, &QPushButton::clicked, [this,page2]() {
+        this->stack->setCurrentWidget(page2);
+    });
+    connect(aboutButton, &QPushButton::clicked, [page3,this]() {
+        this->stack->setCurrentWidget(page3);
+    });
 
     // 将页面添加到 QStackedWidget
     stack->addWidget(page1);
     stack->addWidget(page2);
+    stack->addWidget(page3);
 
     // 设置默认显示的页面
     stack->setCurrentIndex(0);
-
-    // 设置切换按钮的功能
-    connect(startButton, &QPushButton::clicked, [this]() {
-        this->stack->setCurrentIndex(1);
-    });
-    connect(page2->backButton, &QPushButton::clicked, [this]() {
-        this->stack->setCurrentIndex(0);
-    });
-
 
     // 布局：将 QStackedWidget 放入主窗口
     QVBoxLayout *mainLayout = new QVBoxLayout(this);

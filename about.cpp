@@ -1,16 +1,16 @@
-#include "start.h"
+#include "about.h"
 #include <QVBoxLayout>
 
-start::start(QWidget *parent):QWidget(parent)
+about::about(QWidget *parent):QWidget(parent)
 {
     backButton = new button("返回", this);
     backButton->move(0, 0);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
 
-    loginButton = new button("Login", this);
-    registerButton = new button("Register", this);
-    guestButton = new button("Guest", this);
+    button *loginButton = new button("Login", this);
+    button *registerButton = new button("Register", this);
+    button *guestButton = new button("Guest", this);
 
     layout->addWidget(loginButton);
     layout->addWidget(registerButton);
@@ -19,10 +19,7 @@ start::start(QWidget *parent):QWidget(parent)
     this->setLayout(layout);
 }
 
-start::~start()
+about::~about()
 {
     delete backButton;
-    delete loginButton;
-    delete registerButton;
-    delete guestButton;
 }
