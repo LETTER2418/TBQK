@@ -1,6 +1,6 @@
 #include "button.h"
 
-button::button(const QString &text, const QString &soundFilePath, QWidget *parent)
+button::button(const QString &text, QWidget *parent, const QString &soundFilePath)
     : QPushButton(text, parent), gradientOffset(-BUTTON_WIDTH) // 初始化流光偏移量
 {
     // 设置按钮的大小

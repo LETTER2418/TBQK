@@ -1,8 +1,14 @@
 #ifndef WIDGET_H
 #define WIDGET_H
 
-#include <QWidget>
 #include <QStackedWidget>
+#include <QLabel>
+#include <QApplication>
+#include <QPixmap>
+#include <QDebug>
+#include <QGridLayout>
+#include <QFont>
+#include <Qwidget>
 #include "button.h"
 
 QT_BEGIN_NAMESPACE
@@ -17,14 +23,11 @@ class Widget : public QWidget
 
 public:
     Widget(QWidget *parent = nullptr);
+    void startGame();
     ~Widget();
 
 private:
     Ui::Widget *ui;
-    QStackedWidget *stack;
-    button *startButton;
-    button *aboutButton;
-    button *settingsButton;
-    button *exitButton;
+
 };
 #endif // WIDGET_H
