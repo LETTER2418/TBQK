@@ -1,10 +1,10 @@
 #include <QApplication>
-#include <start.h>
+#include <WindowManager.h>
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
-    start main;
-    main.show();
+    WindowManager wmg;
+    wmg.show();
     return app.exec();
 }

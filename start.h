@@ -1,26 +1,22 @@
 #ifndef START_H
 #define START_H
-
-#include <QWidget>
-#include <QStackedWidget>
-#include <QVBoxLayout>
-#include "widget.h"
 #include "button.h"
+#include <QWidget>
 
-class start :public Widget{
+class start : public QWidget
+{
     Q_OBJECT
 
 public:
-    start(Widget *parent = nullptr);
+
+    start(QWidget *parent = nullptr);
 
     ~start();
+
+
+    button *backButton;
 private:
-    button* backbutton;
-    QStackedWidget *stack;
-    button *startButton;
-    button *aboutButton;
-    button *settingsButton;
-    button *exitButton;
+
 };
 
 #endif // START_H
