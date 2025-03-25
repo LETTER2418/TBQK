@@ -39,41 +39,30 @@ start::start(Widget *parent) : Widget(parent), stack(new QStackedWidget(this))
 
     // 创建其他页面
     QWidget *page2 = new QWidget();
-    QWidget *page3 = new QWidget();
 
     QLabel *label2 = new QLabel("This is Page 2", page2);
-    QLabel *label3 = new QLabel("This is Page 3", page3);
 
-    QPushButton *btnPage1 = new QPushButton("Go to Page 1", page2);
-    QPushButton *btnPage2 = new QPushButton("Go to Page 2", page3);
-    QPushButton *btnPage3 = new QPushButton("Go to Page 3", page1);
+    button *btnPage1 = new button("Go to Page 1", page2);
 
     QVBoxLayout *layout2 = new QVBoxLayout(page2);
     layout2->addWidget(label2);
     layout2->addWidget(btnPage1);
 
-    QVBoxLayout *layout3 = new QVBoxLayout(page3);
-    layout3->addWidget(label3);
-    layout3->addWidget(btnPage2);
-
     // 将页面添加到 QStackedWidget
     stack->addWidget(page1);
     stack->addWidget(page2);
-    stack->addWidget(page3);
 
     // 设置默认显示的页面
     stack->setCurrentIndex(0);
 
     // 设置切换按钮的功能
+    connect(startButton, &QPushButton::clicked, [this]() {
+        this->stack->setCurrentIndex(1);
+    });
     connect(btnPage1, &QPushButton::clicked, [this]() {
         this->stack->setCurrentIndex(0);
     });
-    connect(btnPage2, &QPushButton::clicked, [this]() {
-        this->stack->setCurrentIndex(1);
-    });
-    connect(btnPage3, &QPushButton::clicked, [this]() {
-        this->stack->setCurrentIndex(2);
-    });
+
 
     // 布局：将 QStackedWidget 放入主窗口
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
