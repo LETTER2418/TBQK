@@ -21,5 +21,5 @@ about::about(QWidget *parent):QWidget(parent)
 
 about::~about()
 {
-    delete backButton;
+
 }

@@ -21,8 +21,6 @@ start::start(QWidget *parent):QWidget(parent)
 
 start::~start()
 {
-    delete backButton;
-    delete loginButton;
-    delete registerButton;
-    delete guestButton;
+    //如果 QObject（或其子类，如 QWidget、QPushButton 等）有 parent,对象树会自动管理生命周期，不需要手动 delete
+
 }
