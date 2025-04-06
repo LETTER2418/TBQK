@@ -24,6 +24,15 @@ button::button(const QString &text, QWidget *parent, const QString &soundFilePat
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &button::updateGradient);
     timer->start(30); // 每30毫秒更新一次
+
+    setStyleSheet("QPushButton {"
+                  "background: rgba(255, 255, 255, 0);"
+                  "border: none;"
+                  "}"
+
+                  "QPushButton:hover {"
+                  "background: rgba(255, 255, 255, 0.2);"
+                  "}");
 }
 
 void button::paintEvent(QPaintEvent *event)

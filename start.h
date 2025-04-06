@@ -2,6 +2,7 @@
 #define START_H
 #include "button.h"
 #include <QWidget>
+#include <qlineedit.h>
 
 class start : public QWidget
 {
@@ -10,7 +11,8 @@ class start : public QWidget
 public:
 
     start(QWidget *parent = nullptr);
-
+    void onLoginClicked();
+    void onRegisterClicked();
     ~start();
 
 
@@ -19,6 +21,8 @@ private:
     button *loginButton;
     button *registerButton;
     button *guestButton;
+    QLineEdit *accountLineEdit;
+    QLineEdit *passwordLineEdit;
 };
 
 #endif // START_H
