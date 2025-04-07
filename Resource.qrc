@@ -3,5 +3,6 @@
         <file>image/bg.jpg</file>
         <file>image/start.png</file>
         <file>sound/button.ogg</file>
+        <file>image/msg.png</file>
     </qresource>
 </RCC>

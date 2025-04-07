@@ -25,11 +25,11 @@ start::start(QWidget *parent):QWidget(parent)
     passwordLineEdit->setFixedSize(200,50);
 
     // 创建其他按钮
-    loginButton = new button("Login", this);
     registerButton = new button("Register", this);
+    loginButton = new button("Login", this);
     guestButton = new button("Guest", this);
-    loginButton->move(0,250);
-    registerButton->move(0,500);
+    registerButton->move(0,250);
+    loginButton->move(0,500);
     guestButton->move(0,750);
 
     connect(loginButton, &QPushButton::clicked, this, &start::onLoginClicked);
@@ -43,7 +43,10 @@ void start::onLoginClicked()
     QString password = passwordLineEdit->text();
 
     if (username.isEmpty() || password.isEmpty()) {
-        QMessageBox::warning(this, "输入错误", "账号和密码不能为空！");
+        MessageBox messageBox;
+        messageBox.setMessage("账号和密码不能为空！");
+        messageBox.exec();
+        //QMessageBox::warning(this, "输入错误", "账号和密码不能为空！");
         return;
     }
 
@@ -61,10 +64,9 @@ void start::onRegisterClicked()
     QString username = accountLineEdit->text();
     QString password = passwordLineEdit->text();
 
+
     if (username.isEmpty() || password.isEmpty()) {
-        MessageBox messageBox;
-        messageBox.setMessage("账号和密码不能为空！");
-        messageBox.show();
+
         QMessageBox::warning(this, "输入错误", "账号和密码不能为空！");
         return;
     }

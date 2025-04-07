@@ -8,17 +8,17 @@
 #include <QVBoxLayout>
 #include <QPainter>
 #include <QPixmap>
+#include<QMessageBox>
 
-class MessageBox : public QWidget
+class MessageBox : public QMessageBox
 {
     Q_OBJECT
 
 public:
-    explicit MessageBox(QWidget *parent = nullptr);
+    explicit MessageBox(QMessageBox*parent = nullptr);
     ~MessageBox();
 
     void setMessage(const QString &message);
-    void setBackgroundImage(); // 接受文件路径
 
 private:
     void paintEvent(QPaintEvent *event) override;
@@ -26,7 +26,7 @@ private:
     QLabel *messageLabel;
     QVBoxLayout *layout;
     QPixmap backgroundImage;
-    const QString backgroundImagePath=":\\image\\bg.jpg"; // 存储背景图片路径
+    const QString backgroundImagePath=":\\image\\msg.png"; // 存储背景图片路径
 };
 
 #endif // MESSAGEBOX_H

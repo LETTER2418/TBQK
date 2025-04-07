@@ -5,18 +5,20 @@
 #include <QPainter>
 #include <QFileInfo>
 
-MessageBox::MessageBox(QWidget *parent)
-    : QWidget(parent), messageLabel(new QLabel(this)), layout(new QVBoxLayout(this))
+MessageBox::MessageBox(QMessageBox *parent)
+    : QMessageBox(parent), messageLabel(new QLabel(this)), layout(new QVBoxLayout(this))
 {
-    setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint); // 去掉窗口边框
+    this->setStyleSheet("QLabel{min-width: 300px; min-height: 400px;}");
+    //setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint); // 去掉窗口边框
     setAttribute(Qt::WA_TranslucentBackground); // 透明背景
-    this->setFixedSize(300,400);
+    this->setStandardButtons(QMessageBox::NoButton);
 
     messageLabel->setAlignment(Qt::AlignCenter);
     layout->addWidget(messageLabel);
 
-    button *closeButton = new button("确认", this);
-    connect(closeButton, &button::clicked, this, &QWidget::close);
+    class button *closeButton = new class button("确认", this);
+    closeButton->move(150,300);
+    connect(closeButton, &button::clicked, this, &QMessageBox::accept);
     layout->addWidget(closeButton);
 
     setLayout(layout);
@@ -27,6 +29,8 @@ MessageBox::MessageBox(QWidget *parent)
     } else {
         qWarning() << "Image file not found: " << backgroundImagePath;
     }
+
+
 }
 
 MessageBox::~MessageBox() {}
@@ -34,6 +38,8 @@ MessageBox::~MessageBox() {}
 void MessageBox::setMessage(const QString &message)
 {
     messageLabel->setText(message);
+    messageLabel->setStyleSheet("QLabel { color: white; font-size: 20px; }");
+    messageLabel->move(30, 15);
 }
 
 
@@ -47,3 +53,5 @@ void MessageBox::paintEvent(QPaintEvent *event)
 
     QWidget::paintEvent(event);
 }
+
+
