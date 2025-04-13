@@ -24,10 +24,26 @@ start::start(QWidget *parent):QWidget(parent)
     passwordLineEdit->move(700,500);
     passwordLineEdit->setFixedSize(200,50);
 
+    // 创建显示密码按钮
+    showPasswordButton = new button("显示密码", this);
+    showPasswordButton->move(910, 500); // 按钮放在密码框右侧
+
+    // 连接按钮的点击事件到槽函数
+    connect(showPasswordButton, &button::clicked, this, [this]() {
+        // 切换密码框的显示模式
+        if (passwordLineEdit->echoMode() == QLineEdit::Password) {
+            passwordLineEdit->setEchoMode(QLineEdit::Normal); // 显示密码
+            showPasswordButton->setText("隐藏密码");
+        } else {
+            passwordLineEdit->setEchoMode(QLineEdit::Password); // 隐藏密码
+            showPasswordButton->setText("显示密码");
+        }
+    });
+
     // 创建其他按钮
-    registerButton = new button("Register", this);
-    loginButton = new button("Login", this);
-    guestButton = new button("Guest", this);
+    registerButton = new button("注册", this);
+    loginButton = new button("登录", this);
+    guestButton = new button("游客模式", this);
     registerButton->move(0,250);
     loginButton->move(0,500);
     guestButton->move(0,750);
@@ -41,9 +57,9 @@ void start::onLoginClicked()
 {
     QString username = accountLineEdit->text();
     QString password = passwordLineEdit->text();
+    MessageBox messageBox;
 
     if (username.isEmpty() || password.isEmpty()) {
-        MessageBox messageBox;
         messageBox.setMessage("账号和密码不能为空！");
         messageBox.exec();
         //QMessageBox::warning(this, "输入错误", "账号和密码不能为空！");
@@ -52,10 +68,14 @@ void start::onLoginClicked()
 
     // 在 userManager 中验证账号密码
     if (userManager.checkPassword(username, password)) {
-        QMessageBox::information(this, "登录成功", "欢迎回来，" + username);
+        messageBox.setMessage("成功登录！");
+        messageBox.exec();
+        //QMessageBox::information(this, "登录成功", "欢迎回来，" + username);
         // 登录成功后的处理，比如跳转到主界面
     } else {
-        QMessageBox::warning(this, "登录失败", "账号或密码错误！");
+        messageBox.setMessage("账号或密码错误！");
+        messageBox.exec();
+        //QMessageBox::warning(this, "登录失败", "账号或密码错误！");
     }
 }
 
@@ -63,17 +83,23 @@ void start::onRegisterClicked()
 {
     QString username = accountLineEdit->text();
     QString password = passwordLineEdit->text();
-
+    MessageBox messageBox;
 
     if (username.isEmpty() || password.isEmpty()) {
-
-        QMessageBox::warning(this, "输入错误", "账号和密码不能为空！");
+        messageBox.setMessage("账号和密码不能为空！");
+        messageBox.exec();
+        //QMessageBox::warning(this, "输入错误", "账号和密码不能为空！");
         return;
     }
 
+    // 加载用户信息
+    userManager.loadFromFile();
+
     // 在 userManager 中检查账号是否已存在
     if (userManager.getAllUserIds().contains(username)) {
-        QMessageBox::warning(this, "注册失败", "该账号已存在！");
+        messageBox.setMessage("该账号已存在！");
+        messageBox.exec();
+        //QMessageBox::warning(this, "注册失败", "该账号已存在！");
         return;
     }
 
@@ -81,7 +107,9 @@ void start::onRegisterClicked()
     userManager.addUser(username, password);
     userManager.saveToFile();  // 保存到文件
 
-    QMessageBox::information(this, "注册成功", "账号注册成功！");
+    messageBox.setMessage("账号注册成功！");
+    messageBox.exec();
+    //QMessageBox::information(this, "注册成功", "账号注册成功！");
     // 注册成功后的处理，比如跳转到登录界面
 }
 

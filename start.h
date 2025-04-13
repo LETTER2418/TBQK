@@ -21,6 +21,7 @@ private:
     button *loginButton;
     button *registerButton;
     button *guestButton;
+    button *showPasswordButton;
     QLineEdit *accountLineEdit;
     QLineEdit *passwordLineEdit;
 };

@@ -10,7 +10,6 @@ MessageBox::MessageBox(QMessageBox *parent)
 {
     this->setStyleSheet("QLabel{min-width: 300px; min-height: 400px;}");
     //setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint); // 去掉窗口边框
-    setAttribute(Qt::WA_TranslucentBackground); // 透明背景
     this->setStandardButtons(QMessageBox::NoButton);
 
     messageLabel->setAlignment(Qt::AlignCenter);
