@@ -15,8 +15,9 @@ SOURCES += \
     Widget.cpp \
     WindowManager.cpp \
     about.cpp \
-    button.cpp \
+    BUTTON.cpp \
     main.cpp \
+    menu.cpp \
     start.cpp
 
 HEADERS += \
@@ -25,7 +26,8 @@ HEADERS += \
     Widget.h \
     WindowManager.h \
     about.h \
-    button.h \
+    BUTTON.h \
+    menu.h \
     start.h
 
 FORMS += \
@@ -38,6 +40,4 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     Resource.qrc
-
-
 

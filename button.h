@@ -13,13 +13,13 @@ const int BUTTON_WIDTH = 120;
 const int BUTTON_HEIGHT = 50;
 const int FONT_SIZE = 14;
 
-class button : public QPushButton
+class BUTTON : public QPushButton
 {
     Q_OBJECT
 
 public:
     // 构造函数，接收按钮文字和音频文件路径（可选）
-    explicit button(const QString &text, QWidget *parent = nullptr, const QString &soundFilePath = "../../sound/button.ogg");
+    explicit BUTTON(const QString &text, QWidget *parent = nullptr, const QString &soundFilePath = "../../sound/BUTTON.ogg");
 
 protected:
     // 重写paintEvent实现自定义绘制

@@ -9,7 +9,7 @@
 #include <QGridLayout>
 #include <QFont>
 #include <Qwidget>
-#include "button.h"
+#include "BUTTON.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {

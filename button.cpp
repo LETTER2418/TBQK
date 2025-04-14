@@ -1,6 +1,6 @@
-#include "button.h"
+#include "BUTTON.h"
 
-button::button(const QString &text, QWidget *parent, const QString &soundFilePath)
+BUTTON::BUTTON(const QString &text, QWidget *parent, const QString &soundFilePath)
     : QPushButton(text, parent), gradientOffset(-BUTTON_WIDTH) // 初始化流光偏移量
 {
     // 设置按钮的大小
@@ -22,7 +22,7 @@ button::button(const QString &text, QWidget *parent, const QString &soundFilePat
 
     // 创建定时器，用于定时更新流光偏移量
     timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &button::updateGradient);
+    connect(timer, &QTimer::timeout, this, &BUTTON::updateGradient);
     timer->start(30); // 每30毫秒更新一次
 
     setStyleSheet("QPushButton {"
@@ -35,7 +35,7 @@ button::button(const QString &text, QWidget *parent, const QString &soundFilePat
                   "}");
 }
 
-void button::paintEvent(QPaintEvent *event)
+void BUTTON::paintEvent(QPaintEvent *event)
 {
     QPushButton::paintEvent(event);
 
@@ -60,7 +60,7 @@ void button::paintEvent(QPaintEvent *event)
     painter.drawRoundedRect(rect().adjusted(2, 2, -2, -2), 10, 10);
 }
 
-void button::updateGradient()
+void BUTTON::updateGradient()
 {
     gradientOffset += 3; // 每次移动3像素
     if (gradientOffset > width()) {

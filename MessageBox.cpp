@@ -1,26 +1,19 @@
 // MessageBox.cpp
 #include "MessageBox.h"
-#include "button.h"
+#include "BUTTON.h"
 #include <QVBoxLayout>
 #include <QPainter>
 #include <QFileInfo>
 
 MessageBox::MessageBox(QMessageBox *parent)
-    : QMessageBox(parent), messageLabel(new QLabel(this)), layout(new QVBoxLayout(this))
+    : QMessageBox(parent), messageLabel(new QLabel(this))
 {
     this->setStyleSheet("QLabel{min-width: 300px; min-height: 400px;}");
     //setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint); // 去掉窗口边框
     this->setStandardButtons(QMessageBox::NoButton);
 
-    messageLabel->setAlignment(Qt::AlignCenter);
-    layout->addWidget(messageLabel);
-
-    class button *closeButton = new class button("确认", this);
-    closeButton->move(150,300);
-    connect(closeButton, &button::clicked, this, &QMessageBox::accept);
-    layout->addWidget(closeButton);
-
-    setLayout(layout);
+    closeButton = new BUTTON("确认", this);
+    closeButton->move(110,300);
 
     QFileInfo checkFile(backgroundImagePath);
     if (checkFile.exists() && checkFile.isFile()) {
@@ -28,7 +21,6 @@ MessageBox::MessageBox(QMessageBox *parent)
     } else {
         qWarning() << "Image file not found: " << backgroundImagePath;
     }
-
 
 }
 

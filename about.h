@@ -1,7 +1,7 @@
 #ifndef ABOUT_H
 #define ABOUT_H
 #include <QWidget>
-#include "button.h"
+#include "BUTTON.h"
 
 class about : public QWidget
 {
@@ -13,7 +13,7 @@ public:
 
     ~about();
 
-    button *backButton;
+    BUTTON *backButton;
 private:
 
 };

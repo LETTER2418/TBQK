@@ -5,7 +5,7 @@
 #include <QStackedWidget>
 #include <QVBoxLayout>
 #include "Widget.h"
-#include "button.h"
+#include "BUTTON.h"
 
 class WindowManager :public Widget{
     Q_OBJECT
@@ -15,12 +15,12 @@ public:
 
     ~WindowManager();
 private:
-    button* backbutton;
+    BUTTON* backbutton;
     QStackedWidget *stack;
-    button *startButton;
-    button *aboutButton;
-    button *settingsButton;
-    button *exitButton;
+    BUTTON *startButton;
+    BUTTON *aboutButton;
+    BUTTON *settingsButton;
+    BUTTON *exitButton;
 };
 
 #endif // WINDOWMANAGER_H

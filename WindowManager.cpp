@@ -1,21 +1,19 @@
 #include "WindowManager.h"
-#include "button.h"
+#include "BUTTON.h"
 #include "start.h"
 #include "about.h"
+#include "menu.h"
 
 WindowManager::WindowManager(Widget *parent) : Widget(parent), stack(new QStackedWidget(this))
-
 {
-    // backbutton = new button("返回", this);
-    // backbutton->move(0, 0);
 
-    // 创建 page1，并将四个按钮放入
-    QWidget *page1 = new QWidget();
+    // 创建 mainPage，并将四个按钮放入
+    QWidget *mainPage = new QWidget();
 
-    startButton = new button("开始游戏", page1);
-    aboutButton = new button("关于", page1);
-    settingsButton = new button("设置", page1);
-    exitButton = new button("退出", page1);
+    startButton = new BUTTON("开始游戏", mainPage);
+    aboutButton = new BUTTON("关于", mainPage);
+    settingsButton = new BUTTON("设置", mainPage);
+    exitButton = new BUTTON("退出", mainPage);
 
     // 退出按钮连接到窗口关闭
     QObject::connect(exitButton, &QPushButton::clicked, this, &QWidget::close);
@@ -28,41 +26,51 @@ WindowManager::WindowManager(Widget *parent) : Widget(parent), stack(new QStacke
     layout->addWidget(exitButton, 1, 1);
 
     // **创建一个 QWidget 作为中央部件**
-    QWidget *buttonWidget = new QWidget(page1);
+    QWidget *buttonWidget = new QWidget(mainPage);
     buttonWidget->setLayout(layout);
     buttonWidget->setFixedSize(400, 200);  // 固定大小
 
     // **创建一个布局让 buttonWidget 居中**
-    QVBoxLayout *page1Layout = new QVBoxLayout(page1);
+    QVBoxLayout *page1Layout = new QVBoxLayout(mainPage);
     page1Layout->addStretch();   // 上方弹性空间
     page1Layout->addWidget(buttonWidget, 0, Qt::AlignCenter);
     page1Layout->addStretch();   // 下方弹性空间
-    page1->setLayout(page1Layout);
+    mainPage->setLayout(page1Layout);
 
-    start *page2 = new start();
-    connect(page2->backButton, &QPushButton::clicked, [this, page1]() {
-        this->stack->setCurrentWidget(page1);
+    start *startPage = new start();
+    about *aboutPage = new about();
+    menu *menuPage = new menu();
+
+    connect(startPage->backButton, &QPushButton::clicked, [this, mainPage]() {
+        this->stack->setCurrentWidget(mainPage);
     });
 
-    about *page3 = new about();
-    connect(page3->backButton, &QPushButton::clicked, [this, page1]() {
-        this->stack->setCurrentWidget(page1);
+    connect(aboutPage->backButton, &QPushButton::clicked, [this, mainPage]() {
+        this->stack->setCurrentWidget(mainPage);
     });
 
-    connect(startButton, &QPushButton::clicked, [this,page2]() {
-        this->stack->setCurrentWidget(page2);
+    connect(startButton, &QPushButton::clicked, [this,startPage]() {
+        this->stack->setCurrentWidget(startPage);
     });
-    connect(aboutButton, &QPushButton::clicked, [page3,this]() {
-        this->stack->setCurrentWidget(page3);
+
+    connect(aboutButton, &QPushButton::clicked, [this, aboutPage]() {
+        this->stack->setCurrentWidget(aboutPage);
+    });
+
+    connect(startPage->messageBox->closeButton, &QPushButton::clicked, [this,menuPage,startPage]() {
+        startPage->messageBox->accept();
+        qDebug() << "MsgBox\n";
+        this->stack->setCurrentWidget(menuPage);
     });
 
     // 将页面添加到 QStackedWidget
-    stack->addWidget(page1);
-    stack->addWidget(page2);
-    stack->addWidget(page3);
+    stack->addWidget(mainPage);
+    stack->addWidget(startPage);
+    stack->addWidget(aboutPage);
+    stack->addWidget(menuPage);
 
     // 设置默认显示的页面
-    stack->setCurrentIndex(0);
+    this->stack->setCurrentWidget(mainPage);
 
     // 布局：将 QStackedWidget 放入主窗口
     QVBoxLayout *mainLayout = new QVBoxLayout(this);

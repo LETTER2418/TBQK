@@ -3,7 +3,7 @@
 
 about::about(QWidget *parent):QWidget(parent)
 {
-    backButton = new button("返回", this);
+    backButton = new BUTTON("返回", this);
     backButton->move(0, 0);
 
 

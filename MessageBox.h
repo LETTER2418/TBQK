@@ -2,6 +2,7 @@
 #ifndef MESSAGEBOX_H
 #define MESSAGEBOX_H
 
+#include "BUTTON.h"
 #include <QWidget>
 #include <QLabel>
 #include <QPushButton>
@@ -9,6 +10,7 @@
 #include <QPainter>
 #include <QPixmap>
 #include<QMessageBox>
+
 
 class MessageBox : public QMessageBox
 {
@@ -20,11 +22,11 @@ public:
 
     void setMessage(const QString &message);
 
+    BUTTON *closeButton;
 private:
     void paintEvent(QPaintEvent *event) override;
 
     QLabel *messageLabel;
-    QVBoxLayout *layout;
     QPixmap backgroundImage;
     const QString backgroundImagePath=":\\image\\msg.png"; // 存储背景图片路径
 };

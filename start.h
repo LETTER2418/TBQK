@@ -1,8 +1,9 @@
 #ifndef START_H
 #define START_H
-#include "button.h"
+#include "BUTTON.h"
 #include <QWidget>
 #include <qlineedit.h>
+#include "MessageBox.h"
 
 class start : public QWidget
 {
@@ -15,13 +16,14 @@ public:
     void onRegisterClicked();
     ~start();
 
+    MessageBox *messageBox;
+    BUTTON *backButton;
+    BUTTON *loginButton;
+    BUTTON *registerButton;
+    BUTTON *guestButton;
+    BUTTON *showPasswordButton;
 
-    button *backButton;
 private:
-    button *loginButton;
-    button *registerButton;
-    button *guestButton;
-    button *showPasswordButton;
     QLineEdit *accountLineEdit;
     QLineEdit *passwordLineEdit;
 };
