@@ -14,7 +14,11 @@ public:
 
     BUTTON *backButton;
 
+protected:
+    void paintEvent(QPaintEvent *event) override ;
+
 private:
+    void drawHexagon(QPainter &painter, const QPointF &center, int radius);
 
 };
 

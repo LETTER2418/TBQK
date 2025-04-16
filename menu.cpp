@@ -1,7 +1,7 @@
 #include "menu.h"
 #include <QBoxLayout>
 
-menu::menu(QWidget *parent):QWidget(parent)
+Menu::Menu(QWidget *parent):QWidget(parent)
 {
     logoutButton = new BUTTON("注销", this);
     logoutButton -> move(0, 0);
@@ -20,7 +20,7 @@ menu::menu(QWidget *parent):QWidget(parent)
     setLayout(layout);
 }
 
-menu::~menu()
+Menu::~Menu()
 {
 
 }

@@ -1,7 +1,6 @@
 #ifndef WINDOWMANAGER_H
 #define WINDOWMANAGER_H
 
-#include <QWidget>
 #include <QStackedWidget>
 #include <QVBoxLayout>
 #include "Widget.h"

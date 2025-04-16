@@ -3,15 +3,15 @@
 #include <QWidget>
 #include "BUTTON.h"
 
-class about : public QWidget
+class About : public QWidget
 {
     Q_OBJECT
 
 public:
 
-    about(QWidget *parent = nullptr);
+    About(QWidget *parent = nullptr);
 
-    ~about();
+    ~About();
 
     BUTTON *backButton;
 private:

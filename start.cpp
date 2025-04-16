@@ -5,7 +5,7 @@
 
 UserManager userManager;
 
-start::start(QWidget *parent):QWidget(parent)
+Start::Start(QWidget *parent):QWidget(parent)
 {
     // 创建按钮
     backButton = new BUTTON("返回", this);
@@ -47,8 +47,8 @@ start::start(QWidget *parent):QWidget(parent)
     loginButton->move(0,500);
     guestButton->move(0,750);
 
-    connect(loginButton, &QPushButton::clicked, this, &start::onLoginClicked);
-    connect(registerButton, &QPushButton::clicked, this, &start::onRegisterClicked);
+    connect(loginButton, &QPushButton::clicked, this, &Start::onLoginClicked);
+    connect(registerButton, &QPushButton::clicked, this, &Start::onRegisterClicked);
 
     //MsgBox
     YESmessageBox = new MessageBox();
@@ -58,7 +58,7 @@ start::start(QWidget *parent):QWidget(parent)
     });
 }
 
-void start::onLoginClicked()
+void Start::onLoginClicked()
 {
     QString username = accountLineEdit->text();
     QString password = passwordLineEdit->text();
@@ -84,7 +84,7 @@ void start::onLoginClicked()
     }
 }
 
-void start::onRegisterClicked()
+void Start::onRegisterClicked()
 {
     QString username = accountLineEdit->text();
     QString password = passwordLineEdit->text();
@@ -118,7 +118,7 @@ void start::onRegisterClicked()
 }
 
 
-start::~start()
+Start::~Start()
 {
     //如果 QObject（或其子类，如 QWidget、QPushButton 等）有 parent,对象树会自动管理生命周期，不需要手动 delete
 

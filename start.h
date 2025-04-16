@@ -5,16 +5,16 @@
 #include <qlineedit.h>
 #include "MessageBox.h"
 
-class start : public QWidget
+class Start : public QWidget
 {
     Q_OBJECT
 
 public:
 
-    start(QWidget *parent = nullptr);
+    Start(QWidget *parent = nullptr);
     void onLoginClicked();
     void onRegisterClicked();
-    ~start();
+    ~Start();
 
     MessageBox *YESmessageBox;
     MessageBox *NOmessageBox;

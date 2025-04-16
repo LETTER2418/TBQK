@@ -4,14 +4,14 @@
 #include <QWidget>
 #include <qlineedit.h>
 
-class menu : public QWidget
+class Menu : public QWidget
 {
     Q_OBJECT
 
 public:
 
-    menu(QWidget *parent = nullptr);
-    ~menu();
+    Menu(QWidget *parent = nullptr);
+    ~Menu();
 
     BUTTON *logoutButton;
     BUTTON *levelEditorButton;

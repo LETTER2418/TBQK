@@ -1,6 +1,8 @@
 #include "Widget.h"
 #include "ui_Widget.h"
 
+#include <QPainter>
+
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Widget)
@@ -26,12 +28,10 @@ Widget::Widget(QWidget *parent)
     bgLabel->setScaledContents(true);
     bgLabel->setGeometry(0, 0, this->width(), this->height());
 
-}
 
-void  Widget::startGame()
-{
 
 }
+
 
 Widget::~Widget()
 {

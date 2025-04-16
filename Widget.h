@@ -9,7 +9,6 @@
 #include <QGridLayout>
 #include <QFont>
 #include <Qwidget>
-#include "BUTTON.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -23,7 +22,6 @@ class Widget : public QWidget
 
 public:
     Widget(QWidget *parent = nullptr);
-    void startGame();
     ~Widget();
 
 private:

@@ -39,9 +39,9 @@ WindowManager::WindowManager(Widget *parent) : Widget(parent), pageStack(new QSt
     page1Layout->addStretch();   // 下方弹性空间
     mainPage->setLayout(page1Layout);
 
-    start *startPage = new start();
-    about *aboutPage = new about();
-    menu *menuPage = new menu();
+    Start *startPage = new Start();
+    About *aboutPage = new About();
+    Menu *menuPage = new Menu();
     LevelEditor *levelEditorPage = new LevelEditor();
     RandomMap *randomMapPage =new RandomMap();
 
@@ -95,7 +95,7 @@ WindowManager::WindowManager(Widget *parent) : Widget(parent), pageStack(new QSt
     pageStack->addWidget(randomMapPage);
 
     // 设置默认显示的页面
-    this->pageStack->setCurrentWidget(mainPage);
+    this->pageStack->setCurrentWidget(randomMapPage);
 
     // 布局：将 QStackedWidget 放入主窗口
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
