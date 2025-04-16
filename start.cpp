@@ -51,7 +51,11 @@ start::start(QWidget *parent):QWidget(parent)
     connect(registerButton, &QPushButton::clicked, this, &start::onRegisterClicked);
 
     //MsgBox
-    messageBox = new MessageBox();
+    YESmessageBox = new MessageBox();
+    NOmessageBox = new MessageBox();
+    connect(NOmessageBox->closeButton, &BUTTON::clicked, this, [this]() {
+        NOmessageBox->accept();  // 调用 QMessageBox 的 accept
+    });
 }
 
 void start::onLoginClicked()
@@ -61,8 +65,8 @@ void start::onLoginClicked()
 
 
     if (username.isEmpty() || password.isEmpty()) {
-        messageBox->setMessage("账号和密码不能为空！");
-        messageBox->exec();
+        NOmessageBox->setMessage("账号和密码不能为空！");
+        NOmessageBox->exec();
         return;
     }
 
@@ -70,13 +74,13 @@ void start::onLoginClicked()
 
     // 在 userManager 中验证账号密码
     if (userManager.checkPassword(username, password)) {
-        messageBox->setMessage("成功登录！");
-        messageBox->exec();
+        YESmessageBox->setMessage("成功登录！");
+        YESmessageBox->exec();
         // 登录成功后的处理，比如跳转到主界面
     }
     else {
-        messageBox->setMessage("账号或密码错误！");
-        messageBox->exec();
+        NOmessageBox->setMessage("账号或密码错误！");
+        NOmessageBox->exec();
     }
 }
 
@@ -86,8 +90,8 @@ void start::onRegisterClicked()
     QString password = passwordLineEdit->text();
 
     if (username.isEmpty() || password.isEmpty()) {
-        messageBox->setMessage("账号和密码不能为空！");
-        messageBox->exec();
+        NOmessageBox->setMessage("账号和密码不能为空！");
+        NOmessageBox->exec();
         //QMessageBox::warning(this, "输入错误", "账号和密码不能为空！");
         return;
     }
@@ -97,8 +101,8 @@ void start::onRegisterClicked()
 
     // 在 userManager 中检查账号是否已存在
     if (userManager.getAllUserIds().contains(username)) {
-        messageBox->setMessage("该账号已存在！");
-        messageBox->exec();
+        NOmessageBox->setMessage("该账号已存在！");
+        NOmessageBox->exec();
         //QMessageBox::warning(this, "注册失败", "该账号已存在！");
         return;
     }
@@ -107,8 +111,8 @@ void start::onRegisterClicked()
     userManager.addUser(username, password);
     userManager.saveToFile();  // 保存到文件
 
-    messageBox->setMessage("账号注册成功！");
-    messageBox->exec();
+    NOmessageBox->setMessage("账号注册成功！");
+    NOmessageBox->exec();
     //QMessageBox::information(this, "注册成功", "账号注册成功！");
     // 注册成功后的处理，比如跳转到登录界面
 }

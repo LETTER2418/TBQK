@@ -20,7 +20,7 @@ public:
     BUTTON *levelModeButton;
 
 private:
-    int x;
+
 };
 
 #endif // MENU_H

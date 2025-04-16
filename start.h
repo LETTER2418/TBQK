@@ -16,7 +16,8 @@ public:
     void onRegisterClicked();
     ~start();
 
-    MessageBox *messageBox;
+    MessageBox *YESmessageBox;
+    MessageBox *NOmessageBox;
     BUTTON *backButton;
     BUTTON *loginButton;
     BUTTON *registerButton;

@@ -16,7 +16,7 @@ public:
     ~WindowManager();
 private:
     BUTTON* backbutton;
-    QStackedWidget *stack;
+    QStackedWidget *pageStack;
     BUTTON *startButton;
     BUTTON *aboutButton;
     BUTTON *settingsButton;

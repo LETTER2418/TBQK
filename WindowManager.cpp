@@ -3,8 +3,10 @@
 #include "start.h"
 #include "about.h"
 #include "menu.h"
+#include "LevelEditor.h"
+#include "RandomMap.h"
 
-WindowManager::WindowManager(Widget *parent) : Widget(parent), stack(new QStackedWidget(this))
+WindowManager::WindowManager(Widget *parent) : Widget(parent), pageStack(new QStackedWidget(this))
 {
 
     // 创建 mainPage，并将四个按钮放入
@@ -40,41 +42,64 @@ WindowManager::WindowManager(Widget *parent) : Widget(parent), stack(new QStacke
     start *startPage = new start();
     about *aboutPage = new about();
     menu *menuPage = new menu();
+    LevelEditor *levelEditorPage = new LevelEditor();
+    RandomMap *randomMapPage =new RandomMap();
 
     connect(startPage->backButton, &QPushButton::clicked, [this, mainPage]() {
-        this->stack->setCurrentWidget(mainPage);
+        this->pageStack->setCurrentWidget(mainPage);
     });
 
     connect(aboutPage->backButton, &QPushButton::clicked, [this, mainPage]() {
-        this->stack->setCurrentWidget(mainPage);
+        this->pageStack->setCurrentWidget(mainPage);
     });
 
     connect(startButton, &QPushButton::clicked, [this,startPage]() {
-        this->stack->setCurrentWidget(startPage);
+        this->pageStack->setCurrentWidget(startPage);
     });
 
     connect(aboutButton, &QPushButton::clicked, [this, aboutPage]() {
-        this->stack->setCurrentWidget(aboutPage);
+        this->pageStack->setCurrentWidget(aboutPage);
     });
 
-    connect(startPage->messageBox->closeButton, &QPushButton::clicked, [this,menuPage,startPage]() {
-        startPage->messageBox->accept();
-        qDebug() << "MsgBox\n";
-        this->stack->setCurrentWidget(menuPage);
+    connect(startPage->YESmessageBox->closeButton, &QPushButton::clicked, [this,menuPage,startPage]() {
+        startPage->YESmessageBox->accept();
+        this->pageStack->setCurrentWidget(menuPage);
+    });
+
+    connect(menuPage->logoutButton, &QPushButton::clicked, [this,startPage](){
+        this->pageStack->setCurrentWidget(startPage);
+    });
+
+    connect(menuPage->levelEditorButton, &QPushButton::clicked, [this,levelEditorPage](){
+            this->pageStack->setCurrentWidget(levelEditorPage);
+    });
+
+    connect(levelEditorPage->backButton,&QPushButton::clicked, [this,menuPage](){
+        this->pageStack->setCurrentWidget(menuPage);
+    });
+
+    connect(levelEditorPage->randomButton,&QPushButton::clicked, [this,randomMapPage](){
+        this->pageStack->setCurrentWidget(randomMapPage);
+    });
+
+    connect(randomMapPage->backButton,&QPushButton::clicked, [this,levelEditorPage](){
+        this->pageStack->setCurrentWidget(levelEditorPage);
     });
 
     // 将页面添加到 QStackedWidget
-    stack->addWidget(mainPage);
-    stack->addWidget(startPage);
-    stack->addWidget(aboutPage);
-    stack->addWidget(menuPage);
+    pageStack->addWidget(mainPage);
+    pageStack->addWidget(startPage);
+    pageStack->addWidget(aboutPage);
+    pageStack->addWidget(menuPage);
+    pageStack->addWidget(levelEditorPage);
+    pageStack->addWidget(randomMapPage);
 
     // 设置默认显示的页面
-    this->stack->setCurrentWidget(mainPage);
+    this->pageStack->setCurrentWidget(mainPage);
 
     // 布局：将 QStackedWidget 放入主窗口
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->addWidget(stack);
+    mainLayout->addWidget(pageStack);
     this->setLayout(mainLayout);
 }
 
