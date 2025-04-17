@@ -1,6 +1,6 @@
 #ifndef START_H
 #define START_H
-#include "BUTTON.h"
+#include "Lbutton.h"
 #include <QWidget>
 #include <qlineedit.h>
 #include "MessageBox.h"
@@ -18,11 +18,11 @@ public:
 
     MessageBox *YESmessageBox;
     MessageBox *NOmessageBox;
-    BUTTON *backButton;
-    BUTTON *loginButton;
-    BUTTON *registerButton;
-    BUTTON *guestButton;
-    BUTTON *showPasswordButton;
+    Lbutton *backButton;
+    Lbutton *loginButton;
+    Lbutton *registerButton;
+    Lbutton *guestButton;
+    Lbutton *showPasswordButton;
 
 private:
     QLineEdit *accountLineEdit;

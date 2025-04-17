@@ -1,9 +1,9 @@
-#include "about.h"
+#include "About.h"
 #include <QVBoxLayout>
 
 About::About(QWidget *parent):QWidget(parent)
 {
-    backButton = new BUTTON("返回", this);
+    backButton = new Lbutton("返回", this);
     backButton->move(0, 0);
 
 

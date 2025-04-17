@@ -10,29 +10,31 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    About.cpp \
+    Lbutton.cpp \
     LevelEditor.cpp \
+    Main.cpp \
+    Menu.cpp \
     MessageBox.cpp \
     RandomMap.cpp \
+    RandomMapMsgBox.cpp \
+    Start.cpp \
     UserManager.cpp \
     Widget.cpp \
-    WindowManager.cpp \
-    about.cpp \
-    BUTTON.cpp \
-    main.cpp \
-    menu.cpp \
-    start.cpp
+    WindowManager.cpp
 
 HEADERS += \
+    About.h \
+    Lbutton.h \
     LevelEditor.h \
+    Menu.h \
     MessageBox.h \
     RandomMap.h \
+    RandomMapMsgBox.h \
+    Start.h \
     UserManager.h \
     Widget.h \
-    WindowManager.h \
-    about.h \
-    BUTTON.h \
-    menu.h \
-    start.h
+    WindowManager.h
 
 FORMS += \
     Widget.ui

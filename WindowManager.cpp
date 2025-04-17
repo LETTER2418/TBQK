@@ -1,8 +1,8 @@
 #include "WindowManager.h"
-#include "BUTTON.h"
-#include "start.h"
-#include "about.h"
-#include "menu.h"
+#include "Lbutton.h"
+#include "Start.h"
+#include "About.h"
+#include "Menu.h"
 #include "LevelEditor.h"
 #include "RandomMap.h"
 
@@ -10,18 +10,18 @@ WindowManager::WindowManager(Widget *parent) : Widget(parent), pageStack(new QSt
 {
 
     // 创建 mainPage，并将四个按钮放入
-    QWidget *mainPage = new QWidget();
+    QWidget *mainPage = new QWidget(this);
 
-    startButton = new BUTTON("开始游戏", mainPage);
-    aboutButton = new BUTTON("关于", mainPage);
-    settingsButton = new BUTTON("设置", mainPage);
-    exitButton = new BUTTON("退出", mainPage);
+    startButton = new Lbutton("开始游戏", mainPage);
+    aboutButton = new Lbutton("关于", mainPage);
+    settingsButton = new Lbutton("设置", mainPage);
+    exitButton = new Lbutton("退出", mainPage);
 
     // 退出按钮连接到窗口关闭
     QObject::connect(exitButton, &QPushButton::clicked, this, &QWidget::close);
 
     // 创建按钮的网格布局
-    QGridLayout *layout = new QGridLayout;
+    QGridLayout *layout = new QGridLayout(this);
     layout->addWidget(startButton, 0, 0);
     layout->addWidget(aboutButton, 1, 0);
     layout->addWidget(settingsButton, 0, 1);
@@ -39,11 +39,11 @@ WindowManager::WindowManager(Widget *parent) : Widget(parent), pageStack(new QSt
     page1Layout->addStretch();   // 下方弹性空间
     mainPage->setLayout(page1Layout);
 
-    Start *startPage = new Start();
-    About *aboutPage = new About();
-    Menu *menuPage = new Menu();
-    LevelEditor *levelEditorPage = new LevelEditor();
-    RandomMap *randomMapPage =new RandomMap();
+    Start *startPage = new Start(this);
+    About *aboutPage = new About(this);
+    Menu *menuPage = new Menu(this);
+    LevelEditor *levelEditorPage = new LevelEditor(this);
+    RandomMap *randomMapPage =new RandomMap(this);
 
     connect(startPage->backButton, &QPushButton::clicked, [this, mainPage]() {
         this->pageStack->setCurrentWidget(mainPage);
@@ -100,7 +100,6 @@ WindowManager::WindowManager(Widget *parent) : Widget(parent), pageStack(new QSt
     // 布局：将 QStackedWidget 放入主窗口
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(pageStack);
-    this->setLayout(mainLayout);
 }
 
 WindowManager::~WindowManager() {

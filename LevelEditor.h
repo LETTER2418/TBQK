@@ -1,6 +1,6 @@
 #ifndef LEVELEDITOR_H
 #define LEVELEDITOR_H
-#include "BUTTON.h"
+#include "Lbutton.h"
 #include <QWidget>
 #include <qlineedit.h>
 
@@ -13,9 +13,9 @@ public:
     LevelEditor(QWidget *parent = nullptr);
     ~LevelEditor();
 
-    BUTTON *randomButton;
-    BUTTON *customButton;
-    BUTTON *backButton;
+    Lbutton *randomButton;
+    Lbutton *customButton;
+    Lbutton *backButton;
 
 private:
 

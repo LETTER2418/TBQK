@@ -1,82 +1,115 @@
 #include "RandomMap.h"
-#include <QBoxLayout>
+#include <QPainter>
+#include <QMouseEvent>
+#include <cmath>
+#include <cstdlib> // for rand()
 
-RandomMap::RandomMap(QWidget *parent):QWidget(parent)
+RandomMap::RandomMap(QWidget *parent) : QWidget(parent)
 {
-    backButton = new BUTTON("返回", this);
-    backButton -> move(0, 0);
+    backButton = new Lbutton("返回", this);
+    backButton->move(0, 0);
 
+    generateHexagons(); // 初始化一次地图
 }
 
-void RandomMap::paintEvent(QPaintEvent *event) {
-    Q_UNUSED(event);
+RandomMap::~RandomMap()
+{
+}
 
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
+void RandomMap::generateHexagons() {
+    hexagons.clear();
 
-    int radius = 30;  // 六边形的半径
-    int rings = 3;    // 同心环数，包含中心（0层）
-
-    // 中心坐标（屏幕坐标）
-    QPointF center(400, 300);
-
-    // 方向向量（轴向坐标系）
     const QVector<QPoint> directions = {
         {1, 0}, {1, -1}, {0, -1},
         {-1, 0}, {-1, 1}, {0, 1}
     };
 
-    // lambda函数：将轴向坐标转换为像素坐标
     auto hexToPixel = [=](int q, int r) -> QPointF {
         double x = radius * 3.0 / 2 * q;
         double y = radius * std::sqrt(3) * (r + q / 2.0);
         return center + QPointF(x, y);
     };
 
-    // 遍历所有环
-    for (int k = 0; k <= rings; ++k) {
-        if (k == 0) {
-            // 中心六边形
-            QColor color = (rand() % 2 == 0) ? Qt::black : Qt::white;
-            painter.setBrush(color);
-            painter.setPen(Qt::gray);
-            drawHexagon(painter, center, radius);
-        } else {
-            // 每个环从六个方向中一个起点开始，然后顺时针绕一圈
-            QPoint q = directions[4] * k;  // 起点
-            int cur_q = q.x();
-            int cur_r = q.y();
+    QSet<QPoint> visited;
+    QVector<QPoint> path;
 
-            for (int dir = 0; dir < 6; ++dir) {
-                for (int step = 0; step < k; ++step) {
-                    QPointF pos = hexToPixel(cur_q, cur_r);
-                    QColor color = (rand() % 2 == 0) ? Qt::black : Qt::white;
-                    painter.setBrush(color);
-                    painter.setPen(Qt::gray);
-                    drawHexagon(painter, pos, radius);
+    QPoint current(0, 0);
+    path.append(current);
+    visited.insert(current);
 
-                    // 移动到下一个六边形
-                    cur_q += directions[dir].x();
-                    cur_r += directions[dir].y();
-                }
+
+    int maxLength = 3 * rings * (rings + 1); // 允许较长路径，防止过短
+
+    while (path.size() < maxLength) {
+        QVector<QPoint> candidates;
+        for (const QPoint &dir : directions) {
+            QPoint next = current + dir;
+            if (!visited.contains(next)) {
+                candidates.append(next);
             }
+        }
+
+        if (candidates.isEmpty()) {
+            break; // 无路可走
+        }
+
+        QPoint next = candidates[rand() % candidates.size()];
+        current = next;
+        path.append(current);
+        visited.insert(current);
+    }
+
+    // 将路径中的点变成黑色，其余填成白色（可选）
+    QSet<QPoint> pathSet = visited;
+
+    for (int q = -rings; q <= rings; ++q) {
+        for (int r = -rings; r <= rings; ++r) {
+            if (std::abs(q + r) > rings) continue;
+            QPoint pos(q, r);
+            QPointF pixel = hexToPixel(q, r);
+            QColor color = pathSet.contains(pos) ? Qt::black : Qt::white;
+            hexagons.push_back({pixel, color});
         }
     }
 }
 
 
-void RandomMap::drawHexagon(QPainter &painter, const QPointF &center, int radius) {
+void RandomMap::paintEvent(QPaintEvent *event)
+{
+    Q_UNUSED(event);
+
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setPen(Qt::gray);
+
+    for (const HexCell &hex : hexagons) {
+        painter.setBrush(hex.color);
+        drawHexagon(painter, hex.center, radius);
+    }
+}
+
+void RandomMap::mousePressEvent(QMouseEvent *event)
+{
+    QPointF click = event->pos();
+
+    for (HexCell &hex : hexagons) {
+        if (QLineF(click, hex.center).length() <= radius) {
+            hex.color = (hex.color == Qt::black) ? Qt::white : Qt::black;
+            break; // 只翻转一个
+        }
+    }
+
+    update();
+}
+
+void RandomMap::drawHexagon(QPainter &painter, const QPointF &center, int radius)
+{
     QPolygonF hexagon;
     for (int i = 0; i < 6; ++i) {
-        double angle = M_PI / 3 * i;  // 60度
-        double x = center.x() + radius * cos(angle);
-        double y = center.y() + radius * sin(angle);
+        double angle = M_PI / 3 * i;
+        double x = center.x() + radius * std::cos(angle);
+        double y = center.y() + radius * std::sin(angle);
         hexagon << QPointF(x, y);
     }
     painter.drawPolygon(hexagon);
-}
-
-RandomMap::~RandomMap()
-{
-
 }

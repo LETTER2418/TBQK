@@ -1,4 +1,4 @@
-#include "start.h"
+#include "Start.h"
 #include "UserManager.h"
 #include <QVBoxLayout>
 #include <QMessageBox>
@@ -8,7 +8,7 @@ UserManager userManager;
 Start::Start(QWidget *parent):QWidget(parent)
 {
     // 创建按钮
-    backButton = new BUTTON("返回", this);
+    backButton = new Lbutton("返回", this);
     backButton->move(0, 0);
 
     // 创建账号和密码输入框
@@ -24,11 +24,11 @@ Start::Start(QWidget *parent):QWidget(parent)
     passwordLineEdit->setFixedSize(200,50);
 
     // 创建显示密码按钮
-    showPasswordButton = new BUTTON("显示密码", this);
+    showPasswordButton = new Lbutton("显示密码", this);
     showPasswordButton->move(910, 500); // 按钮放在密码框右侧
 
     // 连接按钮的点击事件到槽函数
-    connect(showPasswordButton, &BUTTON::clicked, this, [this]() {
+    connect(showPasswordButton, &Lbutton::clicked, this, [this]() {
         // 切换密码框的显示模式
         if (passwordLineEdit->echoMode() == QLineEdit::Password) {
             passwordLineEdit->setEchoMode(QLineEdit::Normal); // 显示密码
@@ -40,9 +40,9 @@ Start::Start(QWidget *parent):QWidget(parent)
     });
 
     // 创建其他按钮
-    registerButton = new BUTTON("注册", this);
-    loginButton = new BUTTON("登录", this);
-    guestButton = new BUTTON("游客模式", this);
+    registerButton = new Lbutton("注册", this);
+    loginButton = new Lbutton("登录", this);
+    guestButton = new Lbutton("游客模式", this);
     registerButton->move(0,250);
     loginButton->move(0,500);
     guestButton->move(0,750);
@@ -53,7 +53,7 @@ Start::Start(QWidget *parent):QWidget(parent)
     //MsgBox
     YESmessageBox = new MessageBox();
     NOmessageBox = new MessageBox();
-    connect(NOmessageBox->closeButton, &BUTTON::clicked, this, [this]() {
+    connect(NOmessageBox->closeButton, &Lbutton::clicked, this, [this]() {
         NOmessageBox->accept();  // 调用 QMessageBox 的 accept
     });
 }
@@ -121,5 +121,6 @@ void Start::onRegisterClicked()
 Start::~Start()
 {
     //如果 QObject（或其子类，如 QWidget、QPushButton 等）有 parent,对象树会自动管理生命周期，不需要手动 delete
-
+    delete YESmessageBox;
+    delete NOmessageBox;
 }

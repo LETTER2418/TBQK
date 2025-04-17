@@ -1,11 +1,10 @@
-// MessageBox.cpp
-#include "MessageBox.h"
+#include "RandomMapMsgBox.h"
 #include "Lbutton.h"
 #include <QVBoxLayout>
 #include <QPainter>
 #include <QFileInfo>
 
-MessageBox::MessageBox(QMessageBox *parent)
+RandomMapMsgBox::RandomMapMsgBox(QMessageBox *parent)
     : QMessageBox(parent), messageLabel(new QLabel(this))
 {
     this->setStyleSheet("QLabel{min-width: 300px; min-height: 400px;}");
@@ -13,7 +12,7 @@ MessageBox::MessageBox(QMessageBox *parent)
     this->setStandardButtons(QMessageBox::NoButton);
 
     closeButton = new Lbutton("确认", this);
-    closeButton->move(110,300);
+    closeButton->move(70,300);
 
     QFileInfo checkFile(backgroundImagePath);
     if (checkFile.exists() && checkFile.isFile()) {
@@ -24,17 +23,10 @@ MessageBox::MessageBox(QMessageBox *parent)
 
 }
 
-MessageBox::~MessageBox() {}
-
-void MessageBox::setMessage(const QString &message)
-{
-    messageLabel->setText(message);
-    messageLabel->setStyleSheet("QLabel { color: white; font-size: 20px; }");
-    messageLabel->move(30, 15);
-}
+RandomMapMsgBox::~RandomMapMsgBox() {}
 
 
-void MessageBox::paintEvent(QPaintEvent *event)
+void RandomMapMsgBox::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
     if (!backgroundImage.isNull()) {

@@ -1,5 +1,5 @@
-#ifndef BUTTON_H
-#define BUTTON_H
+#ifndef LBUTTON_H
+#define LBUTTON_H
 
 #include <QPushButton>
 #include <QMediaPlayer>
@@ -13,13 +13,13 @@ const int BUTTON_WIDTH = 120;
 const int BUTTON_HEIGHT = 50;
 const int FONT_SIZE = 14;
 
-class BUTTON : public QPushButton
+class Lbutton : public QPushButton
 {
     Q_OBJECT
 
 public:
     // 构造函数，接收按钮文字和音频文件路径（可选）
-    explicit BUTTON(const QString &text, QWidget *parent = nullptr, const QString &soundFilePath = "../../sound/BUTTON.ogg");
+    explicit Lbutton(const QString &text, QWidget *parent = nullptr, const QString &soundFilePath = "../../sound/BUTTON.ogg");
 
 protected:
     // 重写paintEvent实现自定义绘制
@@ -36,4 +36,4 @@ private:
     int gradientOffset;        // 流光偏移量
 };
 
-#endif // BUTTON_H
+#endif // LBUTTON_H

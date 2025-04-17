@@ -1,6 +1,6 @@
 #ifndef MENU_H
 #define MENU_H
-#include "BUTTON.h"
+#include "Lbutton.h"
 #include <QWidget>
 #include <qlineedit.h>
 
@@ -13,11 +13,11 @@ public:
     Menu(QWidget *parent = nullptr);
     ~Menu();
 
-    BUTTON *logoutButton;
-    BUTTON *levelEditorButton;
-    BUTTON *rankButton;
-    BUTTON *onlineButton;
-    BUTTON *levelModeButton;
+    Lbutton *logoutButton;
+    Lbutton *levelEditorButton;
+    Lbutton *rankButton;
+    Lbutton *onlineButton;
+    Lbutton *levelModeButton;
 
 private:
 
