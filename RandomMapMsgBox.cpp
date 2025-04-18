@@ -8,7 +8,6 @@ RandomMapMsgBox::RandomMapMsgBox(QMessageBox *parent)
     : QMessageBox(parent), messageLabel(new QLabel(this))
 {
     this->setStyleSheet("QLabel{min-width: 300px; min-height: 400px;}");
-    //setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint); // 去掉窗口边框
     this->setStandardButtons(QMessageBox::NoButton);
 
     closeButton = new Lbutton("确认", this);
@@ -16,10 +15,23 @@ RandomMapMsgBox::RandomMapMsgBox(QMessageBox *parent)
 
     QFileInfo checkFile(backgroundImagePath);
     if (checkFile.exists() && checkFile.isFile()) {
-        backgroundImage.load(backgroundImagePath); // 如果文件存在，则加载图片
+        backgroundImage.load(backgroundImagePath);
     } else {
         qWarning() << "Image file not found: " << backgroundImagePath;
     }
+
+    QSpinBox *spinBox = new QSpinBox(this);
+    spinBox->setRange(0, 10);
+    spinBox->setValue(3);
+    spinBox->setSingleStep(1);
+    spinBox->setFixedSize(70, 70);
+    spinBox->setStyleSheet("QSpinBox { padding: 10px; font-size: 16px; }");
+    spinBox->move(120, 150);
+
+    connect(closeButton, &QPushButton::clicked, this, [this, spinBox]{
+        this->accept();
+        qDebug() << spinBox->value() ;
+    });
 
 }
 

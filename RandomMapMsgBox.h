@@ -12,6 +12,7 @@
 #include <QHBoxLayout>
 #include <QFormLayout>
 #include <QIntValidator>
+#include <QSpinBox>
 
 class RandomMapMsgBox : public QMessageBox
 {
@@ -26,8 +27,9 @@ public:
 
 private:
     void paintEvent(QPaintEvent *event) override;
-
+    QSpinBox *spinBox;
     QLabel *messageLabel;
     QPixmap backgroundImage;
     const QString backgroundImagePath=":\\image\\msg.png"; // 存储背景图片路径
+
 };

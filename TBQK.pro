@@ -21,7 +21,8 @@ SOURCES += \
     Start.cpp \
     UserManager.cpp \
     Widget.cpp \
-    WindowManager.cpp
+    WindowManager.cpp \
+    colorpicker.cpp
 
 HEADERS += \
     About.h \
@@ -34,7 +35,8 @@ HEADERS += \
     Start.h \
     UserManager.h \
     Widget.h \
-    WindowManager.h
+    WindowManager.h \
+    colorpicker.h
 
 FORMS += \
     Widget.ui
