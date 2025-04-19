@@ -1,5 +1,5 @@
 // #include <QApplication>
-// #include <WindowManager.h>
+// #include "WindowManager.h"
 
 // int main(int argc, char *argv[]) {
 //     QApplication app(argc, argv);
@@ -9,66 +9,40 @@
 //     return app.exec();
 // }
 
-// #include <QApplication>
-// #include "RandomMapMsgBox.h"
-
-// int main(int argc, char *argv[])
-// {
-//     QApplication app(argc, argv);
-//     RandomMapMsgBox *x = new RandomMapMsgBox;
-//     x->exec();
-// }
-
 #include <QApplication>
-#include <QPushButton>
-#include <QLabel>
-#include <QColorDialog>
-#include <QWidget>
-#include <QVBoxLayout>
+#include "RandomMapMsgBox.h"
 
-class ColorPicker : public QWidget {
-
-
-public:
-    ColorPicker(QWidget *parent = nullptr) : QWidget(parent) {
-        // 创建一个按钮，点击时打开颜色选择对话框
-        QPushButton *button = new QPushButton("选择颜色", this);
-        connect(button, &QPushButton::clicked, this, &ColorPicker::openColorDialog);
-
-        // 创建一个标签，用于显示所选颜色
-        colorLabel = new QLabel(this);
-        colorLabel->setFixedSize(100, 30);
-
-        // 设置布局
-        QVBoxLayout *layout = new QVBoxLayout(this);
-        layout->addWidget(button);
-        layout->addWidget(colorLabel);
-        setLayout(layout);
-    }
-
-private slots:
-    void openColorDialog() {
-        // 打开颜色选择对话框
-        QColor color = QColorDialog::getColor(Qt::white, this, "选择颜色");
-        if (color.isValid()) {
-            // 更新标签以显示所选颜色
-            colorLabel->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
-        }
-    }
-
-private:
-    QLabel *colorLabel;
-};
-
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     QApplication app(argc, argv);
-
-    ColorPicker window;
-    window.setWindowTitle("颜色选择器");
-    window.show();
-
+    RandomMapMsgBox *x = new RandomMapMsgBox;
+    x->show();
     return app.exec();
 }
 
 
+// #include <QApplication>
+// #include <QLabel>
+// #include <QWidget>
+
+// int main(int argc, char *argv[])
+// {
+//     QApplication app(argc, argv);
+
+//     // 创建一个主窗口
+//     QWidget window;
+//     window.setWindowTitle("Example");
+//     window.resize(500, 500); // 设置窗口大小
+
+//     // 创建 QLabel 并设置其父部件为 window
+//     QLabel *color1Label = new QLabel();
+//     color1Label->move(100,100);
+//     color1Label->setFixedSize(100, 100);  // 设置标签大小
+//     color1Label->setStyleSheet("background-color: red;"); // 为了更容易看到，设置背景色
+
+//     // 显示窗口
+//     window.show();
+
+//     return app.exec();
+// }
 
