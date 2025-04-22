@@ -24,6 +24,7 @@ public:
     ~RandomMapMsgBox();
     Lbutton *closeButton;
     int rings;
+    QColor color1,color2;
 
 private slots:
     void openColorDialog1() {
@@ -32,6 +33,7 @@ private slots:
         if (color.isValid()) {
             color1Label->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
         }
+        color1 = color;
     }
     void openColorDialog2() {
         QColorDialog *colorDlg = new QColorDialog(this);
@@ -39,6 +41,7 @@ private slots:
         if (color.isValid()) {
             color2Label->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
         }
+        color2 = color;
     }
 
 private:
@@ -52,4 +55,5 @@ private:
     Lbutton *numButton;
     QLabel *color1Label;
     QLabel *color2Label;
+
 };

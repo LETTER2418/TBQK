@@ -8,16 +8,18 @@ RandomMap::RandomMap(QWidget *parent) : QWidget(parent)
 {
     backButton = new Lbutton("返回", this);
     backButton->move(0, 0);
-
-    generateHexagons(); // 初始化一次地图
 }
 
 RandomMap::~RandomMap()
 {
 }
 
-void RandomMap::generateHexagons() {
+// 生成六边形网格地图
+void RandomMap::generateHexagons(int rings, QColor c1, QColor c2) {
     hexagons.clear();
+
+    color1=c1;
+    color2=c2;
 
     const QVector<QPoint> directions = {
         {1, 0}, {1, -1}, {0, -1},
@@ -59,7 +61,6 @@ void RandomMap::generateHexagons() {
         visited.insert(current);
     }
 
-    // 将路径中的点变成黑色，其余填成白色（可选）
     QSet<QPoint> pathSet = visited;
 
     for (int q = -rings; q <= rings; ++q) {
@@ -67,13 +68,13 @@ void RandomMap::generateHexagons() {
             if (std::abs(q + r) > rings) continue;
             QPoint pos(q, r);
             QPointF pixel = hexToPixel(q, r);
-            QColor color = pathSet.contains(pos) ? Qt::black : Qt::white;
+            QColor color = pathSet.contains(pos) ? c1 : c2;
             hexagons.push_back({pixel, color});
         }
     }
 }
 
-
+// 绘制所有六边形
 void RandomMap::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
@@ -94,7 +95,7 @@ void RandomMap::mousePressEvent(QMouseEvent *event)
 
     for (HexCell &hex : hexagons) {
         if (QLineF(click, hex.center).length() <= radius) {
-            hex.color = (hex.color == Qt::black) ? Qt::white : Qt::black;
+            hex.color = (hex.color == color1) ? color2 : color1;
             break; // 只翻转一个
         }
     }

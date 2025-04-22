@@ -81,9 +81,14 @@ WindowManager::WindowManager(Widget *parent) : Widget(parent), pageStack(new QSt
         this->pageStack->setCurrentWidget(menuPage);
     });
 
-    connect(levelEditorPage->randomButton,&QPushButton::clicked, [this,randomMapPage](){
+    connect(randomMapMsgBoxPage->closeButton,&QPushButton::clicked, [this, randomMapPage, randomMapMsgBoxPage](){
+        auto t = randomMapMsgBoxPage;
+        randomMapPage->generateHexagons(t->rings, t->color1, t->color2);
+        randomMapMsgBoxPage->close();
         this->pageStack->setCurrentWidget(randomMapPage);
     });
+
+
 
     connect(levelEditorPage->randomButton,&QPushButton::clicked, [this,randomMapMsgBoxPage](){
         randomMapMsgBoxPage->show();

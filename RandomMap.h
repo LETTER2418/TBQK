@@ -15,19 +15,20 @@ public:
     RandomMap(QWidget *parent = nullptr);
     ~RandomMap();
     Lbutton *backButton;
+     void generateHexagons(int rings=3, QColor c1=Qt::black, QColor c2=Qt::white); // 生成六边形
 
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void drawHexagon(QPainter &painter, const QPointF &center, int radius);
-    void generateHexagons(); // 新增：初始化六边形
+
 
 private:
     MessageBox *messageBox;
     QVector<HexCell> hexagons;
     int radius = 50;
-    int rings = 3;
     QPointF center = QPointF(850, 440); // 地图中心坐标
+    QColor color1,color2;
 
 };
 
