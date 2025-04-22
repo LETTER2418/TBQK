@@ -5,6 +5,7 @@
 #include "Menu.h"
 #include "LevelEditor.h"
 #include "RandomMap.h"
+#include "RandomMapMsgBox.h"
 
 WindowManager::WindowManager(Widget *parent) : Widget(parent), pageStack(new QStackedWidget(this))
 {
@@ -44,6 +45,8 @@ WindowManager::WindowManager(Widget *parent) : Widget(parent), pageStack(new QSt
     Menu *menuPage = new Menu(this);
     LevelEditor *levelEditorPage = new LevelEditor(this);
     RandomMap *randomMapPage =new RandomMap(this);
+    RandomMapMsgBox *randomMapMsgBoxPage = new RandomMapMsgBox(this);
+    randomMapMsgBoxPage->close();
 
     connect(startPage->backButton, &QPushButton::clicked, [this, mainPage]() {
         this->pageStack->setCurrentWidget(mainPage);
@@ -71,7 +74,7 @@ WindowManager::WindowManager(Widget *parent) : Widget(parent), pageStack(new QSt
     });
 
     connect(menuPage->levelEditorButton, &QPushButton::clicked, [this,levelEditorPage](){
-            this->pageStack->setCurrentWidget(levelEditorPage);
+        this->pageStack->setCurrentWidget(levelEditorPage);
     });
 
     connect(levelEditorPage->backButton,&QPushButton::clicked, [this,menuPage](){
@@ -80,6 +83,10 @@ WindowManager::WindowManager(Widget *parent) : Widget(parent), pageStack(new QSt
 
     connect(levelEditorPage->randomButton,&QPushButton::clicked, [this,randomMapPage](){
         this->pageStack->setCurrentWidget(randomMapPage);
+    });
+
+    connect(levelEditorPage->randomButton,&QPushButton::clicked, [this,randomMapMsgBoxPage](){
+        randomMapMsgBoxPage->show();
     });
 
     connect(randomMapPage->backButton,&QPushButton::clicked, [this,levelEditorPage](){
@@ -95,7 +102,7 @@ WindowManager::WindowManager(Widget *parent) : Widget(parent), pageStack(new QSt
     pageStack->addWidget(randomMapPage);
 
     // 设置默认显示的页面
-    this->pageStack->setCurrentWidget(randomMapPage);
+    this->pageStack->setCurrentWidget(levelEditorPage);
 
     // 布局：将 QStackedWidget 放入主窗口
     QVBoxLayout *mainLayout = new QVBoxLayout(this);

@@ -7,7 +7,11 @@
 RandomMapMsgBox::RandomMapMsgBox(QWidget *parent)
     : QWidget(parent), messageLabel(new QLabel(this))
 {
-    this->resize(300,400);
+    this->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    //this->setWindowTitle("Random Map Settings");  // 设置标题
+    // 设置窗口的位置和大小 (x, y, width, height)
+    this->setGeometry(700, 250, 300, 400);
+    //this->resize(300,400);
     this->setStyleSheet("QLabel{min-width: 10px; min-height: 10px;}");
 
     QFileInfo checkFile(backgroundImagePath);
