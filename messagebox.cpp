@@ -1,6 +1,6 @@
 // MessageBox.cpp
-#include "MessageBox.h"
-#include "Lbutton.h"
+#include "messagebox.h"
+#include "lbutton.h"
 #include <QVBoxLayout>
 #include <QPainter>
 #include <QFileInfo>
@@ -12,7 +12,7 @@ MessageBox::MessageBox(QMessageBox *parent)
     //setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint); // 去掉窗口边框
     this->setStandardButtons(QMessageBox::NoButton);
 
-    closeButton = new Lbutton("确认", this);
+    closeButton = new Lbutton(this, "确认");
     closeButton->move(110,300);
 
     QFileInfo checkFile(backgroundImagePath);
@@ -44,5 +44,3 @@ void MessageBox::paintEvent(QPaintEvent *event)
 
     QWidget::paintEvent(event);
 }
-
-

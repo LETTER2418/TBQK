@@ -1,25 +1,53 @@
-#ifndef WINDOWMANAGER_H
-#define WINDOWMANAGER_H
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
 #include <QStackedWidget>
 #include <QVBoxLayout>
-#include "Widget.h"
-#include "Lbutton.h"
+#include "widget.h"
+#include "lbutton.h"
+#include "start.h"
+#include "about.h"
+#include "menu.h"
+#include "leveleditor.h"
+#include "randommap.h"
+#include "randommapmsgbox.h"
+#include "mapmanager.h"
+#include "savemapmsgbox.h"
+#include "savemapmsgbox.h"
+#include "ui_savemapmsgbox.h"
 
-class WindowManager :public Widget{
+class MainWindow :public Widget{
     Q_OBJECT
 
 public:
-    WindowManager(Widget *parent = nullptr);
+    MainWindow(Widget *parent = nullptr);
+    ~MainWindow();
 
-    ~WindowManager();
 private:
-    Lbutton* backbutton;
+
     QStackedWidget *pageStack;
+
+    //button
+    Lbutton* backbutton;
     Lbutton *startButton;
     Lbutton *aboutButton;
     Lbutton *settingsButton;
     Lbutton *exitButton;
+
+    // MsgBox
+    RandomMapMsgBox *randomMapMsgBox;
+    SaveMapMsgBox   *saveMapMsgBox;
+
+    // Pages
+    QWidget     *mainPage;
+    Start       *startPage;
+    About       *aboutPage;
+    Menu        *menuPage;
+    LevelEditor *levelEditorPage;
+    RandomMap   *randomMapPage;
+
+    //Manager
+    MapManager *mapManager;
 };
 
-#endif // WINDOWMANAGER_H
+#endif // MAINWINDOW_H

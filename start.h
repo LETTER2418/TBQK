@@ -1,9 +1,9 @@
 #ifndef START_H
 #define START_H
-#include "Lbutton.h"
+#include "lbutton.h"
 #include <QWidget>
 #include <qlineedit.h>
-#include "MessageBox.h"
+#include "messagebox.h"
 
 class Start : public QWidget
 {

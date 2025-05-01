@@ -10,36 +10,45 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    About.cpp \
-    Lbutton.cpp \
-    LevelEditor.cpp \
-    Main.cpp \
-    Menu.cpp \
-    MessageBox.cpp \
-    RandomMap.cpp \
-    RandomMapMsgBox.cpp \
-    Start.cpp \
-    UserManager.cpp \
-    Widget.cpp \
-    WindowManager.cpp \
-    colorpicker.cpp
+    about.cpp \
+    custommap.cpp \
+    hexcell.cpp \
+    lbutton.cpp \
+    leveleditor.cpp \
+    main.cpp \
+    mainwindow.cpp \
+    mapdata.cpp \
+    mapmanager.cpp \
+    menu.cpp \
+    messagebox.cpp \
+    randommap.cpp \
+    randommapmsgbox.cpp \
+    savemapmsgbox.cpp \
+    start.cpp \
+    usermanager.cpp \
+    widget.cpp
 
 HEADERS += \
-    About.h \
-    Lbutton.h \
-    LevelEditor.h \
-    Menu.h \
-    MessageBox.h \
-    RandomMap.h \
-    RandomMapMsgBox.h \
-    Start.h \
-    UserManager.h \
-    Widget.h \
-    WindowManager.h \
-    colorpicker.h
+    about.h \
+    custommap.h \
+    hexcell.h \
+    lbutton.h \
+    leveleditor.h \
+    mainwindow.h \
+    mapdata.h \
+    mapmanager.h \
+    menu.h \
+    messagebox.h \
+    randommap.h \
+    randommapmsgbox.h \
+    savemapmsgbox.h \
+    start.h \
+    usermanager.h \
+    widget.h
 
 FORMS += \
-    Widget.ui
+    savemapmsgbox.ui \
+    widget.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

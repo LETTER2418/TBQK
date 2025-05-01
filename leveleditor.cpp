@@ -1,12 +1,12 @@
-#include "LevelEditor.h"
+#include "leveleditor.h"
 #include <QBoxLayout>
 
 LevelEditor::LevelEditor(QWidget *parent):QWidget(parent)
 {
-    backButton = new Lbutton("返回", this);
+    backButton = new Lbutton(this, "返回");
     backButton -> move(0, 0);
-    randomButton = new Lbutton("随机生成", this);
-    customButton = new Lbutton("自定义生成", this);
+    randomButton = new Lbutton(this, "随机生成");
+    customButton = new Lbutton(this, "自定义生成");
 
     // 创建按钮的网格布局
     QGridLayout *layout = new QGridLayout(this);

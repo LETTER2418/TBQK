@@ -1,5 +1,5 @@
-#include "Start.h"
-#include "UserManager.h"
+#include "start.h"
+#include "usermanager.h"
 #include <QVBoxLayout>
 #include <QMessageBox>
 
@@ -8,7 +8,7 @@ UserManager userManager;
 Start::Start(QWidget *parent):QWidget(parent)
 {
     // 创建按钮
-    backButton = new Lbutton("返回", this);
+    backButton = new Lbutton(this, "返回");
     backButton->move(0, 0);
 
     // 创建账号和密码输入框
@@ -24,7 +24,7 @@ Start::Start(QWidget *parent):QWidget(parent)
     passwordLineEdit->setFixedSize(200,50);
 
     // 创建显示密码按钮
-    showPasswordButton = new Lbutton("显示密码", this);
+    showPasswordButton = new Lbutton(this,"显示密码");
     showPasswordButton->move(910, 500); // 按钮放在密码框右侧
 
     // 连接按钮的点击事件到槽函数
@@ -40,9 +40,9 @@ Start::Start(QWidget *parent):QWidget(parent)
     });
 
     // 创建其他按钮
-    registerButton = new Lbutton("注册", this);
-    loginButton = new Lbutton("登录", this);
-    guestButton = new Lbutton("游客模式", this);
+    registerButton = new Lbutton(this, "注册");
+    loginButton = new Lbutton(this, "登录");
+    guestButton = new Lbutton(this, "游客模式");
     registerButton->move(0,250);
     loginButton->move(0,500);
     guestButton->move(0,750);

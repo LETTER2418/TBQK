@@ -1,7 +1,10 @@
-#include "Lbutton.h"
+#include "lbutton.h"
 
-Lbutton::Lbutton(const QString &text, QWidget *parent, const QString &soundFilePath)
-    : QPushButton(text, parent), gradientOffset(-BUTTON_WIDTH) // 初始化流光偏移量
+const QString Lbutton::soundFilePath = "../../sound/BUTTON.ogg";
+
+Lbutton::Lbutton(QWidget *parent, const QString &text)
+    : QPushButton(text, parent),
+    gradientOffset(-BUTTON_WIDTH) // 初始化流光偏移量
 {
     // 设置按钮的大小
     setFixedSize(BUTTON_WIDTH, BUTTON_HEIGHT);

@@ -1,4 +1,4 @@
-#include "RandomMap.h"
+#include "randommap.h"
 #include <QPainter>
 #include <QMouseEvent>
 #include <cmath>
@@ -6,8 +6,11 @@
 
 RandomMap::RandomMap(QWidget *parent) : QWidget(parent)
 {
-    backButton = new Lbutton("返回", this);
+    backButton = new Lbutton(this, "返回");
     backButton->move(0, 0);
+    saveButton = new Lbutton(this, "保存");
+    saveButton->move(1300,400);
+    id=0;
 }
 
 RandomMap::~RandomMap()
@@ -55,6 +58,7 @@ void RandomMap::generateHexagons(int rings, QColor c1, QColor c2) {
             break; // 无路可走
         }
 
+        //随机的挑选一个可访问的六边形
         QPoint next = candidates[rand() % candidates.size()];
         current = next;
         path.append(current);
@@ -63,12 +67,34 @@ void RandomMap::generateHexagons(int rings, QColor c1, QColor c2) {
 
     QSet<QPoint> pathSet = visited;
 
+    // 为每个环生成翻转状态
+    int f=rand()%2;
+    QVector<bool> ringFlipStatus(rings + 1);
+    for (int ring = 0; ring <= rings; ++ring) {
+        ringFlipStatus[ring] = ++f % 2 == 0; // 决定是否翻转
+    }
+
     for (int q = -rings; q <= rings; ++q) {
         for (int r = -rings; r <= rings; ++r) {
             if (std::abs(q + r) > rings) continue;
             QPoint pos(q, r);
             QPointF pixel = hexToPixel(q, r);
-            QColor color = pathSet.contains(pos) ? c1 : c2;
+
+            // 计算当前六边形所在的环
+            int ring = (std::abs(q) + std::abs(r) + std::abs(q + r)) / 2;
+
+            // 获取环的翻转状态
+            bool flip = ringFlipStatus[ring];
+
+            // 根据翻转状态决定颜色
+            bool isPath = pathSet.contains(pos);
+            QColor color;
+            if (flip) {
+                color = isPath ? c2 : c1;
+            } else {
+                color = isPath ? c1 : c2;
+            }
+
             hexagons.push_back({pixel, color});
         }
     }
@@ -92,9 +118,12 @@ void RandomMap::paintEvent(QPaintEvent *event)
 void RandomMap::mousePressEvent(QMouseEvent *event)
 {
     QPointF click = event->pos();
-
+    double mn = 1E9;
     for (HexCell &hex : hexagons) {
-        if (QLineF(click, hex.center).length() <= radius) {
+        mn = fmin(mn, QLineF(click, hex.center).length());
+    }
+    for (HexCell &hex : hexagons) {
+        if (QLineF(click, hex.center).length() ==mn) {
             hex.color = (hex.color == color1) ? color2 : color1;
             break; // 只翻转一个
         }
@@ -113,4 +142,20 @@ void RandomMap::drawHexagon(QPainter &painter, const QPointF &center, int radius
         hexagon << QPointF(x, y);
     }
     painter.drawPolygon(hexagon);
+}
+
+MapData RandomMap::getMapData() {
+    MapData data;
+    data.hexagons = this->hexagons;    // 复制六边形单元格数据
+    data.radius = this->radius;       // 复制六边形半径
+    data.center = this->center;       // 复制地图中心坐标
+    data.color1 = this->color1;       // 复制第一种颜色
+    data.color2 = this->color2;       // 复制第二种颜色
+    data.id = this->id;               // 复制关卡索引
+    return data;
+}
+
+void RandomMap::setId(int id_)
+{
+    id = id_;
 }

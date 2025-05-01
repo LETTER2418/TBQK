@@ -2,7 +2,7 @@
 #ifndef MESSAGEBOX_H
 #define MESSAGEBOX_H
 
-#include "Lbutton.h"
+#include "lbutton.h"
 #include <QWidget>
 #include <QLabel>
 #include <QPushButton>

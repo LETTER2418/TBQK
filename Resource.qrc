@@ -1,8 +1,8 @@
 <RCC>
     <qresource prefix="/">
-        <file>image/bg.jpg</file>
         <file>image/start.png</file>
         <file>sound/BUTTON.ogg</file>
         <file>image/msg.png</file>
+        <file>image/bg1.jpg</file>
     </qresource>
 </RCC>

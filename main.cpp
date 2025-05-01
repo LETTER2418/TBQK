@@ -1,24 +1,12 @@
 #include <QApplication>
-#include "WindowManager.h"
+#include "mainwindow.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
     srand(time(0));
-    WindowManager wmg;
-    wmg.show();
+    MainWindow mainWindow;
+    mainWindow.show();
     return app.exec();
 }
 
-// #include <QApplication>
-// #include "RandomMapMsgBox.h"
-
-// int main(int argc, char *argv[])
-// {
-//     QApplication app(argc, argv);
-//     RandomMapMsgBox *x = new RandomMapMsgBox;
-//     x->show();
-//     return app.exec();
-// }
-
-
-
+//clean or rebuild

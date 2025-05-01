@@ -1,7 +1,7 @@
 #ifndef ABOUT_H
 #define ABOUT_H
 #include <QWidget>
-#include "Lbutton.h"
+#include "lbutton.h"
 
 class About : public QWidget
 {

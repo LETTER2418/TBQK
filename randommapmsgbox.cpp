@@ -1,5 +1,5 @@
-#include "RandomMapMsgBox.h"
-#include "Lbutton.h"
+#include "randommapmsgbox.h"
+#include "lbutton.h"
 #include <QVBoxLayout>
 #include <QPainter>
 #include <QFileInfo>
@@ -26,7 +26,7 @@ RandomMapMsgBox::RandomMapMsgBox(QWidget *parent)
     int y2 = 150;
     int y3 = 250;
 
-    numButton = new Lbutton("选择半径", this);
+    numButton = new Lbutton(this, "选择半径");
     numButton->move(x1,y1);
 
     spinBox = new QSpinBox(this);
@@ -44,11 +44,11 @@ RandomMapMsgBox::RandomMapMsgBox(QWidget *parent)
                 rings = value - 1;  // 当 spinBox 值改变时更新 rings
             });
 
-    closeButton = new Lbutton("确认", this);
+    closeButton = new Lbutton(this, "确认");
     closeButton->move(x1,300);
 
     // 创建一个按钮，点击时打开颜色选择对话框
-    color1Button = new Lbutton("选择颜色1", this);
+    color1Button = new Lbutton(this, "选择颜色1");
     color1Button->move(x1,y2);
     color1Label = new QLabel(this);
     color1Label->setStyleSheet("QLabel { background-color: black; }");
@@ -57,7 +57,7 @@ RandomMapMsgBox::RandomMapMsgBox(QWidget *parent)
     color1 = Qt::black;
     connect(color1Button, &QPushButton::clicked, this, &RandomMapMsgBox::openColorDialog1);
 
-    color2Button = new Lbutton("选择颜色2", this);
+    color2Button = new Lbutton(this, "选择颜色2");
     color2Button->move(x1,y3);
     color2Label = new QLabel(this);
     color2Label->setStyleSheet("QLabel { background-color: white; }");

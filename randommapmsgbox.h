@@ -1,4 +1,4 @@
-#include "Lbutton.h"
+#include "lbutton.h"
 #include <QWidget>
 #include <QLabel>
 #include <QPushButton>
@@ -28,16 +28,14 @@ public:
 
 private slots:
     void openColorDialog1() {
-        QColorDialog *colorDlg = new QColorDialog(this);
-        QColor color = colorDlg->getColor(QColor(255,255,255));
+        QColor color = QColorDialog::getColor(QColor(255,255,255));
         if (color.isValid()) {
             color1Label->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
         }
         color1 = color;
     }
     void openColorDialog2() {
-        QColorDialog *colorDlg = new QColorDialog(this);
-        QColor color = colorDlg->getColor(QColor(255,255,255));
+        QColor color = QColorDialog::getColor(QColor(255,255,255));
         if (color.isValid()) {
             color2Label->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
         }

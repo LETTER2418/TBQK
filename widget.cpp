@@ -1,5 +1,5 @@
-#include "Widget.h"
-#include "ui_Widget.h"
+#include "widget.h"
+#include "ui_widget.h"
 
 #include <QPainter>
 
@@ -9,13 +9,13 @@ Widget::Widget(QWidget *parent)
 {
     ui->setupUi(this);
 
-    this->setWindowTitle("Title");
+    this->setWindowTitle("TBQK");
     this->resize(1705, 882);
     this->move(0, 0);
 
     // 创建 QLabel 用于显示背景图片
     QLabel *bgLabel = new QLabel(this);
-    QPixmap bgImage(":\\image\\bg.jpg");
+    QPixmap bgImage(":\\image\\bg1.jpg");
 
     //检查图片是否加载成功
     if (bgImage.isNull()) {

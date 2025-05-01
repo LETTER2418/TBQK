@@ -1,6 +1,6 @@
 #ifndef LEVELEDITOR_H
 #define LEVELEDITOR_H
-#include "Lbutton.h"
+#include "lbutton.h"
 #include <QWidget>
 #include <qlineedit.h>
 
