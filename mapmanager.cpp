@@ -3,7 +3,7 @@
 
 MapManager::MapManager(QObject *parent) : QObject(parent)
 {
-
+    loadMap();
 }
 
 bool MapManager::saveMap() {

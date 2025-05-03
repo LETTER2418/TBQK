@@ -10,11 +10,12 @@
 #include "menu.h"
 #include "leveleditor.h"
 #include "randommap.h"
-#include "randommapmsgbox.h"
+#include "mapmsgbox.h"
 #include "mapmanager.h"
 #include "savemapmsgbox.h"
 #include "savemapmsgbox.h"
-#include "ui_savemapmsgbox.h"
+#include "levelmode.h"
+#include "custommap.h"
 
 class MainWindow :public Widget{
     Q_OBJECT
@@ -35,8 +36,10 @@ private:
     Lbutton *exitButton;
 
     // MsgBox
-    RandomMapMsgBox *randomMapMsgBox;
-    SaveMapMsgBox   *saveMapMsgBox;
+    MapMsgBox *randomMapMsgBox;
+    MapMsgBox *customMapMsgBox;
+    SaveMapMsgBox   *saveRandomMapMsgBox;
+    SaveMapMsgBox   *saveCustomMapMsgBox;
 
     // Pages
     QWidget     *mainPage;
@@ -45,6 +48,8 @@ private:
     Menu        *menuPage;
     LevelEditor *levelEditorPage;
     RandomMap   *randomMapPage;
+    LevelMode *levelModePage;
+    CustomMap *customMapPage;
 
     //Manager
     MapManager *mapManager;

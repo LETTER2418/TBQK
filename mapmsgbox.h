@@ -15,13 +15,13 @@
 #include <QSpinBox>
 #include <QColorDialog>
 
-class RandomMapMsgBox : public QWidget
+class MapMsgBox : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit RandomMapMsgBox(QWidget*parent = nullptr);
-    ~RandomMapMsgBox();
+    explicit MapMsgBox(QWidget*parent = nullptr);
+    ~MapMsgBox();
     Lbutton *closeButton;
     int rings;
     QColor color1,color2;

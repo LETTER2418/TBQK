@@ -8,6 +8,7 @@ public:
     QColor color1;
     QColor color2;
     int id; // 关卡索引
+    QVector<QPoint>path;
 
     // 将 MapData 转换为 QJsonObject
     QJsonObject toJson() const ;

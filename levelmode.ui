@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LevelMode</class>
+ <widget class="QWidget" name="LevelMode">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1705</width>
+    <height>882</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QWidget" name="gridLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1701</width>
+     <height>881</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="2" column="0">
+     <widget class="Lbutton" name="button9">
+      <property name="text">
+       <string>第9关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="Lbutton" name="button2">
+      <property name="text">
+       <string>第2关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="Lbutton" name="button7">
+      <property name="text">
+       <string>第7关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="Lbutton" name="button3">
+      <property name="text">
+       <string>第3关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="Lbutton" name="button6">
+      <property name="text">
+       <string>第6关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2">
+     <widget class="Lbutton" name="button11">
+      <property name="text">
+       <string>第11关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="Lbutton" name="button1">
+      <property name="text">
+       <string>第1关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="Lbutton" name="button5">
+      <property name="text">
+       <string>第5关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="Lbutton" name="button10">
+      <property name="text">
+       <string>第10关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="3">
+     <widget class="Lbutton" name="button4">
+      <property name="text">
+       <string>第4关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3">
+     <widget class="Lbutton" name="button8">
+      <property name="text">
+       <string>第8关</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="3">
+     <widget class="Lbutton" name="button12">
+      <property name="text">
+       <string>第12关</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Lbutton</class>
+   <extends>QPushButton</extends>
+   <header>lbutton.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

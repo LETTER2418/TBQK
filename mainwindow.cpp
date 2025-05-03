@@ -42,69 +42,124 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     menuPage = new Menu(this);
     levelEditorPage = new LevelEditor(this);
     randomMapPage = new RandomMap(this);
-    randomMapMsgBox = new RandomMapMsgBox(this);
-    randomMapMsgBox->close();
-    saveMapMsgBox= new SaveMapMsgBox(this);
-    saveMapMsgBox->close();
+    customMapPage = new CustomMap(this);
+    levelModePage = new LevelMode(this);
+    randomMapMsgBox = new MapMsgBox(this);
+    customMapMsgBox = new MapMsgBox(this);
+    randomMapMsgBox->hide();
+    saveRandomMapMsgBox = new SaveMapMsgBox(this);
+    saveRandomMapMsgBox->hide();
+    saveCustomMapMsgBox = new SaveMapMsgBox(this);
+    saveCustomMapMsgBox->hide();
 
     // 连接信号与槽
-    connect(startPage->backButton, &QPushButton::clicked, this, [this]() {
+    connect(startPage->backButton, &QPushButton::clicked, this, [this]()
+    {
         pageStack->setCurrentWidget(mainPage);
     });
 
-    connect(aboutPage->backButton, &QPushButton::clicked, this, [this]() {
+    connect(aboutPage->backButton, &QPushButton::clicked, this, [this]()
+    {
         pageStack->setCurrentWidget(mainPage);
     });
 
-    connect(startButton, &QPushButton::clicked, this, [this]() {
+    connect(startButton, &QPushButton::clicked, this, [this]()
+    {
         pageStack->setCurrentWidget(startPage);
     });
 
-    connect(aboutButton, &QPushButton::clicked, this, [this]() {
+    connect(aboutButton, &QPushButton::clicked, this, [this]()
+    {
         pageStack->setCurrentWidget(aboutPage);
     });
 
-    connect(startPage->YESmessageBox->closeButton, &QPushButton::clicked, this, [this]() {
+    connect(startPage->YESmessageBox->closeButton, &QPushButton::clicked, this, [this]()
+    {
         startPage->YESmessageBox->accept();
         pageStack->setCurrentWidget(menuPage);
     });
 
-    connect(menuPage->logoutButton, &QPushButton::clicked, this,  [this](){
+    connect(menuPage->logoutButton, &QPushButton::clicked, this,  [this]()
+    {
         pageStack->setCurrentWidget(startPage);
     });
 
-    connect(menuPage->levelEditorButton, &QPushButton::clicked, this, [this](){
+    connect(menuPage->levelEditorButton, &QPushButton::clicked, this, [this]()
+    {
         pageStack->setCurrentWidget(levelEditorPage);
     });
 
-    connect(levelEditorPage->backButton,&QPushButton::clicked, this, [this](){
+    connect(levelEditorPage->backButton, &QPushButton::clicked, this, [this]()
+    {
         pageStack->setCurrentWidget(menuPage);
     });
 
-    connect(randomMapMsgBox->closeButton,&QPushButton::clicked, this, [this](){
+    connect(randomMapMsgBox->closeButton, &QPushButton::clicked, this, [this]()
+    {
         auto t = randomMapMsgBox;
         randomMapPage->generateHexagons(t->rings, t->color1, t->color2);
-        randomMapMsgBox->close();
+        randomMapMsgBox->hide();
         pageStack->setCurrentWidget(randomMapPage);
     });
 
-    connect(levelEditorPage->randomButton,&QPushButton::clicked, this, [this](){
+    connect(customMapMsgBox->closeButton, &QPushButton::clicked, this, [this]()
+    {
+        auto t = customMapMsgBox;
+        customMapPage->generateHexagons(t->rings, t->color1, t->color2);
+        customMapMsgBox->hide();
+        pageStack->setCurrentWidget(customMapPage);
+    });
+
+    connect(levelEditorPage->randomButton, &QPushButton::clicked, this, [this]()
+    {
         randomMapMsgBox->show();
     });
 
-    connect(randomMapPage->backButton,&QPushButton::clicked, this, [this](){
+    connect(levelEditorPage->customButton, &QPushButton::clicked, this, [this]()
+    {
+        customMapMsgBox->show();
+    });
+
+    connect(randomMapPage->backButton, &QPushButton::clicked, this, [this]()
+    {
         pageStack->setCurrentWidget(levelEditorPage);
     });
 
-    connect(randomMapPage->saveButton, &QPushButton::clicked, this, [this](){
-        saveMapMsgBox->show();
+    connect(customMapPage->backButton, &QPushButton::clicked, this, [this]()
+    {
+        pageStack->setCurrentWidget(levelEditorPage);
     });
 
-    connect(saveMapMsgBox, &SaveMapMsgBox::sendMsg, this, [this](int msg){
+    connect(randomMapPage->saveButton, &QPushButton::clicked, this, [this]()
+    {
+        saveRandomMapMsgBox->show();
+    });
+
+    connect(customMapPage->saveButton, &QPushButton::clicked, this, [this]()
+    {
+        saveCustomMapMsgBox->show();
+    });
+
+
+    connect(saveRandomMapMsgBox, &SaveMapMsgBox::sendMsg, this, [this](int msg)
+    {
         randomMapPage->setId(msg);
         mapManager->addMap(randomMapPage->getMapData());
         mapManager->saveMap();
     });
+
+    connect(saveCustomMapMsgBox, &SaveMapMsgBox::sendMsg, this, [this](int msg)
+    {
+        customMapPage->setId(msg);
+        mapManager->addMap(customMapPage->getMapData());
+        mapManager->saveMap();
+    });
+
+    connect(menuPage->levelModeButton, &QPushButton::clicked, this, [this]()
+    {
+        pageStack->setCurrentWidget(levelModePage);
+    });
+
 
     // 将页面添加到 QStackedWidget
     pageStack->addWidget(mainPage);
@@ -113,6 +168,8 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     pageStack->addWidget(menuPage);
     pageStack->addWidget(levelEditorPage);
     pageStack->addWidget(randomMapPage);
+    pageStack->addWidget(levelModePage);
+    pageStack->addWidget(customMapPage);
 
     // 设置默认显示的页面
     this->pageStack->setCurrentWidget(levelEditorPage);
@@ -121,11 +178,10 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(pageStack);
 
-
-
 }
 
-MainWindow::~MainWindow() {
+MainWindow::~MainWindow()
+{
     delete startButton;
     delete settingsButton;
     delete aboutButton;

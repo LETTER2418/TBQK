@@ -1,10 +1,10 @@
-#include "randommapmsgbox.h"
+#include "mapmsgbox.h"
 #include "lbutton.h"
 #include <QVBoxLayout>
 #include <QPainter>
 #include <QFileInfo>
 
-RandomMapMsgBox::RandomMapMsgBox(QWidget *parent)
+MapMsgBox::MapMsgBox(QWidget *parent)
     : QWidget(parent), messageLabel(new QLabel(this))
 {
     this->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
@@ -55,7 +55,7 @@ RandomMapMsgBox::RandomMapMsgBox(QWidget *parent)
     color1Label->move(color1Button->x() + color1Button->width() + 12, color1Button->y() + 2);
     color1Label->setFixedSize(40, 40);  // 设置标签大小
     color1 = Qt::black;
-    connect(color1Button, &QPushButton::clicked, this, &RandomMapMsgBox::openColorDialog1);
+    connect(color1Button, &QPushButton::clicked, this, &MapMsgBox::openColorDialog1);
 
     color2Button = new Lbutton(this, "选择颜色2");
     color2Button->move(x1,y3);
@@ -64,14 +64,14 @@ RandomMapMsgBox::RandomMapMsgBox(QWidget *parent)
     color2Label->move(color2Button->x() + color2Button->width() + 12, color2Button->y() + 2);
     color2Label->setFixedSize(40, 40);  // 设置标签大小
     color2 = Qt::white;
-    connect(color2Button, &QPushButton::clicked, this, &RandomMapMsgBox::openColorDialog2);
+    connect(color2Button, &QPushButton::clicked, this, &MapMsgBox::openColorDialog2);
 
 }
 
-RandomMapMsgBox::~RandomMapMsgBox() {}
+MapMsgBox::~MapMsgBox() {}
 
 
-void RandomMapMsgBox::paintEvent(QPaintEvent *event)
+void MapMsgBox::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
     if (!backgroundImage.isNull()) {
