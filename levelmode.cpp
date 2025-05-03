@@ -6,6 +6,8 @@ LevelMode::LevelMode(QWidget *parent)
     , ui(new Ui::LevelMode)
 {
     ui->setupUi(this);
+    backButton = new Lbutton(this,"返回");
+    backButton->move(0,0);
 }
 
 LevelMode::~LevelMode()

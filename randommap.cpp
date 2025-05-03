@@ -18,12 +18,13 @@ RandomMap::~RandomMap()
 }
 
 // 生成六边形网格地图
-void RandomMap::generateHexagons(int rings, QColor c1, QColor c2)
+void RandomMap::generateHexagons(int rings, QColor c1, QColor c2, QColor c3)
 {
     hexagons.clear();
 
     color1 = c1;
     color2 = c2;
+    color3 = c3;
 
     const QVector<QPoint> directions =
     {
@@ -150,6 +151,7 @@ MapData RandomMap::getMapData()
     data.center = this->center;     // 复制地图中心坐标
     data.color1 = this->color1;     // 复制第一种颜色
     data.color2 = this->color2;     // 复制第二种颜色
+    data.color3 = this->color3;     // 复制第三种颜色
     data.id = this->id;             // 复制关卡索引
     data.path = this->path;         // 复制提示路径
     return data;

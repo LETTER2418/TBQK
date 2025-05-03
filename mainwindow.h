@@ -16,6 +16,7 @@
 #include "savemapmsgbox.h"
 #include "levelmode.h"
 #include "custommap.h"
+#include "mapmsgbox.h"
 
 class MainWindow :public Widget{
     Q_OBJECT

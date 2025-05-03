@@ -2,6 +2,7 @@
 #define LEVELMODE_H
 
 #include <QWidget>
+#include "lbutton.h"
 
 namespace Ui {
 class LevelMode;
@@ -14,6 +15,7 @@ class LevelMode : public QWidget
 public:
     explicit LevelMode(QWidget *parent = nullptr);
     ~LevelMode();
+    Lbutton *backButton;
 
 private:
     Ui::LevelMode *ui;

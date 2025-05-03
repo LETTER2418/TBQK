@@ -9,7 +9,7 @@
 #include <QLinearGradient>
 #include <QFont>
 
-const int BUTTON_WIDTH = 120;
+const int BUTTON_WIDTH = 140;
 const int BUTTON_HEIGHT = 50;
 const int FONT_SIZE = 14;
 
@@ -21,6 +21,7 @@ class Lbutton : public QPushButton
 public:
     // 构造函数，接收按钮文字
     explicit Lbutton(QWidget *parent = nullptr, const QString &text="Lbutton");
+    explicit Lbutton(QWidget *parent, const QString &text, QString color, int fontSize=12);
 
 protected:
     // 重写paintEvent实现自定义绘制

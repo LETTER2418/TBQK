@@ -23,6 +23,10 @@ public:
     void setMessage(const QString &message);
 
     Lbutton *closeButton;
+
+protected:
+    void resizeEvent(QResizeEvent *event) override;
+
 private:
     void paintEvent(QPaintEvent *event) override;
 

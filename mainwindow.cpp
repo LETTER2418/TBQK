@@ -94,18 +94,16 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
         pageStack->setCurrentWidget(menuPage);
     });
 
-    connect(randomMapMsgBox->closeButton, &QPushButton::clicked, this, [this]()
+    connect(randomMapMsgBox, &MapMsgBox::sendMsg, this, [this](int rings, QColor color1, QColor color2, QColor color3)
     {
-        auto t = randomMapMsgBox;
-        randomMapPage->generateHexagons(t->rings, t->color1, t->color2);
+        randomMapPage->generateHexagons(rings, color1, color2);
         randomMapMsgBox->hide();
         pageStack->setCurrentWidget(randomMapPage);
     });
 
-    connect(customMapMsgBox->closeButton, &QPushButton::clicked, this, [this]()
+    connect(customMapMsgBox, &MapMsgBox::sendMsg, this, [this](int rings, QColor color1, QColor color2, QColor color3)
     {
-        auto t = customMapMsgBox;
-        customMapPage->generateHexagons(t->rings, t->color1, t->color2);
+        customMapPage->generateHexagons(rings, color1, color2);
         customMapMsgBox->hide();
         pageStack->setCurrentWidget(customMapPage);
     });
@@ -160,6 +158,9 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
         pageStack->setCurrentWidget(levelModePage);
     });
 
+    connect(levelModePage->backButton, &QPushButton::clicked, this, [this](){
+        pageStack->setCurrentWidget(menuPage);
+    });
 
     // 将页面添加到 QStackedWidget
     pageStack->addWidget(mainPage);

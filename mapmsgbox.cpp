@@ -1,17 +1,16 @@
 #include "mapmsgbox.h"
-#include "lbutton.h"
-#include <QVBoxLayout>
-#include <QPainter>
 #include <QFileInfo>
 
 MapMsgBox::MapMsgBox(QWidget *parent)
-    : QWidget(parent), messageLabel(new QLabel(this))
+    : QWidget(parent)
+    , ui(new Ui::Test)
 {
+    ui->setupUi(this);
+
     this->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
-    //this->setWindowTitle("Random Map Settings");  // 设置标题
+    //this->setWindowTitle("Custom Map Settings");  // 设置标题
     // 设置窗口的位置和大小 (x, y, width, height)
     this->setGeometry(700, 250, 300, 400);
-    //this->resize(300,400);
     this->setStyleSheet("QLabel{min-width: 10px; min-height: 10px;}");
 
     QFileInfo checkFile(backgroundImagePath);
@@ -21,55 +20,37 @@ MapMsgBox::MapMsgBox(QWidget *parent)
         qWarning() << "Image file not found: " << backgroundImagePath;
     }
 
-    int x1 = 60;
-    int y1 = 50;
-    int y2 = 150;
-    int y3 = 250;
+    ui->spinBox->setFixedSize(70, 70);
+    rings = ui->spinBox->value() - 1;
 
-    numButton = new Lbutton(this, "选择半径");
-    numButton->move(x1,y1);
-
-    spinBox = new QSpinBox(this);
-    spinBox->setRange(1, 5);
-    spinBox->setValue(3);
-    spinBox->setSingleStep(1);
-    spinBox->setFixedSize(70, 70);
-    spinBox->setStyleSheet("QSpinBox { padding: 10px; font-size: 16px; }");
-    spinBox->move(x1+130, y1);
-    rings = spinBox->value() - 1;
-
-    // 连接 spinBox 的 valueChanged 信号到更新 rings 的槽
-    connect(spinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+    // 连接 ui->spinBox 的 valueChanged 信号到更新 rings 的槽
+    connect(ui->spinBox, QOverload<int>::of(&QSpinBox::valueChanged),
             this, [this](int value) {
-                rings = value - 1;  // 当 spinBox 值改变时更新 rings
+                rings = value - 1;  // 当 ui->spinBox 值改变时更新 rings
             });
 
-    closeButton = new Lbutton(this, "确认");
-    closeButton->move(x1,300);
-
-    // 创建一个按钮，点击时打开颜色选择对话框
-    color1Button = new Lbutton(this, "选择颜色1");
-    color1Button->move(x1,y2);
-    color1Label = new QLabel(this);
-    color1Label->setStyleSheet("QLabel { background-color: black; }");
-    color1Label->move(color1Button->x() + color1Button->width() + 12, color1Button->y() + 2);
-    color1Label->setFixedSize(40, 40);  // 设置标签大小
+    ui->color1Label->setStyleSheet("QLabel { background-color: black; }");
     color1 = Qt::black;
-    connect(color1Button, &QPushButton::clicked, this, &MapMsgBox::openColorDialog1);
+    connect(ui->color1Button, &QPushButton::clicked, this, &MapMsgBox::openColorDialog1);
 
-    color2Button = new Lbutton(this, "选择颜色2");
-    color2Button->move(x1,y3);
-    color2Label = new QLabel(this);
-    color2Label->setStyleSheet("QLabel { background-color: white; }");
-    color2Label->move(color2Button->x() + color2Button->width() + 12, color2Button->y() + 2);
-    color2Label->setFixedSize(40, 40);  // 设置标签大小
+    ui->color2Label->setStyleSheet("QLabel { background-color: white; }");
     color2 = Qt::white;
-    connect(color2Button, &QPushButton::clicked, this, &MapMsgBox::openColorDialog2);
+    connect(ui->color2Button, &QPushButton::clicked, this, &MapMsgBox::openColorDialog2);
 
+    ui->color3Label->setStyleSheet("QLabel { background-color: green; }");
+    color3 = Qt::green;
+    connect(ui->color3Button, &QPushButton::clicked, this, &MapMsgBox::openColorDialog3);
+
+    connect(ui->closeButton, &QPushButton::clicked, this, [this](){
+        emit sendMsg(rings, color1, color2, color3);
+        this->hide();
+    });
 }
 
-MapMsgBox::~MapMsgBox() {}
-
+MapMsgBox::~MapMsgBox()
+{
+    delete ui;
+}
 
 void MapMsgBox::paintEvent(QPaintEvent *event)
 {
@@ -81,5 +62,3 @@ void MapMsgBox::paintEvent(QPaintEvent *event)
 
     QWidget::paintEvent(event);
 }
-
-

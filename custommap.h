@@ -15,7 +15,7 @@ public:
     ~CustomMap();
     Lbutton *backButton;
     Lbutton *saveButton;
-    void generateHexagons(int rings = 3, QColor c1 = Qt::black, QColor c2 = Qt::white);
+    void generateHexagons(int rings = 3, QColor c1 = Qt::black, QColor c2 = Qt::white, QColor c3 = Qt::green);
     MapData getMapData();
     void setId(int id_);
 
@@ -29,7 +29,7 @@ private:
     QVector<HexCell> hexagons;
     int radius = 50;
     QPointF center = QPointF(850, 440);
-    QColor color1, color2;
+    QColor color1, color2, color3;
     int id;
 };
 

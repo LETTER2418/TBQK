@@ -14,7 +14,7 @@ public:
     ~RandomMap();
     Lbutton *backButton;
     Lbutton *saveButton;
-    void generateHexagons(int rings = 3, QColor c1 = Qt::black, QColor c2 = Qt::white); // 生成六边形
+    void generateHexagons(int rings = 3, QColor c1 = Qt::black, QColor c2 = Qt::white, QColor c3 = Qt::green); // 生成六边形
     MapData getMapData();
     void setId(int id_);
 
@@ -29,7 +29,7 @@ private:
     QVector<HexCell> hexagons;
     int radius = 50;
     QPointF center = QPointF(850, 440); // 地图中心坐标
-    QColor color1, color2;
+    QColor color1, color2, color3;
     int id;
 };
 

@@ -52,6 +52,7 @@ HEADERS += \
 
 FORMS += \
     levelmode.ui \
+    mapmsgbox.ui \
     savemapmsgbox.ui \
     widget.ui
 

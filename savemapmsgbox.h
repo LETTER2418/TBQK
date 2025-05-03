@@ -16,7 +16,7 @@ public:
     ~SaveMapMsgBox();
 
 signals:
-    void sendMsg(const int &msg);  // 发送消息的信号
+    void sendMsg(int);  // 发送消息的信号
 
 private:
     Ui::SaveMapMsgBox *ui;

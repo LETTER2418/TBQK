@@ -4,7 +4,7 @@ const QString Lbutton::soundFilePath = "../../sound/BUTTON.ogg";
 
 Lbutton::Lbutton(QWidget *parent, const QString &text)
     : QPushButton(text, parent),
-    gradientOffset(-BUTTON_WIDTH) // 初始化流光偏移量
+      gradientOffset(-BUTTON_WIDTH) // 初始化流光偏移量
 {
     // 设置按钮的大小
     setFixedSize(BUTTON_WIDTH, BUTTON_HEIGHT);
@@ -31,11 +31,54 @@ Lbutton::Lbutton(QWidget *parent, const QString &text)
     setStyleSheet("QPushButton {"
                   "background: rgba(255, 255, 255, 0);"
                   "border: none;"
+                  "color:white"
                   "}"
 
                   "QPushButton:hover {"
                   "background: rgba(255, 255, 255, 0.2);"
                   "}");
+}
+
+Lbutton::Lbutton(QWidget *parent, const QString &text, QString color, int fontSize)
+    : QPushButton(text, parent),
+      gradientOffset(-BUTTON_WIDTH) // 初始化流光偏移量
+{
+    // 设置按钮的大小
+    setFixedSize(BUTTON_WIDTH, BUTTON_HEIGHT);
+
+    // 设置按钮的字体
+    QFont buttonFont;
+    buttonFont.setPointSize(FONT_SIZE);
+    setFont(buttonFont);
+
+    // 创建媒体播放器和音频输出
+    player = new QMediaPlayer(this);
+    audioOutput = new QAudioOutput(this);
+    player->setAudioOutput(audioOutput);
+    player->setSource(QUrl::fromLocalFile(soundFilePath));
+
+    // 连接按钮点击事件，播放音效
+    connect(this, &QPushButton::clicked, player, &QMediaPlayer::play);
+
+    // 创建定时器，用于定时更新流光偏移量
+    timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &Lbutton::updateGradient);
+    timer->start(30); // 每30毫秒更新一次
+
+    QString style = QString(R"(
+    QPushButton {
+        background: rgba(255, 255, 255, 0);
+        border: none;
+        color: %1;
+        font-size: %2px;
+    }
+
+    QPushButton:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+)").arg(color).arg(fontSize);
+
+    setStyleSheet(style);
 }
 
 void Lbutton::paintEvent(QPaintEvent *event)
@@ -67,7 +110,7 @@ void Lbutton::updateGradient()
 {
     gradientOffset += 3; // 每次移动3像素
     if (gradientOffset > width()) {
-        gradientOffset = -BUTTON_WIDTH; // 重新循环
-    }
+            gradientOffset = -BUTTON_WIDTH; // 重新循环
+        }
     update(); // 触发重绘
 }

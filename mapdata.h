@@ -7,6 +7,7 @@ public:
     QPointF center = QPointF(850, 440); // 地图中心坐标
     QColor color1;
     QColor color2;
+    QColor color3;
     int id; // 关卡索引
     QVector<QPoint>path;
 

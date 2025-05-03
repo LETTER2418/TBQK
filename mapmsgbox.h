@@ -1,19 +1,13 @@
-#include "lbutton.h"
+#ifndef MAPMSGBOX_H
+#define MAPMSGBOX_H
+
 #include <QWidget>
-#include <QLabel>
-#include <QPushButton>
-#include <QVBoxLayout>
-#include <QPainter>
-#include <QPixmap>
-#include <QMessageBox>
-#include <QLineEdit>
-#include <QSlider>
-#include <QKeyEvent>
-#include <QHBoxLayout>
-#include <QFormLayout>
-#include <QIntValidator>
-#include <QSpinBox>
 #include <QColorDialog>
+#include "ui_Test.h"
+
+namespace Ui {
+class Test;
+}
 
 class MapMsgBox : public QWidget
 {
@@ -22,36 +16,40 @@ class MapMsgBox : public QWidget
 public:
     explicit MapMsgBox(QWidget*parent = nullptr);
     ~MapMsgBox();
-    Lbutton *closeButton;
     int rings;
-    QColor color1,color2;
+    QColor color1,color2,color3;
+
+signals:
+    void sendMsg(int, QColor, QColor, QColor);
 
 private slots:
     void openColorDialog1() {
         QColor color = QColorDialog::getColor(QColor(255,255,255));
         if (color.isValid()) {
-            color1Label->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
+            ui->color1Label->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
         }
         color1 = color;
     }
     void openColorDialog2() {
         QColor color = QColorDialog::getColor(QColor(255,255,255));
         if (color.isValid()) {
-            color2Label->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
+            ui->color2Label->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
         }
         color2 = color;
+    }
+    void openColorDialog3() {
+        QColor color = QColorDialog::getColor(QColor(255,255,255));
+        if (color.isValid()) {
+            ui->color3Label->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
+        }
+        color3 = color;
     }
 
 private:
     void paintEvent(QPaintEvent *event) override;
-    QSpinBox *spinBox;
-    QLabel *messageLabel;
     QPixmap backgroundImage;
     const QString backgroundImagePath=":\\image\\msg.png"; // 存储背景图片路径
-    Lbutton *color1Button;
-    Lbutton *color2Button;
-    Lbutton *numButton;
-    QLabel *color1Label;
-    QLabel *color2Label;
-
+    Ui::Test *ui;
 };
+
+#endif // MAPMSGBOX_H

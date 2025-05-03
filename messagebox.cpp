@@ -30,7 +30,8 @@ void MessageBox::setMessage(const QString &message)
 {
     messageLabel->setText(message);
     messageLabel->setStyleSheet("QLabel { color: white; font-size: 20px; }");
-    messageLabel->move(30, 15);
+    messageLabel->setAlignment(Qt::AlignCenter);//文字居中
+
 }
 
 
@@ -43,4 +44,17 @@ void MessageBox::paintEvent(QPaintEvent *event)
     }
 
     QWidget::paintEvent(event);
+}
+
+void MessageBox::resizeEvent(QResizeEvent *event)
+{
+    // 调用父类的resizeEvent以保证正常行为
+    QMessageBox::resizeEvent(event);
+
+    // 居中设置 messageLabel
+    if (messageLabel) {
+        int x = (width() - messageLabel->width()) / 2;
+        int y = (height() - messageLabel->height()) / 2;
+        messageLabel->move(x, y);
+    }
 }
