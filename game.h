@@ -6,6 +6,14 @@
 #include "messagebox.h"
 #include "mapdata.h"
 
+
+// 定义操作结构体，用于记录每次操作
+struct Operation {
+    int hexagonIndex;  // 操作的六边形索引
+    QColor oldColor;   // 操作前的颜色
+    QPoint hexCoord;   // 六边形的轴向坐标
+};
+
 class Game : public QWidget
 {
     Q_OBJECT
@@ -16,21 +24,78 @@ public:
     void setMap(MapData mapData);
     Lbutton *backButton;
 
+signals:
+    // 返回关卡模式的信号，携带完成信息
+    void returnToLevelMode(bool completed = false, int timeUsed = 0, int levelId = 0);
+
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
-    void drawHexagon(QPainter &painter, const QPointF &center, int radius);
 
 private:
+    // === UI初始化和更新 ===
+    void initializeUI();
+    void setupConnections();
+    void drawHexagon(QPainter &painter, const QPointF &center, int radius);
+    void drawGameTimer(QPainter &painter);
+    void drawPath(QPainter &painter);
+    
+    // === 游戏状态管理 ===
+    void resetGameState();
+    bool checkGameComplete();
+    void handleGameCompletion();
+    
+    // === 六边形操作 ===
+    bool canFlipHexagon(int index);
+    void flipHexagon(int index);
+    int findClosestHexagon(const QPointF& clickPos);
+    void withdrawLastOperation();
+    
+    // === 路径管理 ===
+    bool isConnectedToPath(int index);
+    bool areNeighbors(const QPoint& coord1, const QPoint& coord2);
+    void togglePathVisibility();
+    QPoint hexagonIndexToCoord(int index);
+    int coordToHexagonIndex(const QPoint& coord);
+    int getHexagonRing(const QPoint& coord);
+    
+    // === 提示系统 ===
+    void showNextHint();
+    void highlightHexagon(const QPoint& coord);
+    
+    // === 计时系统 ===
+    void updateTimeDisplay();
+    void startTimer();
+    void stopTimer();
+    
     Lbutton *hintButton;
     Lbutton *withdrawButton;
     Lbutton *pathToggleButton;
-    MessageBox *messageBox;
-    QVector<QPoint>path;
+    QMessageBox *messageBox;
+    QVector<QPoint> path;         // 提示路径
+    QVector<int> currentPath;     // 用户当前的操作路径，存储六边形索引
     QVector<HexCell> hexagons;
+    QVector<Operation> operationHistory; // 操作历史记录
+    QSet<int> flippedHexagons;    // 记录已经翻转过的六边形索引
+    bool showPath = false;        // 是否显示路径，默认不显示
+    int currentHintIndex = -1;    // 当前提示的索引位置
+    QTimer* highlightTimer;       // 高亮效果定时器
+    int highlightedHexIndex = -1; // 当前高亮的六边形索引
     int radius = 50;
     QPointF center = QPointF(850, 440);
     QColor color1, color2, color3;
+    QTimer* gameTimer;            // 游戏计时器
+    int penaltySeconds = 0;       // 总时间（包含实际时间和罚时）
+    QString timeText;             // 时间显示文本
+    int rings = 3;               // 游戏的环数
+    
+    // 添加关卡ID成员变量
+    int currentLevelId = 0;
+    
+    // 添加一个函数来设置当前关卡ID
+    void setCurrentLevelId(int id) {
+        currentLevelId = id;
+    }
 };
 
 #endif // GAME_H

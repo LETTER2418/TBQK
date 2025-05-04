@@ -118,6 +118,7 @@ MapData CustomMap::getMapData()
     data.color2 = this->color2;       // 复制第二种颜色
     data.color3 = this->color3;       // 复制第三种颜色
     data.id = this->id;               // 复制关卡索引
+    data.path = this->path;           // 复制路径数据
     return data;
 }
 
@@ -326,6 +327,9 @@ void CustomMap::solvePuzzle()
         {
             std::cout << "开始寻找一笔联通的解决方案：\n";
             bool foundValidSolution = false;
+            int minFlips = INT_MAX;
+            QVector<QPoint> bestSolutionPath;
+            Solution bestSolution;
 
             // 遍历所有解决方案
             for (int solIdx = 0; solIdx < solutions.size(); ++solIdx)
@@ -359,28 +363,41 @@ void CustomMap::solvePuzzle()
                                 }
                         }
 
-                    // 使用模拟退火判断是否能一笔联通
-                    bool canConnectInOneStroke = simulatedAnnealing(flipGraph);
+                    // 使用模拟退火判断是否能一笔联通，并返回最佳路径
+                    QVector<int> bestPath;
+                    bool canConnectInOneStroke = simulatedAnnealing(flipGraph, bestPath);
 
-                    // 只输出能一笔联通的解决方案
+                    // 只处理能一笔联通的解决方案
                     if (canConnectInOneStroke)
                         {
                             foundValidSolution = true;
-                            std::cout << "\n找到一个一笔联通的解决方案：\n";
-                            std::cout << "需要翻转 " << sol.count << " 个六边形\n";
-                            std::cout << "环颜色模式：";
-                            std::cout << "需要翻转的六边形构成的图（邻接表）：\n";
-                            for (int i = 0; i < flipGraph.size(); ++i)
+                            
+                            // 如果找到翻转数更少的解决方案，更新最佳解
+                            if (sol.count < minFlips)
                                 {
-                                    std::cout << "节点 " << i << " (原始索引: " << sol.flippedCells[i] << "): ";
-                                    for (int j : flipGraph[i])
+                                    minFlips = sol.count;
+                                    bestSolution = sol;
+                                    
+                                    // 将最佳路径转换为六边形坐标
+                                    QVector<QPoint> tempPath;
+                                    for (int idx : bestPath)
                                         {
-                                            std::cout << j << " ";
+                                            // 获取在原始图中的索引
+                                            int originalIdx = sol.flippedCells[idx];
+                                            
+                                            // 找到对应的坐标
+                                            for (const auto& [coord, index] : coordToIndex.toStdMap())
+                                                {
+                                                    if (index == originalIdx)
+                                                        {
+                                                            // 将六边形的轴向坐标添加到路径中
+                                                            tempPath.append(QPoint(coord.first, coord.second));
+                                                            break;
+                                                        }
+                                                }
                                         }
-                                    std::cout << std::endl;
+                                    bestSolutionPath = tempPath;
                                 }
-
-                            std::cout << "----------------------------------------\n";
                         }
                 }
 
@@ -390,11 +407,20 @@ void CustomMap::solvePuzzle()
                 }
             else
                 {
+                    // 保存最佳路径到成员变量
+                    path = bestSolutionPath;
+                    
+                    // 输出最佳路径信息
+                    std::cout << "\n找到最佳解决方案：\n";
+                    std::cout << "需要翻转 " << minFlips << " 个六边形\n";
+                    std::cout << "最佳路径坐标: ";
+                    for(const QPoint& p : path)
+                        {
+                            std::cout << "(" << p.x() << "," << p.y() << ") ";
+                        }
+                    std::cout << std::endl;
+                    
                     messageBox->setText("求解成功！");
-                    connect(messageBox, &MessageBox::accepted, this, [this]()
-                    {
-                        this->close();
-                    });
                     messageBox->exec();
                 }
 
@@ -431,8 +457,8 @@ double CustomMap::calculatePathScore(const QVector < int > & path, const QVector
     return score;
 }
 
-// 模拟退火算法判断是否能一笔联通
-bool CustomMap::simulatedAnnealing(const QVector < QVector < int>>& graph)
+// 模拟退火算法判断是否能一笔联通，并返回最佳路径
+bool CustomMap::simulatedAnnealing(const QVector < QVector < int>>& graph, QVector<int>& bestPath)
 {
     if (graph.empty())
         {
@@ -454,13 +480,13 @@ bool CustomMap::simulatedAnnealing(const QVector < QVector < int>>& graph)
 
     double currentScore = calculatePathScore(currentPath, graph);
     double bestScore = currentScore;
-    QVector < int > bestPath = currentPath;
+    bestPath = currentPath;
 
     double temperature = initialTemp;
 
     // 模拟退火主循环
-    for (int iter = 0; iter < maxIterations && bestScore != n - 1; ++iter)
-        //for (int iter = 0; iter < maxIterations && temperature > 0.1; ++iter)
+    // 加入限制最大时间，取消iter限制
+    for (int iter = 0; iter < maxIterations && bestScore != n - 1 && temperature > 0.001; ++iter)
         {
             // 生成新解：随机交换两个位置
             QVector < int > newPath = currentPath;

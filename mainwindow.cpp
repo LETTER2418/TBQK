@@ -181,6 +181,12 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
         pageStack->setCurrentWidget(levelModePage);
     });
 
+    // 连接游戏完成时返回关卡模式的信号
+    connect(gamePage, &Game::returnToLevelMode, this, [this]()
+    {
+        pageStack->setCurrentWidget(levelModePage);
+    });
+
     // 将页面添加到 QStackedWidget
     pageStack->addWidget(mainPage);
     pageStack->addWidget(startPage);
@@ -193,7 +199,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     pageStack->addWidget(gamePage);
 
     // 设置默认显示的页面
-    this->pageStack->setCurrentWidget(levelEditorPage);
+    this->pageStack->setCurrentWidget(levelModePage);
 
     // 主布局
     QVBoxLayout *mainLayout = new QVBoxLayout(this);

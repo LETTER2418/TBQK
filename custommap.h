@@ -28,8 +28,8 @@ private:
     void solvePuzzle();
     // 计算路径的得分（访问的边数）
     double calculatePathScore(const QVector<int>& path, const QVector<QVector<int>>& graph);
-    // 模拟退火算法判断是否能一笔联通
-    bool simulatedAnnealing(const QVector<QVector<int>>& graph);
+    // 模拟退火算法判断是否能一笔联通，并返回最佳路径
+    bool simulatedAnnealing(const QVector<QVector<int>>& graph, QVector<int>& bestPath);
     
     Lbutton *solveButton;
     QMessageBox *messageBox;
@@ -37,6 +37,7 @@ private:
     int radius = 50;
     QPointF center = QPointF(850, 440);
     QColor color1, color2, color3;
+    QVector<QPoint>path;
     int id;
     int rings;
 };
