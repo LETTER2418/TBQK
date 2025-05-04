@@ -18,7 +18,7 @@ void UserData::fromJson(const QJsonObject& obj)
     password = obj["password"].toString();
 }
 
-QString UserData::getPassword()
+QString UserData::getPassword() const
 {
     return password;
 }

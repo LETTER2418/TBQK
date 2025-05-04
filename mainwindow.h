@@ -18,6 +18,7 @@
 #include "mapmsgbox.h"
 #include "datamanager.h"
 #include "game.h"
+#include "rankpage.h"
 
 class MainWindow :public Widget{
     Q_OBJECT
@@ -27,6 +28,7 @@ public:
     ~MainWindow();
 
 private:
+    QString currentUserId;  // 当前登录的用户ID
 
     QStackedWidget *pageStack;
 
@@ -53,6 +55,7 @@ private:
     LevelMode *levelModePage;
     CustomMap *customMapPage;
     Game *gamePage;
+    RankPage *rankPage;
 
     //Manager
     DataManager *dataManager;

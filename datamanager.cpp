@@ -4,6 +4,8 @@
 #include <QJsonObject>
 #include <QDebug>
 #include <QJsonValue>
+#include <QJsonArray>
+#include <algorithm>
 
 DataManager::DataManager(QObject *parent) : QObject(parent)
 {
@@ -49,6 +51,63 @@ QStringList DataManager::getAllUserIds() const
     return users.keys();
 }
 
+// ========== 排行榜操作 ==========
+void DataManager::updateRanking(int levelId, const QString& userId, int penaltySeconds)
+{
+    QVector<Ranking>& levelRanking = rankings[levelId];
+    
+    // 查找用户是否已经在排行榜中
+    auto it = std::find_if(levelRanking.begin(), levelRanking.end(),
+                          [&userId](const Ranking& entry) {
+                              return entry.userId == userId;
+                          });
+    
+    if (it != levelRanking.end()) {
+        // 如果用户已存在且新成绩更好，更新成绩
+        if (penaltySeconds < it->penaltySeconds) {
+            it->penaltySeconds = penaltySeconds;
+        }
+    } else {
+        // 添加新的排行榜条目
+        Ranking newEntry;
+        newEntry.userId = userId;
+        newEntry.penaltySeconds = penaltySeconds;
+        levelRanking.append(newEntry);
+    }
+    
+    // 按照罚时升序排序
+    std::sort(levelRanking.begin(), levelRanking.end(),
+              [](const Ranking& a, const Ranking& b) {
+                  return a.penaltySeconds < b.penaltySeconds;
+              });
+    
+    // 只保留前N名
+    if (levelRanking.size() > MAX_RANKING_ENTRIES) {
+        levelRanking.resize(MAX_RANKING_ENTRIES);
+    }
+    
+    saveToFile();
+}
+
+QVector<Ranking> DataManager::getRanking(int levelId) const
+{
+    return rankings.value(levelId);
+}
+
+void DataManager::clearRanking(int levelId)
+{
+    if (rankings.contains(levelId)) {
+        rankings[levelId].clear();
+        saveToFile();
+    }
+}
+
+void DataManager::clearAllRankings()
+{
+    rankings.clear();
+    saveToFile();
+}
+
 // ========== 数据持久化 ==========
 bool DataManager::saveToFile() const
 {
@@ -73,6 +132,17 @@ bool DataManager::saveToFile() const
         mapArray.append(map.toJson());
     }
     root["maps"] = mapArray;
+    
+    // 写入排行榜数据
+    QJsonObject rankingsObj;
+    for (auto it = rankings.begin(); it != rankings.end(); ++it) {
+        QJsonArray levelRankings;
+        for (const auto& entry : it.value()) {
+            levelRankings.append(entry.toJson());
+        }
+        rankingsObj[QString::number(it.key())] = levelRankings;
+    }
+    root["rankings"] = rankingsObj;
 
     QJsonDocument doc(root);
     file.write(doc.toJson());
@@ -116,6 +186,30 @@ bool DataManager::loadFromFile()
         MapData mapData;
         mapData.fromJson(mapVal.toObject());
         maps.insert(mapData.id, mapData);
+    }
+    
+    // 加载排行榜数据
+    rankings.clear();
+    QJsonObject rankingsObj = root["rankings"].toObject();
+    for (const QString& levelId : rankingsObj.keys()) {
+        QJsonArray levelRankings = rankingsObj[levelId].toArray();
+        QVector<Ranking>& levelRankingVector = rankings[levelId.toInt()];
+        
+        for (const auto& entryVal : levelRankings) {
+            Ranking entry;
+            entry.fromJson(entryVal.toObject());
+            levelRankingVector.append(entry);
+        }
+        
+        // 确保排序和大小限制
+        std::sort(levelRankingVector.begin(), levelRankingVector.end(),
+                  [](const Ranking& a, const Ranking& b) {
+                      return a.penaltySeconds < b.penaltySeconds;
+                  });
+        
+        if (levelRankingVector.size() > MAX_RANKING_ENTRIES) {
+            levelRankingVector.resize(MAX_RANKING_ENTRIES);
+        }
     }
 
     qDebug() << "加载成功：" << filePath;

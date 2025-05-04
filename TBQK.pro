@@ -25,6 +25,8 @@ SOURCES += \
     menu.cpp \
     messagebox.cpp \
     randommap.cpp \
+    ranking.cpp \
+    rankpage.cpp \
     savemapmsgbox.cpp \
     start.cpp \
     userdata.cpp \
@@ -45,6 +47,8 @@ HEADERS += \
     menu.h \
     messagebox.h \
     randommap.h \
+    ranking.h \
+    rankpage.h \
     savemapmsgbox.h \
     start.h \
     userdata.h \

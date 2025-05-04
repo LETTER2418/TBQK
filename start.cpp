@@ -55,11 +55,15 @@ Start::Start(QWidget *parent, DataManager *dataManager_):QWidget(parent), dataMa
     });
 }
 
+QString Start::getAccount() const
+{
+    return accountLineEdit->text();
+}
+
 void Start::onLoginClicked()
 {
     QString username = accountLineEdit->text();
     QString password = passwordLineEdit->text();
-
 
     if (username.isEmpty() || password.isEmpty()) {
         NOmessageBox->setMessage("账号和密码不能为空！");

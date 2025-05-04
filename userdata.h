@@ -16,7 +16,7 @@ public:
 
     // 从 QJsonObject 加载 MapData
     void fromJson(const QJsonObject& obj) ;
-    QString getPassword();
+    QString getPassword() const;
 private:
     QString password;
 };

@@ -53,6 +53,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     saveCustomMapMsgBox->hide();
     gamePage = new Game(this);
     gamePage->hide();
+    rankPage = new RankPage(this, dataManager);
 
     // 连接信号与槽
     connect(startPage->backButton, &QPushButton::clicked, this, [this]()
@@ -78,11 +79,13 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     connect(startPage->YESmessageBox->closeButton, &QPushButton::clicked, this, [this]()
     {
         startPage->YESmessageBox->accept();
+        currentUserId = startPage->getAccount();
         pageStack->setCurrentWidget(menuPage);
     });
 
     connect(menuPage->logoutButton, &QPushButton::clicked, this,  [this]()
     {
+        currentUserId.clear();  // 清除当前用户ID
         pageStack->setCurrentWidget(startPage);
     });
 
@@ -181,9 +184,23 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
         pageStack->setCurrentWidget(levelModePage);
     });
 
-    // 连接游戏完成时返回关卡模式的信号
-    connect(gamePage, &Game::returnToLevelMode, this, [this]()
+    connect(menuPage->rankButton, &QPushButton::clicked, this, [this]()
     {
+        pageStack->setCurrentWidget(rankPage);
+    });
+
+    connect(rankPage->backButton, &QPushButton::clicked, this, [this]()
+    {
+        pageStack->setCurrentWidget(menuPage);
+    });
+
+    // 连接游戏完成时返回关卡模式的信号
+    connect(gamePage, &Game::returnToLevelMode, this, [this](bool completed, int penaltySeconds, int levelId)
+    {
+        if (completed && !currentUserId.isEmpty()) {
+            // 更新排行榜
+            dataManager->updateRanking(levelId, currentUserId, penaltySeconds);
+        }
         pageStack->setCurrentWidget(levelModePage);
     });
 
@@ -197,6 +214,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     pageStack->addWidget(levelModePage);
     pageStack->addWidget(customMapPage);
     pageStack->addWidget(gamePage);
+    pageStack->addWidget(rankPage);
 
     // 设置默认显示的页面
     this->pageStack->setCurrentWidget(levelModePage);

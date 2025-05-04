@@ -25,6 +25,7 @@ public:
     Lbutton *registerButton;
     Lbutton *guestButton;
     Lbutton *showPasswordButton;
+    QString getAccount() const;
 
 private:
     QLineEdit *accountLineEdit;
