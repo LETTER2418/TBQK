@@ -1,11 +1,8 @@
 #include "start.h"
-#include "usermanager.h"
 #include <QVBoxLayout>
 #include <QMessageBox>
 
-UserManager userManager;
-
-Start::Start(QWidget *parent):QWidget(parent)
+Start::Start(QWidget *parent, DataManager *dataManager_):QWidget(parent), dataManager(dataManager_)
 {
     // 创建按钮
     backButton = new Lbutton(this, "返回");
@@ -70,10 +67,10 @@ void Start::onLoginClicked()
         return;
     }
 
-    userManager.loadFromFile();
+    dataManager->loadFromFile();
 
-    // 在 userManager 中验证账号密码
-    if (userManager.checkPassword(username, password)) {
+    // 验证账号密码
+    if (dataManager->checkPassword(username, password)) {
         YESmessageBox->setMessage("成功登录！");
         YESmessageBox->exec();
         // 登录成功后的处理，比如跳转到主界面
@@ -97,10 +94,10 @@ void Start::onRegisterClicked()
     }
 
     // 加载用户信息
-    userManager.loadFromFile();
+    dataManager->loadFromFile();
 
-    // 在 userManager 中检查账号是否已存在
-    if (userManager.getAllUserIds().contains(username)) {
+    // 检查账号是否已存在
+    if (dataManager->getAllUserIds().contains(username)) {
         NOmessageBox->setMessage("该账号已存在！");
         NOmessageBox->exec();
         //QMessageBox::warning(this, "注册失败", "该账号已存在！");
@@ -108,9 +105,9 @@ void Start::onRegisterClicked()
     }
 
     // 添加新用户
-    userManager.addUser(username, password);
-    userManager.saveToFile();  // 保存到文件
-
+    dataManager->addUser(username, password);
+    dataManager->saveToFile();  // 保存到文件
+    
     NOmessageBox->setMessage("账号注册成功！");
     NOmessageBox->exec();
     //QMessageBox::information(this, "注册成功", "账号注册成功！");

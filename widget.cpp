@@ -4,8 +4,7 @@
 #include <QPainter>
 
 Widget::Widget(QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::Widget)
+    : QWidget(parent), ui(new Ui::Widget)
 {
     ui->setupUi(this);
 
@@ -17,21 +16,18 @@ Widget::Widget(QWidget *parent)
     QLabel *bgLabel = new QLabel(this);
     QPixmap bgImage(":\\image\\bg1.jpg");
 
-    //检查图片是否加载成功
-    if (bgImage.isNull()) {
+    // 检查图片是否加载成功
+    if (bgImage.isNull())
+    {
         qDebug() << "图片加载失败，请检查路径！";
-        return ; // 退出程序
+        return; // 退出程序
     }
 
-    //设置 QLabel 填充整个窗口
+    // 设置 QLabel 填充整个窗口
     bgLabel->setPixmap(bgImage);
     bgLabel->setScaledContents(true);
     bgLabel->setGeometry(0, 0, this->width(), this->height());
-
-
-
 }
-
 
 Widget::~Widget()
 {

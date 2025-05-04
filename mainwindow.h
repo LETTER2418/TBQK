@@ -11,12 +11,13 @@
 #include "leveleditor.h"
 #include "randommap.h"
 #include "mapmsgbox.h"
-#include "mapmanager.h"
 #include "savemapmsgbox.h"
 #include "savemapmsgbox.h"
 #include "levelmode.h"
 #include "custommap.h"
 #include "mapmsgbox.h"
+#include "datamanager.h"
+#include "game.h"
 
 class MainWindow :public Widget{
     Q_OBJECT
@@ -51,9 +52,10 @@ private:
     RandomMap   *randomMapPage;
     LevelMode *levelModePage;
     CustomMap *customMapPage;
+    Game *gamePage;
 
     //Manager
-    MapManager *mapManager;
+    DataManager *dataManager;
 };
 
 #endif // MAINWINDOW_H

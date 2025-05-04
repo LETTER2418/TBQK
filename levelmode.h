@@ -16,6 +16,7 @@ public:
     explicit LevelMode(QWidget *parent = nullptr);
     ~LevelMode();
     Lbutton *backButton;
+    Lbutton *buttons[12];
 
 private:
     Ui::LevelMode *ui;

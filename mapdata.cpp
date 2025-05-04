@@ -1,5 +1,15 @@
 #include "mapdata.h"
 
+MapData::MapData()
+{
+
+}
+
+MapData::~MapData()
+{
+
+}
+
 QJsonObject MapData::toJson() const
 {
     QJsonObject obj;

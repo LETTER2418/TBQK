@@ -12,6 +12,7 @@ CONFIG += c++17
 SOURCES += \
     about.cpp \
     custommap.cpp \
+    datamanager.cpp \
     game.cpp \
     hexcell.cpp \
     lbutton.cpp \
@@ -20,19 +21,19 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     mapdata.cpp \
-    mapmanager.cpp \
     mapmsgbox.cpp \
     menu.cpp \
     messagebox.cpp \
     randommap.cpp \
     savemapmsgbox.cpp \
     start.cpp \
-    usermanager.cpp \
+    userdata.cpp \
     widget.cpp
 
 HEADERS += \
     about.h \
     custommap.h \
+    datamanager.h \
     game.h \
     hexcell.h \
     lbutton.h \
@@ -40,14 +41,13 @@ HEADERS += \
     levelmode.h \
     mainwindow.h \
     mapdata.h \
-    mapmanager.h \
     mapmsgbox.h \
     menu.h \
     messagebox.h \
     randommap.h \
     savemapmsgbox.h \
     start.h \
-    usermanager.h \
+    userdata.h \
     widget.h
 
 FORMS += \

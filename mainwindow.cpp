@@ -3,7 +3,7 @@
 MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedWidget(this))
 {
 
-    mapManager = new MapManager(this);
+    dataManager = new DataManager(this);
 
     // 创建 mainPage，并将四个按钮放入
     mainPage = new QWidget(this);
@@ -37,7 +37,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
 
 
     // 初始化各页面
-    startPage = new Start(this);
+    startPage = new Start(this, dataManager);
     aboutPage = new About(this);
     menuPage = new Menu(this);
     levelEditorPage = new LevelEditor(this);
@@ -51,6 +51,8 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     saveRandomMapMsgBox->hide();
     saveCustomMapMsgBox = new SaveMapMsgBox(this);
     saveCustomMapMsgBox->hide();
+    gamePage = new Game(this);
+    gamePage->hide();
 
     // 连接信号与槽
     connect(startPage->backButton, &QPushButton::clicked, this, [this]()
@@ -108,6 +110,17 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
         pageStack->setCurrentWidget(customMapPage);
     });
 
+    for(int i = 0; i < 12; i++)
+        {
+            connect(levelModePage->buttons[i], &QPushButton::clicked, this, [this, i]()
+            {
+               //设置第i+1关的地图
+               gamePage->setMap(dataManager->getMap(i+1));
+                pageStack->setCurrentWidget(gamePage);
+            });
+        }
+
+
     connect(levelEditorPage->randomButton, &QPushButton::clicked, this, [this]()
     {
         randomMapMsgBox->show();
@@ -142,15 +155,15 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     connect(saveRandomMapMsgBox, &SaveMapMsgBox::sendMsg, this, [this](int msg)
     {
         randomMapPage->setId(msg);
-        mapManager->addMap(randomMapPage->getMapData());
-        mapManager->saveMap();
+        dataManager->addMap(randomMapPage->getMapData());
+        dataManager->saveToFile();
     });
 
     connect(saveCustomMapMsgBox, &SaveMapMsgBox::sendMsg, this, [this](int msg)
     {
         customMapPage->setId(msg);
-        mapManager->addMap(customMapPage->getMapData());
-        mapManager->saveMap();
+        dataManager->addMap(customMapPage->getMapData());
+        dataManager->saveToFile();
     });
 
     connect(menuPage->levelModeButton, &QPushButton::clicked, this, [this]()
@@ -158,8 +171,14 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
         pageStack->setCurrentWidget(levelModePage);
     });
 
-    connect(levelModePage->backButton, &QPushButton::clicked, this, [this](){
+    connect(levelModePage->backButton, &QPushButton::clicked, this, [this]()
+    {
         pageStack->setCurrentWidget(menuPage);
+    });
+
+    connect(gamePage->backButton, &QPushButton::clicked, this, [this]()
+    {
+        pageStack->setCurrentWidget(levelModePage);
     });
 
     // 将页面添加到 QStackedWidget
@@ -171,6 +190,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     pageStack->addWidget(randomMapPage);
     pageStack->addWidget(levelModePage);
     pageStack->addWidget(customMapPage);
+    pageStack->addWidget(gamePage);
 
     // 设置默认显示的页面
     this->pageStack->setCurrentWidget(levelEditorPage);

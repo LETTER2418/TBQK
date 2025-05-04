@@ -1,9 +1,11 @@
 #ifndef START_H
 #define START_H
+
 #include "lbutton.h"
 #include <QWidget>
 #include <qlineedit.h>
 #include "messagebox.h"
+#include "datamanager.h"
 
 class Start : public QWidget
 {
@@ -11,7 +13,7 @@ class Start : public QWidget
 
 public:
 
-    Start(QWidget *parent = nullptr);
+    Start(QWidget*, DataManager*);
     void onLoginClicked();
     void onRegisterClicked();
     ~Start();
@@ -27,6 +29,7 @@ public:
 private:
     QLineEdit *accountLineEdit;
     QLineEdit *passwordLineEdit;
+    DataManager *dataManager;
 };
 
 #endif // START_H

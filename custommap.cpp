@@ -3,14 +3,27 @@
 #include <QMouseEvent>
 #include <cmath>
 #include <cstdlib>
+#include <QQueue>
+#include <QSet>
+#include <QPair>
+#include <QMap>
+#include <iostream>
+#include <algorithm>
 
 CustomMap::CustomMap(QWidget *parent) : QWidget(parent)
 {
+    messageBox = new QMessageBox(this);
     backButton = new Lbutton(this, "返回");
     backButton->move(0, 0);
     saveButton = new Lbutton(this, "保存");
     saveButton->move(1300, 400);
+    solveButton = new Lbutton(this, "求解");
+    solveButton->move(1300, 600);
     id = 0;
+    connect(solveButton, &QPushButton::clicked, this, [this]()
+    {
+        solvePuzzle();
+    });
 }
 
 CustomMap::~CustomMap()
@@ -18,12 +31,13 @@ CustomMap::~CustomMap()
 }
 
 // 生成六边形网格地图
-void CustomMap::generateHexagons(int rings, QColor c1, QColor c2, QColor c3)
+void CustomMap::generateHexagons(int r, QColor c1, QColor c2, QColor c3)
 {
     hexagons.clear();
     color1 = c1;
     color2 = c2;
     color3 = c3;
+    rings = r;
 
     //轴向坐标转成笛卡尔坐标
     auto hexToPixel = [ = ](int q, int r) -> QPointF
@@ -72,7 +86,7 @@ void CustomMap::mousePressEvent(QMouseEvent *event)
         }
     for (HexCell &hex : hexagons)
         {
-            if (QLineF(click, hex.center).length() == mn)
+            if (QLineF(click, hex.center).length() == mn && mn <= radius)
                 {
                     hex.color = (hex.color == color1) ? color2 : color1;
                     break; // 只翻转一个
@@ -110,4 +124,375 @@ MapData CustomMap::getMapData()
 void CustomMap::setId(int id_)
 {
     id = id_;
+}
+
+// 求解六边形拼图
+void CustomMap::solvePuzzle()
+{
+    // 六边形距离计算函数
+    auto distanceFromCenter = [](const QPair<int, int>& h)
+    {
+        // 使用轴向坐标计算六边形距离公式：(|q| + |r| + |q+r|) / 2
+        int q = h.first, r = h.second;
+        return (abs(q) + abs(r) + abs(q + r)) / 2;
+    };
+
+    // 六边形方向定义
+    const QVector<QPair<int, int>> directions =
+    {
+        {1, 0}, {1, -1}, {0, -1},
+        {-1, 0}, {-1, 1}, {0, 1}
+    };
+
+    // 构建坐标到索引的映射
+    QMap<QPair<int, int>, int > coordToIndex;
+    QVector<QVector<int>> adj;
+
+    // BFS 生成所有在盘面内的 QPair<int, int> 坐标，并赋索引
+    QQueue<QPair<int, int>> q;
+    QSet<QPair<int, int>> visited;
+
+    QPair<int, int> center = {0, 0};
+    q.push_back(center);
+    visited.insert(center);
+
+    int index = 0;
+    coordToIndex[center] = index++;
+    QVector<QPair<int, int>> all_coords;
+    all_coords.push_back(center);
+
+    while (!q.empty())
+        {
+            QPair<int, int> cur = q.front();
+            q.pop_front();
+            int cq = cur.first, cr = cur.second;
+            for (const auto& [dq, dr] : directions)
+                {
+                    QPair<int, int> neighbor = {cq + dq, cr + dr};
+                    if (!visited.contains(neighbor) && distanceFromCenter(neighbor) <= rings)
+                        {
+                            visited.insert(neighbor);
+                            q.push_back(neighbor);
+                            coordToIndex[neighbor] = index++;
+                            all_coords.push_back(neighbor);
+                        }
+                }
+        }
+
+    // 构造邻接表
+    adj.resize(index); // 初始化邻接表大小
+    for (const QPair<int, int>& coord : all_coords)
+        {
+            int u = coordToIndex[coord];
+            int q = coord.first, r = coord.second;
+            for (const auto& [dq, dr] : directions)
+                {
+                    QPair<int, int> neighbor = {q + dq, r + dr};
+                    if (coordToIndex.contains(neighbor))
+                        {
+                            int v = coordToIndex[neighbor];
+                            adj[u].push_back(v);
+                        }
+                }
+        }
+
+    // 枚举每个同心环的颜色
+    QVector<QColor> ringColors(rings + 1);
+    QVector<int> flipState(index, 0); // 每个六边形的翻转状态
+    QMap<int, QColor> indexToColor; // 存储每个索引对应的六边形颜色
+
+    // 建立索引到颜色的映射
+    for (int i = 0; i < hexagons.size(); ++i)
+        {
+            for (const auto& coord : all_coords)
+                {
+                    // 找到六边形的坐标
+                    QPointF hexPoint = hexagons[i].center;
+
+                    // 轴向坐标转成笛卡尔坐标
+                    double x = radius * 3.0 / 2 * coord.first;
+                    double y = radius * sqrt(3) * (coord.second + coord.first / 2.0);
+                    QPointF pixel = this->center + QPointF(x, y);
+
+                    // 如果坐标接近，建立映射
+                    if (QLineF(hexPoint, pixel).length() < radius / 2)
+                        {
+                            int idx = coordToIndex[coord];
+                            indexToColor[idx] = hexagons[i].color;
+                            break;
+                        }
+                }
+        }
+
+    // 存储所有可行解
+    struct Solution
+    {
+        int count;                   // 翻转的六边形数量
+        int pattern;                 // 环颜色模式
+        QVector < int > flippedCells; // 翻转的六边形索引
+    };
+
+    QVector < Solution > solutions;
+
+    // 枚举所有可能的同心环颜色组合
+    for (int colorPattern = 0; colorPattern < (1 << (rings + 1)); ++colorPattern)
+        {
+            // 重置翻转状态
+            for (int i = 0; i < index; ++i)
+                {
+                    flipState[i] = 0;
+                }
+
+            // 设置每个环的颜色
+            for (int r = 0; r <= rings; ++r)
+                {
+                    ringColors[r] = (colorPattern & (1 << r)) ? color2 : color1;
+                }
+
+            // 判断每个六边形的flipState
+            for (const auto& coord : all_coords)
+                {
+                    int idx = coordToIndex[coord];
+                    int ring = distanceFromCenter(coord);
+                    QColor ringColor = ringColors[ring];
+
+                    if (indexToColor.contains(idx) && indexToColor[idx] != ringColor)
+                        {
+                            flipState[idx] = 1;
+                        }
+                }
+
+            // 检查flipState为1的六边形是否联通
+            QVector < bool > visited2(index, false);
+            int count = 0;
+
+            // 找到第一个flipState为1的六边形
+            int start = -1;
+            for (int i = 0; i < index; ++i)
+                {
+                    if (flipState[i] == 1)
+                        {
+                            start = i;
+                            break;
+                        }
+                }
+
+            if (start != -1)
+                {
+                    // BFS检查连通性
+                    QQueue < int > bfsQueue;
+                    bfsQueue.enqueue(start);
+                    visited2[start] = true;
+                    count = 1;
+
+                    while (!bfsQueue.empty())
+                        {
+                            int u = bfsQueue.dequeue();
+
+                            for (int v : adj[u])
+                                {
+                                    if (!visited2[v] && flipState[v] == 1)
+                                        {
+                                            visited2[v] = true;
+                                            bfsQueue.enqueue(v);
+                                            count++;
+                                        }
+                                }
+                        }
+
+                    // 统计所有flipState为1的六边形数量
+                    int totalFlipped = 0;
+                    QVector < int > flippedCells;
+                    for (int i = 0; i < index; ++i)
+                        {
+                            if (flipState[i] == 1)
+                                {
+                                    totalFlipped++;
+                                    flippedCells.push_back(i);
+                                }
+                        }
+
+                    // 如果所有翻转的六边形都能通过BFS访问到，说明它们是联通的
+                    if (count == totalFlipped && count > 0)
+                        {
+                            // 将有效解加入solutions
+                            solutions.push_back({count, colorPattern, flippedCells});
+                        }
+                }
+        }
+
+    // 枚举所有解决方案
+    if (!solutions.empty())
+        {
+            std::cout << "开始寻找一笔联通的解决方案：\n";
+            bool foundValidSolution = false;
+
+            // 遍历所有解决方案
+            for (int solIdx = 0; solIdx < solutions.size(); ++solIdx)
+                {
+                    const Solution& sol = solutions[solIdx];
+
+                    // 构建需要翻转的六边形构成的图的邻接表
+                    QVector < QVector < int>> flipGraph;
+                    flipGraph.resize(sol.flippedCells.size());
+
+                    // 建立索引映射，从原始索引到新图中的索引
+                    QMap < int, int > originalToFlipIndex;
+                    for (int i = 0; i < sol.flippedCells.size(); ++i)
+                        {
+                            originalToFlipIndex[sol.flippedCells[i]] = i;
+                        }
+
+                    // 构建新的邻接表
+                    for (int i = 0; i < sol.flippedCells.size(); ++i)
+                        {
+                            int originalIdx = sol.flippedCells[i];
+
+                            // 检查原始图中的邻居是否也在需要翻转的集合中
+                            for (int neighbor : adj[originalIdx])
+                                {
+                                    if (originalToFlipIndex.contains(neighbor))
+                                        {
+                                            int flipNeighborIdx = originalToFlipIndex[neighbor];
+                                            flipGraph[i].push_back(flipNeighborIdx);
+                                        }
+                                }
+                        }
+
+                    // 使用模拟退火判断是否能一笔联通
+                    bool canConnectInOneStroke = simulatedAnnealing(flipGraph);
+
+                    // 只输出能一笔联通的解决方案
+                    if (canConnectInOneStroke)
+                        {
+                            foundValidSolution = true;
+                            std::cout << "\n找到一个一笔联通的解决方案：\n";
+                            std::cout << "需要翻转 " << sol.count << " 个六边形\n";
+                            std::cout << "环颜色模式：";
+                            std::cout << "需要翻转的六边形构成的图（邻接表）：\n";
+                            for (int i = 0; i < flipGraph.size(); ++i)
+                                {
+                                    std::cout << "节点 " << i << " (原始索引: " << sol.flippedCells[i] << "): ";
+                                    for (int j : flipGraph[i])
+                                        {
+                                            std::cout << j << " ";
+                                        }
+                                    std::cout << std::endl;
+                                }
+
+                            std::cout << "----------------------------------------\n";
+                        }
+                }
+
+            if (!foundValidSolution)
+                {
+                    std::cout << "未找到可以一笔联通的解决方案。" << std::endl;
+                }
+            else
+                {
+                    messageBox->setText("求解成功！");
+                    connect(messageBox, &MessageBox::accepted, this, [this]()
+                    {
+                        this->close();
+                    });
+                    messageBox->exec();
+                }
+
+        }
+    else
+        {
+            std::cout << "未找到满足条件的解决方案。" << std::endl;
+        }
+}
+
+// 计算路径的得分（访问的边数）
+double CustomMap::calculatePathScore(const QVector < int > & path, const QVector < QVector<int >> & graph)
+{
+    int score = 0;
+    for (int i = 0; i < path.size() - 1; ++i)
+        {
+            int u = path[i];
+            int v = path[i + 1];
+            // 检查是否存在边
+            bool hasEdge = false;
+            for (int next : graph[u])
+                {
+                    if (next == v)
+                        {
+                            hasEdge = true;
+                            break;
+                        }
+                }
+            if (hasEdge)
+                {
+                    score++;
+                }
+        }
+    return score;
+}
+
+// 模拟退火算法判断是否能一笔联通
+bool CustomMap::simulatedAnnealing(const QVector < QVector < int>>& graph)
+{
+    if (graph.empty())
+        {
+            return false;
+        }
+
+    const int n = graph.size();
+    const double initialTemp = 100.0;
+    const double coolingRate = 0.995;
+    const int maxIterations = 10000000;
+
+    // 初始化随机路径
+    QVector < int > currentPath;
+    for (int i = 0; i < n; ++i)
+        {
+            currentPath.push_back(i);
+        }
+    std::random_shuffle(currentPath.begin(), currentPath.end());
+
+    double currentScore = calculatePathScore(currentPath, graph);
+    double bestScore = currentScore;
+    QVector < int > bestPath = currentPath;
+
+    double temperature = initialTemp;
+
+    // 模拟退火主循环
+    for (int iter = 0; iter < maxIterations && bestScore != n - 1; ++iter)
+        //for (int iter = 0; iter < maxIterations && temperature > 0.1; ++iter)
+        {
+            // 生成新解：随机交换两个位置
+            QVector < int > newPath = currentPath;
+            int i = rand() % n;
+            int j = rand() % n;
+            std::swap(newPath[i], newPath[j]);
+
+            // 计算新解的得分
+            double newScore = calculatePathScore(newPath, graph);
+
+            // 计算接受概率
+            double delta = newScore - currentScore;
+            double acceptanceProbability = exp(delta / temperature);
+
+            // 接受新解或保持当前解
+            if (delta > 0 || (double)rand() / RAND_MAX < acceptanceProbability)
+                {
+                    currentPath = newPath;
+                    currentScore = newScore;
+
+                    if (currentScore > bestScore)
+                        {
+                            bestScore = currentScore;
+                            bestPath = currentPath;
+                        }
+                }
+
+            // 降温
+            temperature *= coolingRate;
+        }
+
+    // 判断是否找到一笔联通的路径
+    // 边数应该等于节点数-1，且所有节点都在路径中
+    return bestScore == n - 1;
 }

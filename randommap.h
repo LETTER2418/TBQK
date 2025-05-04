@@ -1,9 +1,10 @@
 #ifndef RANDOMMAP_H
 #define RANDOMMAP_H
+
 #include <QWidget>
 #include "lbutton.h"
 #include "messagebox.h"
-#include "mapmanager.h"
+#include "mapdata.h"
 
 class RandomMap: public QWidget
 {
