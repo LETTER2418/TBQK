@@ -2,10 +2,9 @@
 #define SAVEMAPMSGBOX_H
 
 #include <QWidget>
-
-namespace Ui {
-class SaveMapMsgBox;
-}
+#include <QComboBox>
+#include <QLabel>
+#include "lbutton.h" 
 
 class SaveMapMsgBox : public QWidget
 {
@@ -19,7 +18,10 @@ signals:
     void sendMsg(int);  // 发送消息的信号
 
 private:
-    Ui::SaveMapMsgBox *ui;
+    QComboBox *comboBox;
+    Lbutton *closeButton;  
+    QLabel *promptLabel;  
+    QLabel *bgLabel; 
 };
 
 #endif // SAVEMAPMSGBOX_H

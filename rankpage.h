@@ -18,14 +18,20 @@ public:
     explicit RankPage(QWidget *parent = nullptr, DataManager *dataManager = nullptr);
     ~RankPage();
 
-    void refreshRankingList(int levelId);
+    void refreshRankingList(const QVector<Ranking>& rankings);
     Lbutton *backButton;
+
+private slots:
+    void sortTable(int logicalIndex);
 
 private:
     DataManager *dataManager;
     QTableWidget *rankingTable;
     QComboBox *levelSelector;
     QLabel *titleLabel;
+    
+    int currentSortColumn = 2;
+    Qt::SortOrder currentSortOrder = Qt::AscendingOrder;
     
     void setupUI();
     void connectSignals();

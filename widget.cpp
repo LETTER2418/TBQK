@@ -8,7 +8,7 @@ Widget::Widget(QWidget *parent)
 {
     ui->setupUi(this);
 
-    this->setWindowTitle("TBQK");
+    this->setWindowTitle("提笔乾坤");
     this->resize(1705, 882);
     this->move(0, 0);
 

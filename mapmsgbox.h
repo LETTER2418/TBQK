@@ -3,53 +3,46 @@
 
 #include <QWidget>
 #include <QColorDialog>
-#include "ui_Test.h"
-
-namespace Ui {
-class Test;
-}
+#include <QLabel>
+#include <QComboBox>
+#include "lbutton.h"
+#include <QPainter>
 
 class MapMsgBox : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit MapMsgBox(QWidget*parent = nullptr);
+    explicit MapMsgBox(QWidget *parent = nullptr);
     ~MapMsgBox();
     int rings;
-    QColor color1,color2,color3;
+    QColor color1, color2, color3;
 
 signals:
     void sendMsg(int, QColor, QColor, QColor);
 
 private slots:
-    void openColorDialog1() {
-        QColor color = QColorDialog::getColor(QColor(255,255,255));
-        if (color.isValid()) {
-            ui->color1Label->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
-        }
-        color1 = color;
-    }
-    void openColorDialog2() {
-        QColor color = QColorDialog::getColor(QColor(255,255,255));
-        if (color.isValid()) {
-            ui->color2Label->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
-        }
-        color2 = color;
-    }
-    void openColorDialog3() {
-        QColor color = QColorDialog::getColor(QColor(255,255,255));
-        if (color.isValid()) {
-            ui->color3Label->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
-        }
-        color3 = color;
-    }
+    void openColorDialog1();
+    void openColorDialog2();
+    void openColorDialog3();
 
 private:
     void paintEvent(QPaintEvent *event) override;
+    void setupUI();
+
     QPixmap backgroundImage;
-    const QString backgroundImagePath=":\\image\\msg.png"; // 存储背景图片路径
-    Ui::Test *ui;
+    const QString backgroundImagePath = ":\\image\\msg.png"; // 存储背景图片路径
+    
+    // 控件
+    Lbutton *closeButton;
+    Lbutton *color1Button;
+    Lbutton *color2Button;
+    Lbutton *color3Button;
+    Lbutton *radiusButton;
+    QLabel *color1Label;
+    QLabel *color2Label;
+    QLabel *color3Label;
+    QComboBox *comboBox;
 };
 
 #endif // MAPMSGBOX_H

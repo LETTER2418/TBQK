@@ -57,7 +57,11 @@ Start::Start(QWidget *parent, DataManager *dataManager_):QWidget(parent), dataMa
 
 QString Start::getAccount() const
 {
-    return accountLineEdit->text();
+    QString account = accountLineEdit->text();
+    if (account.isEmpty()) {
+        return "tourist";
+    }
+    return account;
 }
 
 void Start::onLoginClicked()

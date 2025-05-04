@@ -26,7 +26,7 @@ public:
 
 signals:
     // 返回关卡模式的信号，携带完成信息
-    void returnToLevelMode(bool completed = false, int timeUsed = 0, int levelId = 0);
+    void returnToLevelMode(bool completed = false, int timeUsed = 0, int steps = 0, int levelId = 0);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -88,6 +88,7 @@ private:
     int penaltySeconds = 0;       // 总时间（包含实际时间和罚时）
     QString timeText;             // 时间显示文本
     int rings = 3;               // 游戏的环数
+    int stepCount = 0;           // 记录步数
     
     // 添加关卡ID成员变量
     int currentLevelId = 0;

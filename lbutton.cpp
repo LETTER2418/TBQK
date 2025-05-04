@@ -48,7 +48,7 @@ Lbutton::Lbutton(QWidget *parent, const QString &text, QString color, int fontSi
 
     // 设置按钮的字体
     QFont buttonFont;
-    buttonFont.setPointSize(FONT_SIZE);
+    buttonFont.setPointSize(fontSize);
     setFont(buttonFont);
 
     // 创建媒体播放器和音频输出
@@ -70,13 +70,12 @@ Lbutton::Lbutton(QWidget *parent, const QString &text, QString color, int fontSi
         background: rgba(255, 255, 255, 0);
         border: none;
         color: %1;
-        font-size: %2px;
     }
 
     QPushButton:hover {
         background: rgba(255, 255, 255, 0.2);
     }
-)").arg(color).arg(fontSize);
+)").arg(color);
 
     setStyleSheet(style);
 }

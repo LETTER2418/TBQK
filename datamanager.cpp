@@ -52,7 +52,7 @@ QStringList DataManager::getAllUserIds() const
 }
 
 // ========== 排行榜操作 ==========
-void DataManager::updateRanking(int levelId, const QString& userId, int penaltySeconds)
+void DataManager::updateRanking(int levelId, const QString& userId, int penaltySeconds, int steps)
 {
     QVector<Ranking>& levelRanking = rankings[levelId];
     
@@ -63,22 +63,30 @@ void DataManager::updateRanking(int levelId, const QString& userId, int penaltyS
                           });
     
     if (it != levelRanking.end()) {
-        // 如果用户已存在且新成绩更好，更新成绩
+        // 如果用户已存在，分别更新时间和步数为各自的最小值
+        // 注意：这可能导致存储的时间和步数并非来自同一次游戏尝试
         if (penaltySeconds < it->penaltySeconds) {
             it->penaltySeconds = penaltySeconds;
+        }
+        if (steps < it->steps) {
+            it->steps = steps;
         }
     } else {
         // 添加新的排行榜条目
         Ranking newEntry;
         newEntry.userId = userId;
         newEntry.penaltySeconds = penaltySeconds;
+        newEntry.steps = steps;
         levelRanking.append(newEntry);
     }
     
-    // 按照罚时升序排序
+    // 按照罚时升序排序，时间相同时按步数升序排序
     std::sort(levelRanking.begin(), levelRanking.end(),
               [](const Ranking& a, const Ranking& b) {
-                  return a.penaltySeconds < b.penaltySeconds;
+                  if (a.penaltySeconds != b.penaltySeconds) {
+                      return a.penaltySeconds < b.penaltySeconds;
+                  }
+                  return a.steps < b.steps; // 时间相同，比较步数
               });
     
     // 只保留前N名
@@ -189,7 +197,6 @@ bool DataManager::loadFromFile()
     }
     
     // 加载排行榜数据
-    rankings.clear();
     QJsonObject rankingsObj = root["rankings"].toObject();
     for (const QString& levelId : rankingsObj.keys()) {
         QJsonArray levelRankings = rankingsObj[levelId].toArray();
@@ -201,10 +208,13 @@ bool DataManager::loadFromFile()
             levelRankingVector.append(entry);
         }
         
-        // 确保排序和大小限制
+        // 确保加载后也排序和限制大小
         std::sort(levelRankingVector.begin(), levelRankingVector.end(),
                   [](const Ranking& a, const Ranking& b) {
-                      return a.penaltySeconds < b.penaltySeconds;
+                      if (a.penaltySeconds != b.penaltySeconds) {
+                          return a.penaltySeconds < b.penaltySeconds;
+                      }
+                      return a.steps < b.steps;
                   });
         
         if (levelRankingVector.size() > MAX_RANKING_ENTRIES) {

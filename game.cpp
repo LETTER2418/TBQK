@@ -76,6 +76,7 @@ void Game::resetGameState()
     currentHintIndex = -1;
     showPath = false;
     penaltySeconds = 0;
+    stepCount = 0;
     pathToggleButton->setText("显示路径");
     startTimer();
 }
@@ -110,7 +111,7 @@ void Game::handleGameCompletion()
     messageBox->exec();
     
     // 发送带有完成信息的信号
-    emit returnToLevelMode(true, penaltySeconds, currentLevelId);
+    emit returnToLevelMode(true, penaltySeconds, stepCount, currentLevelId);
 }
 
 // === 六边形操作 ===
@@ -130,6 +131,7 @@ void Game::flipHexagon(int index)
     hexagons[index].color = (hexagons[index].color == color1) ? color2 : color1;
     flippedHexagons.insert(index);
     currentPath.append(index);
+    stepCount++;
     
     update();
 }
@@ -170,7 +172,7 @@ void Game::withdrawLastOperation()
     
     // 如果是通过返回按钮退出，发送未完成的信号
     if (sender() == backButton) {
-        emit returnToLevelMode(false, penaltySeconds, currentLevelId);
+        emit returnToLevelMode(false, penaltySeconds, stepCount, currentLevelId);
     }
 }
 
@@ -293,12 +295,12 @@ void Game::drawGameTimer(QPainter &painter)
     QFontMetrics fm(font);
     int textWidth = fm.horizontalAdvance(timeText);
     int textHeight = fm.height();
-    int x = (width() - textWidth) / 2;
-    int y = textHeight + 20;
     
-    QRectF textRect(x - 10, y - textHeight, textWidth + 20, textHeight + 10);
-    painter.fillRect(textRect, QColor(0, 0, 0, 128));
-    painter.drawText(x, y, timeText);
+    // 修改位置到左侧正中间
+    int x = 100; // 左侧位置
+    int y = height() / 2; // 垂直居中
+    
+    painter.drawText(x, y + textHeight / 2 - fm.descent(), timeText);
 }
 
 // 将六边形索引转换为轴向坐标

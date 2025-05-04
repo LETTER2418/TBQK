@@ -56,8 +56,6 @@ HEADERS += \
 
 FORMS += \
     levelmode.ui \
-    mapmsgbox.ui \
-    savemapmsgbox.ui \
     widget.ui
 
 # Default rules for deployment.
@@ -67,4 +65,9 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     Resource.qrc
+
+DISTFILES += \
+    image/太极.png \
+    image/太极.png \
+    image/太极.svg
 

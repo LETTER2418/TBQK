@@ -2,8 +2,12 @@
 
 MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedWidget(this))
 {
+    // 设置应用图标
+    QIcon appIcon(":/image/taiji.png");
+    this->setWindowIcon(appIcon);
 
     dataManager = new DataManager(this);
+    //dataManager->clearAllRankings();
 
     // 创建 mainPage，并将四个按钮放入
     mainPage = new QWidget(this);
@@ -101,14 +105,14 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
 
     connect(randomMapMsgBox, &MapMsgBox::sendMsg, this, [this](int rings, QColor color1, QColor color2, QColor color3)
     {
-        randomMapPage->generateHexagons(rings, color1, color2);
+        randomMapPage->generateHexagons(rings, color1, color2, color3);
         randomMapMsgBox->hide();
         pageStack->setCurrentWidget(randomMapPage);
     });
 
     connect(customMapMsgBox, &MapMsgBox::sendMsg, this, [this](int rings, QColor color1, QColor color2, QColor color3)
     {
-        customMapPage->generateHexagons(rings, color1, color2);
+        customMapPage->generateHexagons(rings, color1, color2, color3);
         customMapMsgBox->hide();
         pageStack->setCurrentWidget(customMapPage);
     });
@@ -195,11 +199,11 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     });
 
     // 连接游戏完成时返回关卡模式的信号
-    connect(gamePage, &Game::returnToLevelMode, this, [this](bool completed, int penaltySeconds, int levelId)
+    connect(gamePage, &Game::returnToLevelMode, this, [this](bool completed, int penaltySeconds, int steps, int levelId)
     {
         if (completed && !currentUserId.isEmpty()) {
             // 更新排行榜
-            dataManager->updateRanking(levelId, currentUserId, penaltySeconds);
+            dataManager->updateRanking(levelId, currentUserId, penaltySeconds, steps);
         }
         pageStack->setCurrentWidget(levelModePage);
     });
@@ -217,7 +221,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     pageStack->addWidget(rankPage);
 
     // 设置默认显示的页面
-    this->pageStack->setCurrentWidget(levelModePage);
+    this->pageStack->setCurrentWidget(menuPage);
 
     // 主布局
     QVBoxLayout *mainLayout = new QVBoxLayout(this);

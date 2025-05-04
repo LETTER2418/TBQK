@@ -30,7 +30,7 @@ public:
     bool containsMap(int id) const;
 
     // 排行榜相关操作
-    void updateRanking(int levelId, const QString& userId, int penaltySeconds);
+    void updateRanking(int levelId, const QString& userId, int penaltySeconds, int steps);
     QVector<Ranking> getRanking(int levelId) const;
     void clearRanking(int levelId);
     void clearAllRankings();

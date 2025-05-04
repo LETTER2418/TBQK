@@ -21,6 +21,7 @@ RandomMap::~RandomMap()
 void RandomMap::generateHexagons(int rings, QColor c1, QColor c2, QColor c3)
 {
     hexagons.clear();
+    path.clear();
 
     color1 = c1;
     color2 = c2;
