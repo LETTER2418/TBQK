@@ -120,6 +120,7 @@ MapData CustomMap::getMapData()
     data.color3 = this->color3;       // 复制第三种颜色
     data.id = this->id;               // 复制关卡索引
     data.path = this->path;           // 复制路径数据
+    data.generation = "custom";       // 设置为自定义生成
     return data;
 }
 

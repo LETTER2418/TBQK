@@ -155,6 +155,7 @@ MapData RandomMap::getMapData()
     data.color3 = this->color3;     // 复制第三种颜色
     data.id = this->id;             // 复制关卡索引
     data.path = this->path;         // 复制提示路径
+    data.generation = "random";     // 设置为随机生成
     return data;
 }
 

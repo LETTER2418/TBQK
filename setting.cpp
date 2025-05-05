@@ -6,6 +6,10 @@
 Setting::Setting(QWidget *parent, DataManager *dataManager_)
     : QWidget(parent), dataManager(dataManager_)
 {
+    // 设置应用图标
+    QIcon appIcon(":/image/taiji.png");
+    this->setWindowIcon(appIcon);
+
     // 创建返回按钮
     backButton = new Lbutton(this, "返回");
     backButton->move(0, 0);
@@ -23,10 +27,10 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     clearDataButton = new Lbutton(this, "清除所有数据");
     
     // 创建消息框
-    confirmMessageBox = new MessageBox(nullptr, true);
+    confirmMessageBox = new MessageBox(this, true);
     confirmMessageBox->setMessage("确定要清除所有数据吗？这将删除所有用户、地图和排行榜数据，且无法恢复！");
     
-    successMessageBox = new MessageBox();
+    successMessageBox = new MessageBox(this);
     successMessageBox->setMessage("所有数据已清除！");
 
     // 连接清除数据按钮点击事件

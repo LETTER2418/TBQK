@@ -24,6 +24,7 @@ public:
     int id; // 关卡索引
     QVector<QPoint>path;
     QMap<int,int>penaltyMap;//在to/fromJson，其他类的函数待实现
+    QString generation; // "custom" 或 "random"
 
 };
 

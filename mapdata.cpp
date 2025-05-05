@@ -20,6 +20,7 @@ QJsonObject MapData::toJson() const
     obj["color1"] = color1.name();
     obj["color2"] = color2.name();
     obj["color3"] = color3.name();
+    obj["generation"] = generation;
 
     // 处理 path
     QJsonArray pathArray;
@@ -52,6 +53,7 @@ void MapData::fromJson(const QJsonObject& obj)
     color1 = QColor(obj["color1"].toString());
     color2 = QColor(obj["color2"].toString());
     color3 = QColor(obj["color3"].toString());
+    generation = obj["generation"].toString();
 
     path.clear();
     QJsonArray pathArray = obj["path"].toArray();

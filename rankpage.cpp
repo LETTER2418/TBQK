@@ -33,6 +33,10 @@ RankPage::~RankPage()
 
 void RankPage::setupUI()
 {
+    // 设置应用图标
+    QIcon appIcon(":/image/taiji.png");
+    this->setWindowIcon(appIcon);
+
     // 创建返回按钮
     backButton = new Lbutton(this, "返回");
     backButton->move(0, 0);
@@ -219,7 +223,7 @@ void RankPage::clearCurrentLevelData()
     int levelId = levelSelector->currentData().toInt();
     
     // 创建确认对话框，使用自定义MessageBox
-    MessageBox *confirmBox = new MessageBox(nullptr, true); // 使用nullptr作为父对象
+    MessageBox *confirmBox = new MessageBox(this, true);
     confirmBox->setMessage(QString("确定要清除关卡 %1 的所有排行榜数据吗？").arg(levelId));
     
     // 连接确认和取消按钮

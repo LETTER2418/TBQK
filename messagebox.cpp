@@ -132,7 +132,7 @@ void MessageBox::resizeEvent(QResizeEvent *event)
     if (cancelButton) {
         // 有两个按钮时，左右对称放置
         int centerX = width() / 2;
-        int buttonSpacing = 50;
+        int buttonSpacing = 20;
         
         closeButton->move(centerX - closeButton->width() - buttonSpacing/2, buttonY);
         cancelButton->move(centerX + buttonSpacing/2, buttonY);
