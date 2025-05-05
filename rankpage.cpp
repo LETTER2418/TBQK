@@ -4,6 +4,7 @@
 #include <QMessageBox>
 #include <algorithm>
 #include "messagebox.h"
+#include <QShowEvent>
 
 RankPage::RankPage(QWidget *parent, DataManager *dataManager_)
     : QWidget(parent), dataManager(dataManager_)
@@ -251,4 +252,60 @@ void RankPage::clearCurrentLevelData()
     
     int result = confirmBox->exec();
     delete confirmBox;
+}
+
+// 新增：实现 showEvent 以在页面显示时刷新数据
+void RankPage::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event); // 调用基类的实现
+
+    // 检查 dataManager 是否有效
+    if (!dataManager) {
+        return;
+    }
+
+    // 检查 levelSelector 是否有选项
+    if (levelSelector->count() <= 0) {
+        return;
+    }
+    
+    // 获取当前选中的关卡 ID
+    int currentIndex = levelSelector->currentIndex();
+    if (currentIndex < 0) { // 如果没有选中任何项
+         currentIndex = 0; // 默认刷新第一个关卡
+         levelSelector->setCurrentIndex(currentIndex); // 设置为选中
+    }
+    int levelId = levelSelector->itemData(currentIndex).toInt();
+    
+    // 获取最新数据
+    QVector<Ranking> rankings = dataManager->getRanking(levelId);
+    
+    // 根据当前的排序设置进行排序
+    std::sort(rankings.begin(), rankings.end(), [&](const Ranking& a, const Ranking& b) {
+       bool less;
+       if (currentSortColumn == 2) { // 按用时排
+             if (a.penaltySeconds != b.penaltySeconds) {
+                less = a.penaltySeconds < b.penaltySeconds;
+             } else {
+                less = a.steps < b.steps; // 时间相同按步数
+             }
+       } else if (currentSortColumn == 3) { // 按步数排
+             if (a.steps != b.steps) {
+                less = a.steps < b.steps;
+             } else {
+                less = a.penaltySeconds < b.penaltySeconds; // 步数相同按时间
+             }
+       } else { // 默认或未指定排序列，按时间和步数综合排
+             if (a.penaltySeconds != b.penaltySeconds) {
+                 less = a.penaltySeconds < b.penaltySeconds;
+             } else {
+                 less = a.steps < b.steps;
+             }
+       }
+       // 应用当前的排序顺序
+       return currentSortOrder == Qt::AscendingOrder ? less : !less;
+    });
+    
+    // 刷新表格显示
+    refreshRankingList(rankings);
 } 

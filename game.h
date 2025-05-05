@@ -83,6 +83,7 @@ private:
     int currentHintIndex = -1;    // 当前提示的索引位置
     QTimer* highlightTimer;       // 高亮效果定时器
     int highlightedHexIndex = -1; // 当前高亮的六边形索引
+    bool isShowingHint = false;   // 是否正在显示提示
     int radius = 50;
     QPointF center = QPointF(850, 440);
     QColor color1, color2, color3;
