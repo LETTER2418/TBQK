@@ -217,8 +217,9 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
             dataManager->updateRanking(levelId, currentUserId, penaltySeconds, steps);
             // 确保数据保存到文件
             dataManager->saveToFile();
+         pageStack->setCurrentWidget(levelModePage);
         }
-        pageStack->setCurrentWidget(levelModePage);
+        
     });
 
     // 将页面添加到 QStackedWidget

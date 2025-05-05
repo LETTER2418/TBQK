@@ -32,7 +32,7 @@ private:
     bool simulatedAnnealing(const QVector<QVector<int>>& graph, QVector<int>& bestPath);
     
     Lbutton *solveButton;
-    QMessageBox *messageBox;
+    MessageBox *messageBox;
     QVector<HexCell> hexagons;
     int radius = 50;
     QPointF center = QPointF(850, 440);

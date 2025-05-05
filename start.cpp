@@ -50,8 +50,8 @@ Start::Start(QWidget *parent, DataManager *dataManager_):QWidget(parent), dataMa
     connect(registerButton, &QPushButton::clicked, this, &Start::onRegisterClicked);
 
     //MsgBox
-    YESmessageBox = new MessageBox();
-    NOmessageBox = new MessageBox();
+    YESmessageBox = new MessageBox(this);
+    NOmessageBox = new MessageBox(this);
     connect(NOmessageBox->closeButton, &Lbutton::clicked, this, [this]() {
         NOmessageBox->accept();  // 调用 QMessageBox 的 accept
     });

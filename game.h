@@ -73,7 +73,7 @@ private:
     Lbutton *hintButton;
     Lbutton *withdrawButton;
     Lbutton *pathToggleButton;
-    QMessageBox *messageBox;
+    MessageBox *messageBox;
     QVector<QPoint> path;         // 提示路径
     QVector<int> currentPath;     // 用户当前的操作路径，存储六边形索引
     QVector<HexCell> hexagons;

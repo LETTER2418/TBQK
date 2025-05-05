@@ -30,7 +30,7 @@ void Game::initializeUI()
     withdrawButton->move(1400, 400);
     pathToggleButton->move(1400, 600);
     
-    messageBox = new QMessageBox(this);
+    messageBox = new MessageBox(this);
     
     gameTimer = new QTimer(this);
     gameTimer->setInterval(1000);
@@ -42,6 +42,9 @@ void Game::setupConnections()
     connect(pathToggleButton, &QPushButton::clicked, this, &Game::togglePathVisibility);
     connect(hintButton, &QPushButton::clicked, this, &Game::showNextHint);
     connect(gameTimer, &QTimer::timeout, this, &Game::updateTimeDisplay);
+    connect(messageBox->closeButton, &QPushButton::clicked, this, [this]() {
+        messageBox->accept();
+    });
 }
 
 void Game::setMap(MapData mapData)
@@ -107,10 +110,10 @@ void Game::handleGameCompletion()
     // 停止计时器
     stopTimer();
     QString message = QString("恭喜完成！用时：%1").arg(timeText);
-    messageBox->setText(message);
+    messageBox->setMessage(message);
     messageBox->exec();
-    
-    // 发送带有完成信息的信号
+
+     // 发送带有完成信息的信号
     emit returnToLevelMode(true, penaltySeconds, stepCount, currentLevelId);
 }
 

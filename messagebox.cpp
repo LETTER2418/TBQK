@@ -1,17 +1,14 @@
 // MessageBox.cpp
 #include "messagebox.h"
-#include "lbutton.h"
-#include <QVBoxLayout>
-#include <QPainter>
 #include <QFileInfo>
 
-MessageBox::MessageBox(QMessageBox *parent, bool showCancelButton)
-    : QMessageBox(parent), messageLabel(new QLabel(this))
+MessageBox::MessageBox(QWidget *parent, bool showCancelButton)
+    : QWidget(parent), messageLabel(new QLabel(this)), eventLoop(nullptr), dialogCode(0)
 {
-    this->setStyleSheet("QLabel{min-width: 300px; min-height: 400px;}");
-    //setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint); // 去掉窗口边框
-    this->setStandardButtons(QMessageBox::NoButton);
+    this->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    this->setGeometry(700, 250, 300, 400);
 
+    // 创建closeButton
     closeButton = new Lbutton(this, "确认");
     
     // 只有在showCancelButton为true时才创建取消按钮
@@ -38,19 +35,73 @@ MessageBox::MessageBox(QMessageBox *parent, bool showCancelButton)
     } else {
         qWarning() << "Image file not found: " << backgroundImagePath;
     }
+    
+    // 设置消息标签
+    messageLabel->setStyleSheet("QLabel { color: white; font-size: 20px; }");
+    messageLabel->setAlignment(Qt::AlignCenter); // 文字居中
+    messageLabel->setWordWrap(true); // 添加自动换行
+    
+    // 居中显示
+    messageLabel->move((width() - messageLabel->width()) / 2, (height() - messageLabel->height()) / 2);
+
+    // 默认隐藏窗口
+    hide();
 }
 
-MessageBox::~MessageBox() {}
+MessageBox::~MessageBox() 
+{
+    if (eventLoop && eventLoop->isRunning()) {
+        eventLoop->exit(0);
+        delete eventLoop;
+    }
+}
 
 void MessageBox::setMessage(const QString &message)
 {
     messageLabel->setText(message);
-    messageLabel->setStyleSheet("QLabel { color: white; font-size: 20px; }");
-    messageLabel->setAlignment(Qt::AlignCenter);//文字居中
-    messageLabel->setWordWrap(true); // 添加自动换行
     messageLabel->adjustSize(); // 调整标签大小以适应文本
+    
+    // 重新居中消息标签
+    int x = (width() - messageLabel->width()) / 2;
+    int y = (height() - messageLabel->height()) / 2;
+    messageLabel->move(x, y);
 }
 
+int MessageBox::exec()
+{
+    // 显示对话框
+    show();
+    raise();
+    activateWindow();
+
+    // 创建一个新的事件循环
+    if (!eventLoop) {
+        eventLoop = new QEventLoop();
+    }
+    
+    // 运行事件循环，直到调用accept()或reject()
+    return eventLoop->exec();
+}
+
+void MessageBox::accept()
+{
+    // 设置对话框结果为1（类似QDialog::Accepted）并关闭事件循环
+    dialogCode = 1;
+    hide();
+    if (eventLoop && eventLoop->isRunning()) {
+        eventLoop->exit(dialogCode);
+    }
+}
+
+void MessageBox::reject()
+{
+    // 设置对话框结果为0（类似QDialog::Rejected）并关闭事件循环
+    dialogCode = 0;
+    hide();
+    if (eventLoop && eventLoop->isRunning()) {
+        eventLoop->exit(dialogCode);
+    }
+}
 
 void MessageBox::paintEvent(QPaintEvent *event)
 {
@@ -66,7 +117,7 @@ void MessageBox::paintEvent(QPaintEvent *event)
 void MessageBox::resizeEvent(QResizeEvent *event)
 {
     // 调用父类的resizeEvent以保证正常行为
-    QMessageBox::resizeEvent(event);
+    QWidget::resizeEvent(event);
 
     // 居中设置 messageLabel
     if (messageLabel) {
@@ -90,3 +141,5 @@ void MessageBox::resizeEvent(QResizeEvent *event)
         closeButton->move((width() - closeButton->width()) / 2, buttonY);
     }
 }
+
+ 

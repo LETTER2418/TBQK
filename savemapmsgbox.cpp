@@ -1,13 +1,11 @@
 #include "savemapmsgbox.h"
-// #include "ui_savemapmsgbox.h" // Remove this
-#include <QLabel> // Keep include if needed
-#include <QPixmap> // Keep include if needed
-#include <QFont> // Include QFont for label
+#include <QLabel> 
+#include <QPixmap> 
+#include <QFont> 
 
 SaveMapMsgBox::SaveMapMsgBox(QWidget *parent)
     : QWidget(parent)
 {
-    // ui->setupUi(this); // Remove this
     this->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     this->setGeometry(700, 250, 300, 400);
     this->setStyleSheet("QLabel{min-width: 10px; min-height: 10px;} QComboBox { min-height: 30px; font-size: 12pt; } "); 

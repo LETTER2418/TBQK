@@ -12,18 +12,19 @@
 
 CustomMap::CustomMap(QWidget *parent) : QWidget(parent)
 {
-    messageBox = new QMessageBox(this);
     backButton = new Lbutton(this, "返回");
     backButton->move(0, 0);
     saveButton = new Lbutton(this, "保存");
     saveButton->move(1300, 400);
     solveButton = new Lbutton(this, "求解");
     solveButton->move(1300, 600);
+
+    // 创建消息框
+    messageBox = new MessageBox(this);
+
+    // 连接求解按钮到槽函数
+    connect(solveButton, &QPushButton::clicked, this, &CustomMap::solvePuzzle);
     id = 0;
-    connect(solveButton, &QPushButton::clicked, this, [this]()
-    {
-        solvePuzzle();
-    });
 }
 
 CustomMap::~CustomMap()
@@ -420,7 +421,7 @@ void CustomMap::solvePuzzle()
                         }
                     std::cout << std::endl;
                     
-                    messageBox->setText("求解成功！");
+                    messageBox->setMessage("求解成功！");
                     messageBox->exec();
                 }
 
