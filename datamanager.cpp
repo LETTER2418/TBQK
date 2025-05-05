@@ -54,6 +54,7 @@ QStringList DataManager::getAllUserIds() const
 // ========== 排行榜操作 ==========
 void DataManager::updateRanking(int levelId, const QString& userId, int penaltySeconds, int steps)
 {
+
     QVector<Ranking>& levelRanking = rankings[levelId];
     
     // 查找用户是否已经在排行榜中
@@ -61,7 +62,18 @@ void DataManager::updateRanking(int levelId, const QString& userId, int penaltyS
                           [&userId](const Ranking& entry) {
                               return entry.userId == userId;
                           });
-    
+    //打印levelRanking的数据
+    qDebug() << "before updateRanking";
+    for (const auto& entry : levelRanking) {
+        qDebug() << "levelRanking:" << entry.userId << " " << entry.penaltySeconds << " " << entry.steps;
+    }
+    // 打印it是否存在
+    if (it != levelRanking.end()) {
+        qDebug() << "it存在";
+    } else {
+        qDebug() << "it不存在";
+    }
+
     if (it != levelRanking.end()) {
         // 如果用户已存在，分别更新时间和步数为各自的最小值
         // 注意：这可能导致存储的时间和步数并非来自同一次游戏尝试
@@ -72,14 +84,17 @@ void DataManager::updateRanking(int levelId, const QString& userId, int penaltyS
             it->steps = steps;
         }
     } else {
-        // 添加新的排行榜条目
+        //添加新的排行榜条目
         Ranking newEntry;
         newEntry.userId = userId;
         newEntry.penaltySeconds = penaltySeconds;
         newEntry.steps = steps;
         levelRanking.append(newEntry);
     }
-    
+    qDebug() << "after updateRanking";
+    for (const auto& entry : levelRanking) {
+        qDebug() << "levelRanking:" << entry.userId << " " << entry.penaltySeconds << " " << entry.steps;
+    }
     // 按照罚时升序排序，时间相同时按步数升序排序
     std::sort(levelRanking.begin(), levelRanking.end(),
               [](const Ranking& a, const Ranking& b) {
@@ -155,7 +170,6 @@ bool DataManager::saveToFile() const
     QJsonDocument doc(root);
     file.write(doc.toJson());
     file.close();
-    qDebug() << "保存成功到：" << filePath;
     return true;
 }
 
@@ -197,15 +211,19 @@ bool DataManager::loadFromFile()
     }
     
     // 加载排行榜数据
+    rankings.clear(); // 在加载前清空整个 rankings map
     QJsonObject rankingsObj = root["rankings"].toObject();
-    for (const QString& levelId : rankingsObj.keys()) {
-        QJsonArray levelRankings = rankingsObj[levelId].toArray();
-        QVector<Ranking>& levelRankingVector = rankings[levelId.toInt()];
-        
-        for (const auto& entryVal : levelRankings) {
+    for (const QString& levelIdStr : rankingsObj.keys()) { // 使用 levelIdStr 避免重定义
+        int levelId = levelIdStr.toInt(); // 转换为 int
+        QJsonArray levelRankingsJson = rankingsObj[levelIdStr].toArray(); // 使用 levelIdStr
+        QVector<Ranking>& levelRankingVector = rankings[levelId]; // 获取引用 (如果不存在则创建)
+
+        for (const auto& entryVal : levelRankingsJson) { // 使用 levelRankingsJson
             Ranking entry;
             entry.fromJson(entryVal.toObject());
             levelRankingVector.append(entry);
+            // 打印排行榜数据
+           // qDebug() << "加载排行榜数据：" << levelId.toInt() << " " << entry.userId << " " << entry.penaltySeconds << " " << entry.steps;
         }
         
         // 确保加载后也排序和限制大小
@@ -222,6 +240,14 @@ bool DataManager::loadFromFile()
         }
     }
 
-    qDebug() << "加载成功：" << filePath;
     return true;
+}
+
+// 清除所有数据（用户、地图和排行榜）
+void DataManager::clearAllData()
+{
+    users.clear();
+    maps.clear();
+    rankings.clear();
+    saveToFile(); // 保存清空后的数据到文件
 }

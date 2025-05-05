@@ -28,6 +28,7 @@ SOURCES += \
     ranking.cpp \
     rankpage.cpp \
     savemapmsgbox.cpp \
+    setting.cpp \
     start.cpp \
     userdata.cpp \
     widget.cpp
@@ -50,6 +51,7 @@ HEADERS += \
     ranking.h \
     rankpage.h \
     savemapmsgbox.h \
+    setting.h \
     start.h \
     userdata.h \
     widget.h

@@ -13,12 +13,14 @@ Start::Start(QWidget *parent, DataManager *dataManager_):QWidget(parent), dataMa
     accountLineEdit->setPlaceholderText("请输入账号");
     accountLineEdit->setFixedSize(200,50);
     accountLineEdit->move(700,400);
+    accountLineEdit->setText("1"); // 设置默认文本为"1"
 
     passwordLineEdit = new QLineEdit(this);
     passwordLineEdit->setPlaceholderText("请输入密码");
     passwordLineEdit->setEchoMode(QLineEdit::Password); // 设置密码框隐藏输入的文字
     passwordLineEdit->move(700,500);
     passwordLineEdit->setFixedSize(200,50);
+    passwordLineEdit->setText("1"); // 设置默认文本为"1"
 
     // 创建显示密码按钮
     showPasswordButton = new Lbutton(this,"显示密码");

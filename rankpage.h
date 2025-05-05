@@ -23,12 +23,14 @@ public:
 
 private slots:
     void sortTable(int logicalIndex);
+    void clearCurrentLevelData();
 
 private:
     DataManager *dataManager;
     QTableWidget *rankingTable;
     QComboBox *levelSelector;
     QLabel *titleLabel;
+    Lbutton *clearButton;
     
     int currentSortColumn = 2;
     Qt::SortOrder currentSortOrder = Qt::AscendingOrder;

@@ -14,7 +14,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
 
     startButton = new Lbutton(mainPage, "开始游戏");
     aboutButton = new Lbutton(mainPage, "关于");
-    settingsButton = new Lbutton(mainPage, "设置");
+    settingButton = new Lbutton(mainPage, "设置");
     exitButton = new Lbutton(mainPage, "退出");
 
     // 退出按钮连接到窗口关闭
@@ -24,7 +24,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     QGridLayout *layout = new QGridLayout();
     layout->addWidget(startButton, 0, 0);
     layout->addWidget(aboutButton, 1, 0);
-    layout->addWidget(settingsButton, 0, 1);
+    layout->addWidget(settingButton, 0, 1);
     layout->addWidget(exitButton, 1, 1);
 
     // 创建一个 QWidget 作为中央部件
@@ -58,6 +58,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     gamePage = new Game(this);
     gamePage->hide();
     rankPage = new RankPage(this, dataManager);
+    settingPage = new Setting(this, dataManager);
 
     // 连接信号与槽
     connect(startPage->backButton, &QPushButton::clicked, this, [this]()
@@ -66,6 +67,11 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     });
 
     connect(aboutPage->backButton, &QPushButton::clicked, this, [this]()
+    {
+        pageStack->setCurrentWidget(mainPage);
+    });
+    
+    connect(settingPage->backButton, &QPushButton::clicked, this, [this]()
     {
         pageStack->setCurrentWidget(mainPage);
     });
@@ -78,6 +84,11 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     connect(aboutButton, &QPushButton::clicked, this, [this]()
     {
         pageStack->setCurrentWidget(aboutPage);
+    });
+    
+    connect(settingButton, &QPushButton::clicked, this, [this]()
+    {
+        pageStack->setCurrentWidget(settingPage);
     });
 
     connect(startPage->YESmessageBox->closeButton, &QPushButton::clicked, this, [this]()
@@ -204,6 +215,8 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
         if (completed && !currentUserId.isEmpty()) {
             // 更新排行榜
             dataManager->updateRanking(levelId, currentUserId, penaltySeconds, steps);
+            // 确保数据保存到文件
+            dataManager->saveToFile();
         }
         pageStack->setCurrentWidget(levelModePage);
     });
@@ -219,9 +232,10 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     pageStack->addWidget(customMapPage);
     pageStack->addWidget(gamePage);
     pageStack->addWidget(rankPage);
+    pageStack->addWidget(settingPage);
 
     // 设置默认显示的页面
-    this->pageStack->setCurrentWidget(menuPage);
+    this->pageStack->setCurrentWidget(startPage);
 
     // 主布局
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
@@ -232,7 +246,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
 MainWindow::~MainWindow()
 {
     delete startButton;
-    delete settingsButton;
+    delete settingButton;
     delete aboutButton;
     delete exitButton;
 }

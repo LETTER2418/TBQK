@@ -293,7 +293,6 @@ void Game::drawGameTimer(QPainter &painter)
     painter.setFont(font);
     
     QFontMetrics fm(font);
-    int textWidth = fm.horizontalAdvance(timeText);
     int textHeight = fm.height();
     
     // 修改位置到左侧正中间
@@ -463,3 +462,9 @@ int Game::getHexagonRing(const QPoint& coord)
     int q = coord.x(), r = coord.y();
     return (abs(q) + abs(r) + abs(q + r)) / 2;
 }
+
+void Game::setCurrentLevelId(int id)
+{
+    currentLevelId = id;
+}
+

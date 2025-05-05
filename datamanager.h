@@ -21,8 +21,6 @@ public:
     bool removeUser(const QString &id);
     bool checkPassword(const QString &id, const QString &password) const;
     QStringList getAllUserIds() const;
-    
-  
 
     // 地图相关操作
     void addMap(const MapData& mapData);
@@ -34,6 +32,9 @@ public:
     QVector<Ranking> getRanking(int levelId) const;
     void clearRanking(int levelId);
     void clearAllRankings();
+    
+    // 清除所有数据（用户、地图和排行榜）
+    void clearAllData();
 
     // 数据持久化
     bool saveToFile() const;

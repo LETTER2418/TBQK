@@ -19,6 +19,7 @@
 #include "datamanager.h"
 #include "game.h"
 #include "rankpage.h"
+#include "setting.h"
 
 class MainWindow :public Widget{
     Q_OBJECT
@@ -36,7 +37,7 @@ private:
     Lbutton* backbutton;
     Lbutton *startButton;
     Lbutton *aboutButton;
-    Lbutton *settingsButton;
+    Lbutton *settingButton;
     Lbutton *exitButton;
 
     // MsgBox
@@ -56,6 +57,7 @@ private:
     CustomMap *customMapPage;
     Game *gamePage;
     RankPage *rankPage;
+    Setting *settingPage;
 
     //Manager
     DataManager *dataManager;

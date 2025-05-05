@@ -38,7 +38,6 @@ private:
     void setupConnections();
     void drawHexagon(QPainter &painter, const QPointF &center, int radius);
     void drawGameTimer(QPainter &painter);
-    void drawPath(QPainter &painter);
     
     // === 游戏状态管理 ===
     void resetGameState();
@@ -67,6 +66,9 @@ private:
     void updateTimeDisplay();
     void startTimer();
     void stopTimer();
+
+    // === 关卡管理 ===
+    void setCurrentLevelId(int id);
     
     Lbutton *hintButton;
     Lbutton *withdrawButton;
@@ -93,10 +95,6 @@ private:
     // 添加关卡ID成员变量
     int currentLevelId = 0;
     
-    // 添加一个函数来设置当前关卡ID
-    void setCurrentLevelId(int id) {
-        currentLevelId = id;
-    }
 };
 
 #endif // GAME_H

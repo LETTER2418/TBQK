@@ -1,7 +1,9 @@
 #include "rankpage.h"
 #include <QHeaderView>
 #include <QFont>
-#include <algorithm> // 包含 <algorithm> 用于 std::sort
+#include <QMessageBox>
+#include <algorithm>
+#include "messagebox.h"
 
 RankPage::RankPage(QWidget *parent, DataManager *dataManager_)
     : QWidget(parent), dataManager(dataManager_)
@@ -22,6 +24,7 @@ RankPage::RankPage(QWidget *parent, DataManager *dataManager_)
          });
         refreshRankingList(rankings); // 传递排序后的数据
     }
+    
 }
 
 RankPage::~RankPage()
@@ -53,6 +56,10 @@ void RankPage::setupUI()
     comboFont.setPointSize(12);
     levelSelector->setFont(comboFont);
     
+    // 创建清除按钮
+    clearButton = new Lbutton(this, "清除本关数据");
+    clearButton->setFixedWidth(140);
+    
     // 创建排行榜表格
     rankingTable = new QTableWidget(this);
     rankingTable->setColumnCount(4);
@@ -78,6 +85,7 @@ void RankPage::setupUI()
     selectorLayout->addWidget(levelLabel);
     selectorLayout->addWidget(levelSelector);
     selectorLayout->addStretch();
+    selectorLayout->addWidget(clearButton);
     
     mainLayout->addWidget(titleLabel);
     mainLayout->addLayout(selectorLayout);
@@ -92,6 +100,7 @@ void RankPage::connectSignals()
     // 连接下拉框选择变化的信号
     connect(levelSelector, QOverload<int>::of(&QComboBox::currentIndexChanged), 
             [this](int index) {
+                // 获取当前选择的关卡ID
                 int levelId = levelSelector->itemData(index).toInt();
                 QVector<Ranking> rankings = dataManager->getRanking(levelId); // 获取数据
                 // 按当前选择的列和顺序排序
@@ -119,6 +128,9 @@ void RankPage::connectSignals()
             
     // 连接表头点击信号
     connect(rankingTable->horizontalHeader(), &QHeaderView::sectionClicked, this, &RankPage::sortTable);
+    
+    // 连接清除按钮点击信号
+    connect(clearButton, &Lbutton::clicked, this, &RankPage::clearCurrentLevelData);
 }
 
 // 新增：处理表头点击事件的槽函数
@@ -191,8 +203,7 @@ void RankPage::refreshRankingList(const QVector<Ranking>& rankings)
         stepsItem->setTextAlignment(Qt::AlignCenter);
         rankingTable->setItem(i, 3, stepsItem);
     }
-    // 可以选择性地更新表头视觉指示排序状态 (可选)
-    // rankingTable->horizontalHeader()->setSortIndicator(currentSortColumn, currentSortOrder);
+
 }
 
 QString RankPage::formatTime(int seconds) const
@@ -200,4 +211,40 @@ QString RankPage::formatTime(int seconds) const
     int minutes = seconds / 60;
     int remainSeconds = seconds % 60;
     return QString("%1:%2").arg(minutes, 2, 10, QChar('0')).arg(remainSeconds, 2, 10, QChar('0'));
+}
+
+// 新增：清除当前选择关卡的排行榜数据
+void RankPage::clearCurrentLevelData()
+{
+    int levelId = levelSelector->currentData().toInt();
+    
+    // 创建确认对话框，使用自定义MessageBox
+    MessageBox *confirmBox = new MessageBox(nullptr, true); // 使用nullptr作为父对象
+    confirmBox->setMessage(QString("确定要清除关卡 %1 的所有排行榜数据吗？").arg(levelId));
+    
+    // 连接确认和取消按钮
+    connect(confirmBox->closeButton, &Lbutton::clicked, this, [this, confirmBox, levelId]() {
+        // 用户确认，清除数据
+        dataManager->clearRanking(levelId);
+        
+        // 刷新显示为空表格
+        QVector<Ranking> emptyRankings;
+        refreshRankingList(emptyRankings);
+        
+        // 使用MessageBox显示成功消息
+        MessageBox *successBox = new MessageBox(nullptr); // 使用nullptr作为父对象
+        successBox->setMessage(QString("关卡 %1 的排行榜数据已清除").arg(levelId));
+        connect(successBox->closeButton, &Lbutton::clicked, successBox, &MessageBox::accept);
+        successBox->exec();
+        delete successBox;
+        
+        confirmBox->accept();
+    });
+    
+    if(confirmBox->cancelButton) {
+        connect(confirmBox->cancelButton, &Lbutton::clicked, confirmBox, &MessageBox::reject);
+    }
+    
+    int result = confirmBox->exec();
+    delete confirmBox;
 } 

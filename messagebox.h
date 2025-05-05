@@ -16,12 +16,13 @@ class MessageBox : public QMessageBox
     Q_OBJECT
 
 public:
-    explicit MessageBox(QMessageBox*parent = nullptr);
+    explicit MessageBox(QMessageBox*parent = nullptr, bool showCancelButton = false);
     ~MessageBox();
 
     void setMessage(const QString &message);
 
     Lbutton *closeButton;
+    Lbutton *cancelButton;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
