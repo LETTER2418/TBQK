@@ -1,4 +1,4 @@
-# 提笔乾坤 (TBQK)
+# 提笔乾坤  
 
 一个基于Qt开发的益智解谜游戏，玩家需要通过翻转六边形来创建特定的图案和路径。
 
@@ -64,11 +64,9 @@ make
 
 ## 📝 开发计划
 
-- [ ] 添加更多关卡
-- [ ] 优化游戏性能
 - [ ] 添加音效系统
 - [ ] 实现多人模式
-- [ ] 添加成就系统
+- [ ] 添加动画效果
 
 ## 🤝 贡献指南
 
@@ -79,10 +77,6 @@ make
 3. 提交您的更改 (`git commit -m 'Add some AmazingFeature'`)
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 开启一个 Pull Request
-
-## 📄 许可证
-
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
 
 ## 👥 作者
 
