@@ -73,7 +73,7 @@ void RandomMap::generateHexagons(int rings, QColor c1, QColor c2, QColor c3)
 
     QSet<QPoint> pathSet = visited;
 
-    // 为每个环生成翻转状态
+     // 为每个环生成翻转状态
     int f = rand() % 2;
     QVector<bool> ringFlipStatus(rings + 1);
     for (int ring = 0; ring <= rings; ++ring)

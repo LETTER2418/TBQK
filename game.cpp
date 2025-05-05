@@ -24,14 +24,14 @@ void Game::initializeUI()
     hintButton = new Lbutton(this, "提示");
     withdrawButton = new Lbutton(this, "撤销");
     pathToggleButton = new Lbutton(this, "显示路径");
-    
+
     backButton->move(0, 0);
     hintButton->move(1400, 200);
     withdrawButton->move(1400, 400);
     pathToggleButton->move(1400, 600);
-    
+
     messageBox = new MessageBox(this);
-    
+
     gameTimer = new QTimer(this);
     gameTimer->setInterval(1000);
 }
@@ -42,7 +42,8 @@ void Game::setupConnections()
     connect(pathToggleButton, &QPushButton::clicked, this, &Game::togglePathVisibility);
     connect(hintButton, &QPushButton::clicked, this, &Game::showNextHint);
     connect(gameTimer, &QTimer::timeout, this, &Game::updateTimeDisplay);
-    connect(messageBox->closeButton, &QPushButton::clicked, this, [this]() {
+    connect(messageBox->closeButton, &QPushButton::clicked, this, [this]()
+    {
         messageBox->accept();
     });
 }
@@ -58,15 +59,15 @@ void Game::setMap(MapData mapData)
     center = mapData.center;
     color3 = mapData.color3;
     path = mapData.path;
-    
+
     // 计算游戏的环数
     rings = 0;
     for (int i = 0; i < hexagons.size(); i++)
-    {
-        QPoint coord = hexagonIndexToCoord(i);
-        rings = qMax(rings, getHexagonRing(coord));
-    }
-    
+        {
+            QPoint coord = hexagonIndexToCoord(i);
+            rings = qMax(rings, getHexagonRing(coord));
+        }
+
     resetGameState();
 }
 
@@ -77,31 +78,33 @@ void Game::resetGameState()
     operationHistory.clear();
     flippedHexagons.clear();
     currentHintIndex = -1;
-    showPath = false;
+    showPath = true;
     penaltySeconds = 0;
     stepCount = 0;
-    pathToggleButton->setText("显示路径");
+    isShowingHint = false;
+    highlightedHexIndex = -1;
+    pathToggleButton->setText("隐藏路径");
     startTimer();
 }
 
 bool Game::checkGameComplete()
 {
     QMap<int, QColor> ringColors;
-    
+
     for (int i = 0; i < hexagons.size(); i++)
-    {
-        QPoint coord = hexagonIndexToCoord(i);
-        int ring = getHexagonRing(coord);
-        
-        if (!ringColors.contains(ring))
         {
-            ringColors[ring] = hexagons[i].color;
+            QPoint coord = hexagonIndexToCoord(i);
+            int ring = getHexagonRing(coord);
+
+            if (!ringColors.contains(ring))
+                {
+                    ringColors[ring] = hexagons[i].color;
+                }
+            else if (ringColors[ring] != hexagons[i].color)
+                {
+                    return false;
+                }
         }
-        else if (ringColors[ring] != hexagons[i].color)
-        {
-            return false;
-        }
-    }
     return true;
 }
 
@@ -113,7 +116,7 @@ void Game::handleGameCompletion()
     messageBox->setMessage(message);
     messageBox->exec();
 
-     // 发送带有完成信息的信号
+    // 发送带有完成信息的信号
     emit returnToLevelMode(true, penaltySeconds, stepCount, currentLevelId);
 }
 
@@ -130,12 +133,12 @@ void Game::flipHexagon(int index)
     op.oldColor = hexagons[index].color;
     op.hexCoord = hexagonIndexToCoord(index);
     operationHistory.append(op);
-    
+
     hexagons[index].color = (hexagons[index].color == color1) ? color2 : color1;
     flippedHexagons.insert(index);
     currentPath.append(index);
     stepCount++;
-    
+
     update();
 }
 
@@ -143,47 +146,54 @@ int Game::findClosestHexagon(const QPointF& clickPos)
 {
     double minDistance = 1E9;
     int closestIndex = -1;
-    
+
     for (int i = 0; i < hexagons.size(); i++)
-    {
-        double dist = QLineF(clickPos, hexagons[i].center).length();
-        if (dist < minDistance)
         {
-            minDistance = dist;
-            closestIndex = i;
+            double dist = QLineF(clickPos, hexagons[i].center).length();
+            if (dist < minDistance)
+                {
+                    minDistance = dist;
+                    closestIndex = i;
+                }
         }
-    }
-    
+
     return (minDistance <= radius) ? closestIndex : -1;
 }
 
 void Game::withdrawLastOperation()
 {
-    if (operationHistory.isEmpty()) return;
-    
+    if (operationHistory.isEmpty())
+        {
+            return;
+        }
+
     Operation lastOp = operationHistory.last();
     hexagons[lastOp.hexagonIndex].color = lastOp.oldColor;
     flippedHexagons.remove(lastOp.hexagonIndex);
     operationHistory.removeLast();
-    
+
     if (!currentPath.isEmpty())
-    {
-        currentPath.removeLast();
-    }
-    
+        {
+            currentPath.removeLast();
+        }
+
     update();
-    
+
     // 如果是通过返回按钮退出，发送未完成的信号
-    if (sender() == backButton) {
-        emit returnToLevelMode(false, penaltySeconds, stepCount, currentLevelId);
-    }
+    if (sender() == backButton)
+        {
+            emit returnToLevelMode(false, penaltySeconds, stepCount, currentLevelId);
+        }
 }
 
 // === 路径管理 ===
 bool Game::isConnectedToPath(int index)
 {
-    if (currentPath.isEmpty()) return true;
-    
+    if (currentPath.isEmpty())
+        {
+            return true;
+        }
+
     QPoint coord = hexagonIndexToCoord(index);
     QPoint lastCoord = hexagonIndexToCoord(currentPath.last());
     return areNeighbors(lastCoord, coord);
@@ -191,20 +201,21 @@ bool Game::isConnectedToPath(int index)
 
 bool Game::areNeighbors(const QPoint& coord1, const QPoint& coord2)
 {
-    static const QVector<QPair<int, int>> directions = {
-        {1,0}, {1,-1}, {0,-1}, {-1,0}, {-1,1}, {0,1}
+    static const QVector<QPair<int, int>> directions =
+    {
+        {1, 0}, {1, -1}, {0, -1}, {-1, 0}, {-1, 1}, {0, 1}
     };
-    
+
     int dq = coord2.x() - coord1.x();
     int dr = coord2.y() - coord1.y();
-    
+
     for (const auto& dir : directions)
-    {
-        if (dq == dir.first && dr == dir.second)
         {
-            return true;
+            if (dq == dir.first && dr == dir.second)
+                {
+                    return true;
+                }
         }
-    }
     return false;
 }
 
@@ -221,44 +232,50 @@ void Game::paintEvent(QPaintEvent *event)
     Q_UNUSED(event);
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-    
+
     // 绘制六边形
     painter.setPen(Qt::gray);
     for (const HexCell &hex : hexagons)
-    {
-        painter.setBrush(hex.color);
-        drawHexagon(painter, hex.center, radius);
-    }
-    
+        {
+            painter.setBrush(hex.color);
+            drawHexagon(painter, hex.center, radius);
+        }
+
     // 绘制路径
     if (showPath && !currentPath.isEmpty())
-    {
-        painter.setPen(QPen(color3, 4));
-        for (int i = 0; i < currentPath.size() - 1; ++i)
         {
-            QPointF start = hexagons[currentPath[i]].center;
-            QPointF end = hexagons[currentPath[i+1]].center;
-            painter.drawLine(start, end);
+            painter.setPen(QPen(color3, 4));
+            for (int i = 0; i < currentPath.size() - 1; ++i)
+                {
+                    QPointF start = hexagons[currentPath[i]].center;
+                    QPointF end = hexagons[currentPath[i + 1]].center;
+                    painter.drawLine(start, end);
+                }
         }
-    }
-    
+
     // 绘制计时器
     drawGameTimer(painter);
 }
 
 void Game::mousePressEvent(QMouseEvent *event)
 {
-    int hexIndex = findClosestHexagon(event->pos());
-    
-    if (hexIndex != -1 && canFlipHexagon(hexIndex))
-    {
-        flipHexagon(hexIndex);
-        
-        if (checkGameComplete())
+    // 如果正在显示提示，忽略点击事件
+    if (isShowingHint)
         {
-            handleGameCompletion();
+            return;
         }
-    }
+
+    int hexIndex = findClosestHexagon(event->pos());
+
+    if (hexIndex != -1 && canFlipHexagon(hexIndex))
+        {
+            flipHexagon(hexIndex);
+
+            if (checkGameComplete())
+                {
+                    handleGameCompletion();
+                }
+        }
 }
 
 // === 计时系统 ===
@@ -280,28 +297,28 @@ void Game::updateTimeDisplay()
     int minutes = penaltySeconds / 60;
     int seconds = penaltySeconds % 60;
     timeText = QString("%1:%2")
-        .arg(minutes, 2, 10, QChar('0'))
-        .arg(seconds, 2, 10, QChar('0'));
+               .arg(minutes, 2, 10, QChar('0'))
+               .arg(seconds, 2, 10, QChar('0'));
     update();
 }
 
 void Game::drawGameTimer(QPainter &painter)
 {
     if (timeText.isEmpty()) return;
-    
+
     painter.setPen(Qt::white);
     QFont font = painter.font();
     font.setPointSize(24);
     font.setBold(true);
     painter.setFont(font);
-    
+
     QFontMetrics fm(font);
     int textHeight = fm.height();
-    
+
     // 修改位置到左侧正中间
     int x = 100; // 左侧位置
     int y = height() / 2; // 垂直居中
-    
+
     painter.drawText(x, y + textHeight / 2 - fm.descent(), timeText);
 }
 
@@ -310,14 +327,14 @@ QPoint Game::hexagonIndexToCoord(int index)
 {
     if (index < 0 || index >= hexagons.size())
         return QPoint(0, 0);
-    
+
     QPointF hexCenter = hexagons[index].center;
     QPointF relativePos = hexCenter - this->center;
-    
+
     // 使用正确的坐标转换公式
-    double q = (2.0/3.0 * relativePos.x()) / radius;
-    double r = (-1.0/3.0 * relativePos.x() + sqrt(3.0)/3.0 * relativePos.y()) / radius;
-    
+    double q = (2.0 / 3.0 * relativePos.x()) / radius;
+    double r = (-1.0 / 3.0 * relativePos.x() + sqrt(3.0) / 3.0 * relativePos.y()) / radius;
+
     // 四舍五入到最近的整数坐标
     return QPoint(qRound(q), qRound(r));
 }
@@ -332,27 +349,29 @@ int Game::coordToHexagonIndex(const QPoint& coord)
         double y = radius * sqrt(3) * (r + q / 2.0);
         return center + QPointF(x, y);
     };
-    
+
     QPointF pixel = hexToPixel(coord.x(), coord.y());
-    
+
     // 找到最接近该坐标的六边形
     int closestIndex = -1;
     double minDistance = radius * 2; // 设置一个较大的初始值
-    
+
     for (int i = 0; i < hexagons.size(); i++)
-    {
-        double distance = QLineF(pixel, hexagons[i].center).length();
-        if (distance < minDistance)
         {
-            minDistance = distance;
-            closestIndex = i;
+            double distance = QLineF(pixel, hexagons[i].center).length();
+            if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    closestIndex = i;
+                }
         }
-    }
-    
+
     // 确保找到的六边形在合理距离内
     if (minDistance > radius / 2)
-        return -1;
-    
+        {
+            return -1;
+        }
+
     return closestIndex;
 }
 
@@ -360,103 +379,136 @@ void Game::drawHexagon(QPainter &painter, const QPointF &center, int radius)
 {
     QPolygonF hexagon;
     for (int i = 0; i < 6; ++i)
-    {
-        double angle = M_PI / 3 * i;
-        double x = center.x() + radius * cos(angle);
-        double y = center.y() + radius * sin(angle);
-        hexagon << QPointF(x, y);
-    }
+        {
+            double angle = M_PI / 3 * i;
+            double x = center.x() + radius * cos(angle);
+            double y = center.y() + radius * sin(angle);
+            hexagon << QPointF(x, y);
+        }
     painter.drawPolygon(hexagon);
 }
 
 void Game::showNextHint()
 {
     // 原有的提示逻辑
-    if (path.isEmpty()) {
-        return;
-    }
-    
+    if (path.isEmpty())
+        {
+            return;
+        }
+
     // 增加罚时（30秒）
     penaltySeconds += 30;
-    
-    if (currentPath.isEmpty()) {
-        QPoint nextCoord = path.first();
-        currentHintIndex = 0;
-        highlightHexagon(nextCoord);
-        return;
-    }
-    
-    bool isMatchingPath = true;
-    for (int i = 0; i < currentPath.size(); i++) {
-        if (i >= path.size()) {
-            isMatchingPath = false;
-            break;
-        }
-        
-        QPoint currentCoord = hexagonIndexToCoord(currentPath[i]);
-        if (currentCoord != path[i]) {
-            isMatchingPath = false;
-            break;
-        }
-    }
-    
-    if (isMatchingPath && currentPath.size() < path.size()) {
-        QPoint nextCoord = path[currentPath.size()];
-        highlightHexagon(nextCoord);
-    } else {
-        withdrawButton->setStyleSheet("background: rgba(255, 255, 255, 0.2);");
-        QTimer::singleShot(1000, this, [this]() {
-            withdrawButton->setStyleSheet("QPushButton {"
-                  "background: rgba(255, 255, 255, 0);"
-                  "border: none;"
-                  "color:white"
-                  "}"
 
-                  "QPushButton:hover {"
-                  "background: rgba(255, 255, 255, 0.2);"
-                  "}");
-        });
-    }
+    if (currentPath.isEmpty())
+        {
+            QPoint nextCoord = path.first();
+            currentHintIndex = 0;
+            highlightHexagon(nextCoord);
+            return;
+        }
+
+    bool isMatchingPath = true;
+    for (int i = 0; i < currentPath.size(); i++)
+        {
+            if (i >= path.size())
+                {
+                    isMatchingPath = false;
+                    break;
+                }
+
+            QPoint currentCoord = hexagonIndexToCoord(currentPath[i]);
+            if (currentCoord != path[i])
+                {
+                    isMatchingPath = false;
+                    break;
+                }
+        }
+    if(isMatchingPath && currentPath.size() == path.size())
+        {
+            qDebug() << "path错误！！！！";
+        }
+
+    if (isMatchingPath && currentPath.size() < path.size())
+        {
+            QPoint nextCoord = path[currentPath.size()];
+            highlightHexagon(nextCoord);
+        }
+    else
+        {
+            withdrawButton->setStyleSheet("background: rgba(255, 255, 255, 0.2);");
+            QTimer::singleShot(1000, this, [this]()
+            {
+                withdrawButton->setStyleSheet("QPushButton {"
+                                              "background: rgba(255, 255, 255, 0);"
+                                              "border: none;"
+                                              "color:white"
+                                              "}"
+
+                                              "QPushButton:hover {"
+                                              "background: rgba(255, 255, 255, 0.2);"
+                                              "}");
+            });
+        }
 }
 
 void Game::highlightHexagon(const QPoint& coord)
 {
+    if(isShowingHint)
+        {
+            return;
+        }
+
     // 找到对应的六边形索引
     int targetIndex = -1;
-    for (int i = 0; i < hexagons.size(); i++) {
-        if (hexagonIndexToCoord(i) == coord) {
-            targetIndex = i;
-            break;
+    for (int i = 0; i < hexagons.size(); i++)
+        {
+            if (hexagonIndexToCoord(i) == coord)
+                {
+                    targetIndex = i;
+                    break;
+                }
         }
-    }
-    
+
     // 如果找到了目标六边形，高亮显示它
-    if (targetIndex >= 0) {
-        // 获取当前颜色
-        QColor currentColor = hexagons[targetIndex].color;
-        
-        // 根据当前颜色选择对比色
-        QColor highlightColor;
-        if (currentColor == color1) {
-            // 如果当前是第一种颜色，使用第二种颜色
-            highlightColor = color2;
-        } else {
-            // 如果当前是第一种颜色，使用第一种颜色
-            highlightColor = color1;
-        }
-        
-        // 临时保存原始颜色
-        QColor originalColor = hexagons[targetIndex].color;
-        // 设置高亮颜色
-        hexagons[targetIndex].color = highlightColor;
-        // 更新显示
-        update();
-        // 1秒后恢复原始颜色
-        QTimer::singleShot(1000, this, [this, targetIndex, originalColor]() {
-            hexagons[targetIndex].color = originalColor;
+    if (targetIndex >= 0)
+        {
+            // 获取当前颜色
+            QColor currentColor = hexagons[targetIndex].color;
+
+            // 根据当前颜色选择对比色
+            QColor highlightColor;
+            if (currentColor == color1)
+                {
+                    // 如果当前是第一种颜色，使用第二种颜色
+                    highlightColor = color2;
+                }
+            else
+                {
+                    // 如果当前是第一种颜色，使用第一种颜色
+                    highlightColor = color1;
+                }
+
+            // 设置正在显示提示标志
+            isShowingHint = true;
+            highlightedHexIndex = targetIndex;
+
+            // 临时保存原始颜色
+            QColor originalColor = hexagons[targetIndex].color;
+            // 设置高亮颜色
+            hexagons[targetIndex].color = highlightColor;
+            // 更新显示
             update();
-        });
-    }
+            // 毫秒后恢复原始颜色
+            QTimer::singleShot(250, this, [this, targetIndex, originalColor]()
+            {
+
+                hexagons[targetIndex].color = originalColor;
+                isShowingHint = false;
+                highlightedHexIndex = -1;
+                update();
+
+            });
+        }
 }
 
 int Game::getHexagonRing(const QPoint& coord)

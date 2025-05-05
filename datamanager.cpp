@@ -62,21 +62,9 @@ void DataManager::updateRanking(int levelId, const QString& userId, int penaltyS
                           [&userId](const Ranking& entry) {
                               return entry.userId == userId;
                           });
-    //打印levelRanking的数据
-    qDebug() << "before updateRanking";
-    for (const auto& entry : levelRanking) {
-        qDebug() << "levelRanking:" << entry.userId << " " << entry.penaltySeconds << " " << entry.steps;
-    }
-    // 打印it是否存在
-    if (it != levelRanking.end()) {
-        qDebug() << "it存在";
-    } else {
-        qDebug() << "it不存在";
-    }
 
     if (it != levelRanking.end()) {
         // 如果用户已存在，分别更新时间和步数为各自的最小值
-        // 注意：这可能导致存储的时间和步数并非来自同一次游戏尝试
         if (penaltySeconds < it->penaltySeconds) {
             it->penaltySeconds = penaltySeconds;
         }
@@ -91,10 +79,7 @@ void DataManager::updateRanking(int levelId, const QString& userId, int penaltyS
         newEntry.steps = steps;
         levelRanking.append(newEntry);
     }
-    qDebug() << "after updateRanking";
-    for (const auto& entry : levelRanking) {
-        qDebug() << "levelRanking:" << entry.userId << " " << entry.penaltySeconds << " " << entry.steps;
-    }
+  
     // 按照罚时升序排序，时间相同时按步数升序排序
     std::sort(levelRanking.begin(), levelRanking.end(),
               [](const Ranking& a, const Ranking& b) {
@@ -222,9 +207,7 @@ bool DataManager::loadFromFile()
             Ranking entry;
             entry.fromJson(entryVal.toObject());
             levelRankingVector.append(entry);
-            // 打印排行榜数据
-           // qDebug() << "加载排行榜数据：" << levelId.toInt() << " " << entry.userId << " " << entry.penaltySeconds << " " << entry.steps;
-        }
+              }
         
         // 确保加载后也排序和限制大小
         std::sort(levelRankingVector.begin(), levelRankingVector.end(),

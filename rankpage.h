@@ -21,6 +21,9 @@ public:
     void refreshRankingList(const QVector<Ranking>& rankings);
     Lbutton *backButton;
 
+protected:
+    void showEvent(QShowEvent *event) override;
+
 private slots:
     void sortTable(int logicalIndex);
     void clearCurrentLevelData();
