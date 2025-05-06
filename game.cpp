@@ -498,7 +498,7 @@ void Game::highlightHexagon(const QPoint& coord)
             hexagons[targetIndex].color = highlightColor;
             // 更新显示
             update();
-            // 250毫秒后恢复原始颜色
+            // 毫秒后恢复原始颜色
             QTimer::singleShot(250, this, [this, targetIndex, originalColor]()
             {
 
