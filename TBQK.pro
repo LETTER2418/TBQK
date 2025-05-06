@@ -24,6 +24,7 @@ SOURCES += \
     mapmsgbox.cpp \
     menu.cpp \
     messagebox.cpp \
+    onlinemode.cpp \
     onlinemsgbox.cpp \
     randommap.cpp \
     ranking.cpp \
@@ -49,6 +50,7 @@ HEADERS += \
     mapmsgbox.h \
     menu.h \
     messagebox.h \
+    onlinemode.h \
     onlinemsgbox.h \
     randommap.h \
     ranking.h \

@@ -59,6 +59,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     gamePage->hide();
     rankPage = new RankPage(this, dataManager);
     settingPage = new Setting(this, dataManager);
+    onlineModePage = new OnlineMode(this);
 
     // 连接信号与槽
     connect(startPage->backButton, &QPushButton::clicked, this, [this]()
@@ -107,6 +108,21 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     connect(menuPage->levelEditorButton, &QPushButton::clicked, this, [this]()
     {
         pageStack->setCurrentWidget(levelEditorPage);
+    });
+
+     connect(menuPage->levelModeButton, &QPushButton::clicked, this, [this]()
+    {
+        pageStack->setCurrentWidget(levelModePage);
+    });
+
+      connect(menuPage->rankButton, &QPushButton::clicked, this, [this]()
+    {
+        pageStack->setCurrentWidget(rankPage);
+    });
+    
+    connect(menuPage->onlineButton, &QPushButton::clicked, this, [this]()
+    {
+        pageStack->setCurrentWidget(onlineModePage);
     });
 
     connect(levelEditorPage->backButton, &QPushButton::clicked, this, [this]()
@@ -184,10 +200,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
         dataManager->saveToFile();
     });
 
-    connect(menuPage->levelModeButton, &QPushButton::clicked, this, [this]()
-    {
-        pageStack->setCurrentWidget(levelModePage);
-    });
+    
 
     connect(levelModePage->backButton, &QPushButton::clicked, this, [this]()
     {
@@ -199,10 +212,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
         pageStack->setCurrentWidget(levelModePage);
     });
 
-    connect(menuPage->rankButton, &QPushButton::clicked, this, [this]()
-    {
-        pageStack->setCurrentWidget(rankPage);
-    });
+   
 
     connect(rankPage->backButton, &QPushButton::clicked, this, [this]()
     {
@@ -234,6 +244,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     pageStack->addWidget(gamePage);
     pageStack->addWidget(rankPage);
     pageStack->addWidget(settingPage);
+    pageStack->addWidget(onlineModePage);
 
     // 设置默认显示的页面
     this->pageStack->setCurrentWidget(startPage);

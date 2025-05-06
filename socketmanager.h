@@ -9,6 +9,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QTimer>
 
 class SocketManager : public QObject
 {
@@ -18,7 +19,7 @@ public:
     ~SocketManager();
 
     bool StartServer();
-    bool StartClient(const QString& serverAddress = "127.0.0.1");
+    void StartClient(const QString& serverAddress = "127.0.0.1");
     void SendChatMessage(const QString& message, const QString& sender = "User");
     QJsonObject CreateMsg();
 
@@ -33,6 +34,7 @@ private slots:
     void handleClientDisconnected();
     void handleReadyRead();
     void handleError(QAbstractSocket::SocketError socketError);
+    void handleConnectionTimeout();
 
 private:
     QTcpServer* server;
@@ -42,6 +44,7 @@ private:
     QMap<QTcpSocket*, QQueue<QJsonObject>> serverSendMsgList;
     static const int SERVER_PORT = 8888;
     bool isServer;
+    QTimer* connectionTimer;
 
     void ServerAddSendMsgList(QTcpSocket* client, const QJsonObject& msg);
     bool ServerSendMsg(QTcpSocket* client, const QJsonObject& msg);

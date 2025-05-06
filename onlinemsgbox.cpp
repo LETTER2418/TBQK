@@ -206,16 +206,15 @@ void OnlineMsgBox::connectToServer()
         return;
     }
     
-    // 假设SocketManager已实现StartClient方法
-    if (socketManager->StartClient(ip)) {
-        chatDisplay->append("<系统> 已连接到服务器");
-        serverButton->setEnabled(false);
-        clientButton->setEnabled(false);
-        sendButton->setEnabled(true);
-        isConnected = true;
-    } else {
-        chatDisplay->append("<系统> 连接服务器失败");
-    }
+    // 尝试连接，不再检查返回值
+    socketManager->StartClient(ip);
+
+    // 更新UI为"正在连接"状态
+    chatDisplay->append("<系统> 正在连接到服务器...");
+    serverButton->setEnabled(false);
+    clientButton->setEnabled(false);
+    sendButton->setEnabled(false); // 在连接成功前禁用发送按钮
+    // isConnected 状态将在 handleClientConnected 中设置为 true
 }
 
 void OnlineMsgBox::sendMessage()
@@ -245,11 +244,20 @@ void OnlineMsgBox::displayMessage(const QString& sender, const QString& message)
 void OnlineMsgBox::handleConnectionError(const QString& error)
 {
     chatDisplay->append(QString("<系统> 错误: %1").arg(error));
+    // 连接失败，恢复按钮状态
+    serverButton->setEnabled(true);
+    clientButton->setEnabled(true);
+    sendButton->setEnabled(false);
+    isConnected = false;
 }
 
 void OnlineMsgBox::handleClientConnected()
 {
-    chatDisplay->append("<系统> 有新客户端连接");
+    chatDisplay->append("<系统> 已连接到服务器");
+    serverButton->setEnabled(false); // 保持禁用状态
+    clientButton->setEnabled(false); // 保持禁用状态
+    sendButton->setEnabled(true);
+    isConnected = true;
 }
 
 void OnlineMsgBox::handleClientDisconnected()

@@ -8,6 +8,7 @@ SocketManager::SocketManager(QObject *parent)
     , server(nullptr)
     , clientSocket(nullptr)
     , isServer(false)
+    , connectionTimer(nullptr)
 {
     // 初始化服务器和客户端相关变量
 }
@@ -27,6 +28,12 @@ SocketManager::~SocketManager()
                 clientSocket->waitForDisconnected();
         }
         delete clientSocket;
+    }
+    
+    // 清理定时器
+    if (connectionTimer) {
+        connectionTimer->stop();
+        delete connectionTimer;
     }
 
     // 清理所有客户端连接（如果是服务器）
@@ -66,7 +73,7 @@ bool SocketManager::StartServer()
     return true;
 }
 
-bool SocketManager::StartClient(const QString& serverAddress)
+void SocketManager::StartClient(const QString& serverAddress)
 {
     // 确保之前的连接已断开
     if (clientSocket) {
@@ -78,10 +85,27 @@ bool SocketManager::StartClient(const QString& serverAddress)
         delete clientSocket;
     }
     
+    // 清理旧的定时器
+    if (connectionTimer) {
+        connectionTimer->stop();
+        delete connectionTimer;
+    }
+    
+    // 创建新的定时器，设置为5秒超时
+    connectionTimer = new QTimer(this);
+    connectionTimer->setSingleShot(true);
+    connect(connectionTimer, &QTimer::timeout, this, &SocketManager::handleConnectionTimeout);
+    
     clientSocket = new QTcpSocket(this);
     
     // 连接信号
-    connect(clientSocket, &QTcpSocket::connected, this, &SocketManager::clientConnected);
+    connect(clientSocket, &QTcpSocket::connected, this, [this](){
+        // 连接成功，停止定时器
+        if (connectionTimer) {
+            connectionTimer->stop();
+        }
+        emit clientConnected();
+    });
     connect(clientSocket, &QTcpSocket::disconnected, this, &SocketManager::handleClientDisconnected);
     connect(clientSocket, &QTcpSocket::readyRead, this, &SocketManager::handleReadyRead);
     connect(clientSocket, &QTcpSocket::errorOccurred, this, &SocketManager::handleError);
@@ -89,14 +113,10 @@ bool SocketManager::StartClient(const QString& serverAddress)
     // 尝试连接到服务器
     clientSocket->connectToHost(serverAddress, SERVER_PORT);
     
-    // 等待连接（可选，也可以通过信号异步处理）
-    if (!clientSocket->waitForConnected(5000)) {
-        emit connectionError(QString("无法连接到服务器: %1").arg(clientSocket->errorString()));
-        return false;
-    }
-    
+    // 启动5秒定时器
+    connectionTimer->start(5000);
+
     isServer = false;
-    return true;
 }
 
 void SocketManager::SendChatMessage(const QString& message, const QString& sender)
@@ -186,10 +206,24 @@ void SocketManager::handleReadyRead()
     processReceivedData(socket, data);
 }
 
+void SocketManager::handleConnectionTimeout()
+{
+    // 处理连接超时
+    if (clientSocket && clientSocket->state() != QAbstractSocket::ConnectedState) {
+        clientSocket->abort(); // 中止连接
+        emit connectionError("连接超时，无法连接到服务器");
+    }
+}
+
 void SocketManager::handleError(QAbstractSocket::SocketError socketError)
 {
     QTcpSocket* socket = qobject_cast<QTcpSocket*>(sender());
     QString errorMsg;
+    
+    // 如果定时器在运行，停止定时器
+    if (connectionTimer && connectionTimer->isActive()) {
+        connectionTimer->stop();
+    }
     
     if (socket) {
         errorMsg = socket->errorString();

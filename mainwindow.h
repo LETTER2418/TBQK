@@ -20,6 +20,7 @@
 #include "game.h"
 #include "rankpage.h"
 #include "setting.h"
+#include "onlinemode.h"
 
 class MainWindow :public Widget{
     Q_OBJECT
@@ -58,7 +59,8 @@ private:
     Game *gamePage;
     RankPage *rankPage;
     Setting *settingPage;
-
+    OnlineMode *onlineModePage;
+    
     //Manager
     DataManager *dataManager;
 };
