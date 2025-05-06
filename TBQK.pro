@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core gui network
 QT += multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -24,11 +24,13 @@ SOURCES += \
     mapmsgbox.cpp \
     menu.cpp \
     messagebox.cpp \
+    onlinemsgbox.cpp \
     randommap.cpp \
     ranking.cpp \
     rankpage.cpp \
     savemapmsgbox.cpp \
     setting.cpp \
+    socketmanager.cpp \
     start.cpp \
     userdata.cpp \
     widget.cpp
@@ -47,11 +49,13 @@ HEADERS += \
     mapmsgbox.h \
     menu.h \
     messagebox.h \
+    onlinemsgbox.h \
     randommap.h \
     ranking.h \
     rankpage.h \
     savemapmsgbox.h \
     setting.h \
+    socketmanager.h \
     start.h \
     userdata.h \
     widget.h

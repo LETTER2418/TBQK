@@ -250,7 +250,6 @@ void RankPage::clearCurrentLevelData()
         connect(confirmBox->cancelButton, &Lbutton::clicked, confirmBox, &MessageBox::reject);
     }
     
-    int result = confirmBox->exec();
     delete confirmBox;
 }
 
