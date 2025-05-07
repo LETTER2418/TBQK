@@ -523,3 +523,29 @@ void Game::setCurrentLevelId(int id)
     currentLevelId = id;
 }
 
+void Game::setSocketManager(SocketManager* manager)
+{
+    socketManager = manager;
+    if (socketManager) {
+        connect(socketManager, &SocketManager::gameStateReceived,
+                this, &Game::onGameStateReceived);
+    }
+}
+
+void Game::onGameStateReceived(const MapData& mapData)
+{
+    // 如果不是服务器，则更新游戏状态
+    if (!isServer) {
+        setMap(mapData);
+        update();
+    }
+}
+
+void Game::setOnlineMode(bool isServerMode, SocketManager* manager)
+{
+    this->isServer = isServerMode;
+    setSocketManager(manager); // 复用已有的 setSocketManager 方法
+                               // 如果 setSocketManager 除了赋值和连接信号外还有其他逻辑，
+                               // 需要确保这些逻辑得到保留。
+}
+

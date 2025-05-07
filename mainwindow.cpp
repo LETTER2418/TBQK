@@ -7,6 +7,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     this->setWindowIcon(appIcon);
 
     dataManager = new DataManager(this);
+    socketManager = new SocketManager(this);
     //dataManager->clearAllRankings();
 
     // 创建 mainPage，并将四个按钮放入
@@ -59,7 +60,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     gamePage->hide();
     rankPage = new RankPage(this, dataManager);
     settingPage = new Setting(this, dataManager);
-    onlineModePage = new OnlineMode(this);
+    onlineModePage = new OnlineMode(this, socketManager);
 
     // 连接信号与槽
     connect(startPage->backButton, &QPushButton::clicked, this, [this]()
@@ -150,13 +151,23 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
         pageStack->setCurrentWidget(customMapPage);
     });
 
+    connect(socketManager, &SocketManager::gameStateReceived, this, &MainWindow::onClientReceivedGameState);
+
     for(int i = 0; i < 12; i++)
         {
             connect(levelModePage->buttons[i], &QPushButton::clicked, this, [this, i]()
             {
-               //设置第i+1关的地图
-               gamePage->setMap(dataManager->getMap(i+1));
-                pageStack->setCurrentWidget(gamePage);
+               bool isHost = (this->socketManager && this->socketManager->isServerMode());
+
+               if (isHost) { // 如果是服务器端
+                   MapData mapData = dataManager->getMap(i + 1);
+                   gamePage->setOnlineMode(isHost, this->socketManager);
+                   this->socketManager->SendGameState(mapData);
+                   gamePage->setMap(mapData);
+                   pageStack->setCurrentWidget(gamePage);
+               } else {
+                   qDebug() << "客户端已选择关卡，等待服务器数据...";
+               }
             });
         }
 
@@ -259,6 +270,16 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(pageStack);
 
+}
+
+void MainWindow::onClientReceivedGameState(const MapData& mapData)
+{
+    if (socketManager && !socketManager->isServerMode()) { // 确保是客户端
+        qDebug() << "客户端接收到 gameState, 准备加载关卡: " << mapData.id;
+        gamePage->setOnlineMode(false, this->socketManager); // 配置gamePage为客户端模式
+        gamePage->setMap(mapData);                           // 设置地图
+        pageStack->setCurrentWidget(gamePage);             // 切换到游戏页面
+    }
 }
 
 MainWindow::~MainWindow()

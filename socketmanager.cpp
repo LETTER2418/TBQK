@@ -140,6 +140,26 @@ void SocketManager::SendChatMessage(const QString& message, const QString& sende
     }
 }
 
+void SocketManager::SendGameState(const MapData& mapData)
+{
+    // 创建JSON消息对象
+    QJsonObject jsonMessage;
+    jsonMessage["type"] = "gameState";
+    jsonMessage["mapData"] = mapData.toJson();
+    jsonMessage["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
+    
+    if (isServer) {
+        // 服务器广播游戏状态给所有客户端
+        for (QTcpSocket* clientSocket : clientSockets) {
+            ServerAddSendMsgList(clientSocket, jsonMessage);
+        }
+        ServerProcessClientsSendMsgList();
+    } else if (clientSocket && clientSocket->state() == QAbstractSocket::ConnectedState) {
+        // 客户端发送游戏状态给服务器
+        sendJson(clientSocket, jsonMessage);
+    }
+}
+
 QJsonObject SocketManager::CreateMsg()
 {
     // 创建一个基本的JSON消息结构
@@ -162,13 +182,14 @@ void SocketManager::handleNewConnection()
     clientSockets.append(clientSocket);
     clientsState[clientSocket] = true; // 设置初始状态
     serverSendMsgList[clientSocket] = QQueue<QJsonObject>(); // 初始化消息队列
-    
-    // 发送欢迎消息（可选）
-    QJsonObject welcomeMsg;
-    welcomeMsg["type"] = "system";
-    welcomeMsg["message"] = "欢迎连接到服务器";
-    ServerAddSendMsgList(clientSocket, welcomeMsg);
-    ServerProcessClientSendMsgList(clientSocket);
+
+    // 发送导航到 levelModePage 的消息
+    QJsonObject navigateMsg;
+    navigateMsg["type"] = "navigateTo";
+    navigateMsg["page"] = "levelModePage";
+    ServerAddSendMsgList(clientSocket, navigateMsg);
+
+    ServerProcessClientSendMsgList(clientSocket); // 统一处理消息队列
 }
 
 void SocketManager::handleClientDisconnected()
@@ -318,35 +339,44 @@ bool SocketManager::sendJson(QTcpSocket* socket, const QJsonObject& json)
 
 void SocketManager::processReceivedData(QTcpSocket* socket, const QByteArray& data)
 {
-    // 尝试将接收到的数据解析为JSON
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    if (doc.isNull() || !doc.isObject()) {
-        // 数据不是有效的JSON
-        return;
-    }
+    // 分割可能的多条JSON消息（假设以 '\n' 分隔）
+    QList<QByteArray> jsonMessages = data.split('\n');
     
-    QJsonObject json = doc.object();
-    
-    // 根据消息类型处理
-    QString type = json["type"].toString();
-    
-    if (type == "chat") {
-        // 聊天消息
-        QString sender = json["sender"].toString();
-        QString message = json["message"].toString();
-        
-        // 发出信号通知上层应用
-        emit newMessageReceived(sender, message);
-        
-        // 如果是服务器，则可以将消息广播给其他客户端
-        if (isServer && socket) {
-            for (QTcpSocket* client : clientSockets) {
-                if (client != socket) { // 不发给发送方
-                    ServerAddSendMsgList(client, json);
-                }
+    for (const QByteArray& jsonData : jsonMessages) {
+        if (jsonData.trimmed().isEmpty()) {
+            continue;
+        }
+
+        QJsonDocument doc = QJsonDocument::fromJson(jsonData.trimmed());
+        if (!doc.isObject()) {
+            qWarning() << "Received non-JSON object data:" << jsonData.trimmed();
+            continue;
+        }
+
+        QJsonObject json = doc.object();
+        QString type = json["type"].toString();
+
+        if (type == "chat") {
+            QString sender = json["sender"].toString();
+            QString message = json["message"].toString();
+            emit newMessageReceived(sender, message);
+        }
+        else if (type == "gameState") {
+            QJsonObject mapDataJson = json["mapData"].toObject();
+            MapData mapData;
+            mapData.fromJson(mapDataJson);
+            emit gameStateReceived(mapData);
+        }
+        else if (type == "navigateTo") { // 处理新的导航消息类型
+            QString pageName = json["page"].toString();
+            if (!pageName.isEmpty()) {
+                emit navigateToPageRequest(pageName);
             }
-            ServerProcessClientsSendMsgList();
         }
     }
-    // 可以根据需要添加更多消息类型的处理
+}
+
+bool SocketManager::isServerMode() const
+{
+    return isServer;
 }

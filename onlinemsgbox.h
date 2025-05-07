@@ -27,7 +27,7 @@ public:
         JoinMode     // 加入房间模式
     };
 
-    explicit OnlineMsgBox(QWidget *parent = nullptr);
+    explicit OnlineMsgBox(QWidget *parent = nullptr, SocketManager* manager = nullptr);
     ~OnlineMsgBox();
     QString getLocalIP();
     void setBackgroundImage(const QString& path);
@@ -42,6 +42,7 @@ protected:
 
 private slots:
     void updateBackground();
+    void handleNavigateRequest(const QString& pageName);
 
 public slots:
     void startServer();

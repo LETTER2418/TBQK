@@ -21,6 +21,7 @@
 #include "rankpage.h"
 #include "setting.h"
 #include "onlinemode.h"
+#include "socketmanager.h"
 
 class MainWindow :public Widget{
     Q_OBJECT
@@ -28,6 +29,9 @@ class MainWindow :public Widget{
 public:
     MainWindow(Widget *parent = nullptr);
     ~MainWindow();
+
+private slots:
+    void onClientReceivedGameState(const MapData& mapData);
 
 private:
     QString currentUserId;  // 当前登录的用户ID
@@ -63,6 +67,7 @@ private:
     
     //Manager
     DataManager *dataManager;
+    SocketManager* socketManager; // SocketManager 成员指针
 };
 
 #endif // MAINWINDOW_H

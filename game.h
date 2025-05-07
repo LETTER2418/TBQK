@@ -5,6 +5,7 @@
 #include "lbutton.h"
 #include "messagebox.h"
 #include "mapdata.h"
+#include "socketmanager.h"
 
 
 // 定义操作结构体，用于记录每次操作
@@ -22,6 +23,8 @@ public:
     Game(QWidget *parent = nullptr);
     ~Game();
     void setMap(MapData mapData);
+    void setSocketManager(SocketManager* manager);  // 设置SocketManager
+    void setOnlineMode(bool isServerMode, SocketManager* manager); // 用于联机模式的设置（角色和SocketManager）
     Lbutton *backButton;
 
 signals:
@@ -31,6 +34,9 @@ signals:
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
+
+private slots:
+    void onGameStateReceived(const MapData& mapData);  // 处理接收到的游戏状态
 
 private:
     // === UI初始化和更新 ===
@@ -95,7 +101,10 @@ private:
     
     // 添加关卡ID成员变量
     int currentLevelId = 0;
-    
+
+    // 网络同步相关
+    SocketManager* socketManager = nullptr;  // SocketManager指针
+    bool isServer = false;  // 是否是服务器, 由setOnlineMode设置
 };
 
 #endif // GAME_H

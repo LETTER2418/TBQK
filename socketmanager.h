@@ -10,6 +10,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QTimer>
+#include "mapdata.h"
 
 class SocketManager : public QObject
 {
@@ -21,13 +22,18 @@ public:
     bool StartServer();
     void StartClient(const QString& serverAddress = "127.0.0.1");
     void SendChatMessage(const QString& message, const QString& sender = "User");
+    void SendGameState(const MapData& mapData);  // 发送游戏状态
     QJsonObject CreateMsg();
+
+    bool isServerMode() const; // 用于检查当前是否为服务器模式
 
 signals:
     void newMessageReceived(const QString& sender, const QString& message);
     void clientConnected();
     void clientDisconnected();
     void connectionError(const QString& error);
+    void gameStateReceived(const MapData& mapData);  // 接收游戏状态的信号
+    void navigateToPageRequest(const QString& pageName); // 新增信号，请求页面导航
 
 private slots:
     void handleNewConnection();
