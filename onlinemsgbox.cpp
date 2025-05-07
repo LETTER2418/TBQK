@@ -2,15 +2,17 @@
 #include <QDateTime>
 
 OnlineMsgBox::OnlineMsgBox(QWidget *parent)
-    : QWidget{parent}
-    , socketManager(nullptr)
+    : socketManager(nullptr)
     , isConnected(false)
     , backgroundGif(nullptr)
     , usingGif(false)
+    , currentMode(CreateMode)  // 默认创建模式
 {
     setWindowTitle("在线聊天");
-    
-    // 加载背景图片
+    this->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    this->setGeometry(700, 250, 300, 400);
+
+    // 加载背景图片/视频
     //setBackgroundImage(":/image/msg.png");
     setBackgroundGif(":/image/msg.gif");
     
@@ -33,6 +35,10 @@ OnlineMsgBox::OnlineMsgBox(QWidget *parent)
     sendButton = new QPushButton("发送", this);
     sendButton->setEnabled(false);
     
+    // 创建按钮
+    cancelButton = new Lbutton(this, "取消", "black");
+    actionButton = new Lbutton(this, "创建", "black");  // 默认显示"创建"
+
     // 布局
     QGridLayout *topLayout = new QGridLayout();
     topLayout->addWidget(localIPLabel, 0, 0, 1, 2);
@@ -44,6 +50,11 @@ OnlineMsgBox::OnlineMsgBox(QWidget *parent)
     QHBoxLayout *buttonLayout = new QHBoxLayout();
     buttonLayout->addWidget(serverButton);
     buttonLayout->addWidget(clientButton);
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(cancelButton);
+    buttonLayout->addSpacing(20);
+    buttonLayout->addWidget(actionButton);
+    buttonLayout->addStretch();
     
     QHBoxLayout *messageLayout = new QHBoxLayout();
     messageLayout->addWidget(messageInput);
@@ -65,6 +76,19 @@ OnlineMsgBox::OnlineMsgBox(QWidget *parent)
     connect(clientButton, &QPushButton::clicked, this, &OnlineMsgBox::connectToServer);
     connect(sendButton, &QPushButton::clicked, this, &OnlineMsgBox::sendMessage);
     connect(messageInput, &QLineEdit::returnPressed, this, &OnlineMsgBox::sendMessage);//回车发送消息
+    
+    // 连接取消和创建/加入按钮的信号
+    connect(cancelButton, &QPushButton::clicked, this, &QWidget::hide);
+    connect(actionButton, &QPushButton::clicked, this, [this]() {
+        if (currentMode == CreateMode) {
+            // 创建房间模式：进入levelModePage
+            emit enterLevelMode();
+            hide();
+        } else {
+            // 加入房间模式：连接到服务器
+            connectToServer();
+        }
+    });
 }
 
 void OnlineMsgBox::setBackgroundImage(const QString& path)
@@ -268,5 +292,15 @@ void OnlineMsgBox::handleClientDisconnected()
         clientButton->setEnabled(true);
         sendButton->setEnabled(false);
         isConnected = false;
+    }
+}
+
+void OnlineMsgBox::setMode(Mode mode)
+{
+    currentMode = mode;
+    if (mode == CreateMode) {
+        actionButton->setText("创建");
+    } else {
+        actionButton->setText("加入");
     }
 }

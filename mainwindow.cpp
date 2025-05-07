@@ -125,6 +125,12 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
         pageStack->setCurrentWidget(onlineModePage);
     });
 
+    // 连接在线模式的信号
+    connect(onlineModePage->msgBox, &OnlineMsgBox::enterLevelMode, this, [this]()
+    {
+        pageStack->setCurrentWidget(levelModePage);
+    });
+
     connect(levelEditorPage->backButton, &QPushButton::clicked, this, [this]()
     {
         pageStack->setCurrentWidget(menuPage);

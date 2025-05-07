@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include "lbutton.h"
+#include "onlinemsgbox.h"
 
 class OnlineMode : public QWidget
 {
@@ -15,7 +16,10 @@ public:
 private slots:
     void onCreateRoom();
     void onJoinRoom();
-    
+
+public:
+    OnlineMsgBox *msgBox;
+
 private:
     Lbutton *createRoomButton;
     Lbutton *joinRoomButton;

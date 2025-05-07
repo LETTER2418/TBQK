@@ -16,16 +16,26 @@
 #include <QPainter>
 #include <QMovie>
 #include "socketmanager.h"
+#include "lbutton.h"
 
 class OnlineMsgBox : public QWidget
 {
     Q_OBJECT
 public:
+    enum Mode {
+        CreateMode,  // 创建房间模式
+        JoinMode     // 加入房间模式
+    };
+
     explicit OnlineMsgBox(QWidget *parent = nullptr);
     ~OnlineMsgBox();
     QString getLocalIP();
     void setBackgroundImage(const QString& path);
     void setBackgroundGif(const QString& path);
+    void setMode(Mode mode);  // 设置对话框模式
+
+signals:
+    void enterLevelMode();     // 进入关卡模式的信号
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -51,6 +61,8 @@ private:
     QPushButton *serverButton;
     QPushButton *clientButton;
     QPushButton *sendButton;
+    Lbutton *actionButton;
+    Lbutton *cancelButton;
     QLineEdit *messageInput;
     QTextEdit *chatDisplay;
     
@@ -60,6 +72,7 @@ private:
     QMovie *backgroundGif;
     bool usingGif;
     QPixmap currentFrame;
+    Mode currentMode;         // 当前模式
 };
 
 #endif // ONLINEMSGBOX_H
