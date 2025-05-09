@@ -15,7 +15,7 @@ class RankPage : public QWidget
     Q_OBJECT
 
 public:
-    explicit RankPage(QWidget *parent = nullptr, DataManager *dataManager = nullptr);
+    explicit RankPage(QWidget *parent = nullptr, DataManager *dataManager_ = nullptr);
     ~RankPage();
 
     void refreshRankingList(const QVector<Ranking>& rankings);

@@ -1,5 +1,5 @@
 QT       += core gui network
-QT += multimedia
+QT += multimedia multimediawidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -24,6 +24,7 @@ SOURCES += \
     mapmsgbox.cpp \
     menu.cpp \
     messagebox.cpp \
+    onlinechat.cpp \
     onlinemode.cpp \
     onlinemsgbox.cpp \
     randommap.cpp \
@@ -50,6 +51,7 @@ HEADERS += \
     mapmsgbox.h \
     menu.h \
     messagebox.h \
+    onlinechat.h \
     onlinemode.h \
     onlinemsgbox.h \
     randommap.h \

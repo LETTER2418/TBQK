@@ -2,9 +2,16 @@
 #include "ui_widget.h"
 
 #include <QPainter>
+#include <QPixmap>
+#include <QMovie>
+#include <QLabel>
+#include <QDebug>
+#include <QPaintEvent>
+#include <QResizeEvent>
 
 Widget::Widget(QWidget *parent)
-    : QWidget(parent), ui(new Ui::Widget)
+    : QWidget(parent)
+    , ui(new Ui::Widget)
 {
     ui->setupUi(this);
 
@@ -12,24 +19,39 @@ Widget::Widget(QWidget *parent)
     this->resize(1705, 882);
     this->move(0, 0);
 
-    // 创建 QLabel 用于显示背景图片
-    QLabel *bgLabel = new QLabel(this);
-    QPixmap bgImage(":\\image\\bg1.jpg");
-
-    // 检查图片是否加载成功
-    if (bgImage.isNull())
-    {
-        qDebug() << "图片加载失败，请检查路径！";
-        return; // 退出程序
-    }
-
-    // 设置 QLabel 填充整个窗口
-    bgLabel->setPixmap(bgImage);
-    bgLabel->setScaledContents(true);
-    bgLabel->setGeometry(0, 0, this->width(), this->height());
+    // 设置背景图片
+    setBackgroundImage();
 }
 
 Widget::~Widget()
 {
     delete ui;
+}
+
+void Widget::setBackgroundImage()
+{
+    backgroundImage = QPixmap(backgroundImagePath);
+
+    if (backgroundImage.isNull()) {
+        qDebug() << "背景图片加载失败";
+        return;
+    }
+
+    update(); // 触发重绘
+}
+
+void Widget::paintEvent(QPaintEvent *event)
+{
+    QPainter painter(this);
+    if (!backgroundImage.isNull()) {
+        // 绘制背景图片
+        painter.drawPixmap(0, 0, width(), height(), backgroundImage);
+    }
+
+    QWidget::paintEvent(event);
+}
+
+void Widget::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
 }

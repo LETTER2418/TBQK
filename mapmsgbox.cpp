@@ -37,7 +37,6 @@ MapMsgBox::MapMsgBox(QWidget *parent)
     connect(color1Button, &QPushButton::clicked, this, &MapMsgBox::openColorDialog1);
     connect(color2Button, &QPushButton::clicked, this, &MapMsgBox::openColorDialog2);
     connect(color3Button, &QPushButton::clicked, this, &MapMsgBox::openColorDialog3);
-
     connect(closeButton, &QPushButton::clicked, this, [this]()
     {
         emit sendMsg(rings, color1, color2, color3);

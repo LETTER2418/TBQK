@@ -6,6 +6,8 @@
 #include "messagebox.h"
 #include "mapdata.h"
 #include "socketmanager.h"
+#include "onlinechat.h"
+#include "datamanager.h"
 
 
 // 定义操作结构体，用于记录每次操作
@@ -20,12 +22,13 @@ class Game : public QWidget
     Q_OBJECT
 
 public:
-    Game(QWidget *parent = nullptr);
+    Game(QWidget *parent = nullptr, DataManager *dataManager = nullptr);
     ~Game();
     void setMap(MapData mapData);
     void setSocketManager(SocketManager* manager);  // 设置SocketManager
     void setOnlineMode(bool isServerMode, SocketManager* manager); // 用于联机模式的设置（角色和SocketManager）
     Lbutton *backButton;
+    bool getOnlineMode();
 
 signals:
     // 返回关卡模式的信号，携带完成信息
@@ -105,6 +108,10 @@ private:
     // 网络同步相关
     SocketManager* socketManager = nullptr;  // SocketManager指针
     bool isServer = false;  // 是否是服务器, 由setOnlineMode设置
+    OnlineChat* onlineChat = nullptr; // 联机聊天窗口
+    bool isOnlineMode = false; // 是否为联机模式，用于设置聊天窗口是否显示
+
+    DataManager *dataManager;  // 添加 DataManager 指针
 };
 
 #endif // GAME_H

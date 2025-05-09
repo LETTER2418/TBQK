@@ -3,8 +3,8 @@
         <file>image/start.png</file>
         <file>sound/BUTTON.ogg</file>
         <file>image/msg.png</file>
-        <file>image/bg1.jpg</file>
         <file>image/taiji.png</file>
         <file>image/msg.gif</file>
+        <file>image/bg.jpg</file>
     </qresource>
 </RCC>

@@ -21,6 +21,7 @@ private slots:
 public:
     OnlineMsgBox *msgBox;
     SocketManager *socketManager;
+    Lbutton *cancelButton;
 
 private:
     Lbutton *createRoomButton;

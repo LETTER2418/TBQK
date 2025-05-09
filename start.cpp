@@ -77,8 +77,6 @@ void Start::onLoginClicked()
         return;
     }
 
-    dataManager->loadFromFile();
-
     // 验证账号密码
     if (dataManager->checkPassword(username, password)) {
         YESmessageBox->setMessage("成功登录！");
@@ -102,9 +100,6 @@ void Start::onRegisterClicked()
         //QMessageBox::warning(this, "输入错误", "账号和密码不能为空！");
         return;
     }
-
-    // 加载用户信息
-    dataManager->loadFromFile();
 
     // 检查账号是否已存在
     if (dataManager->getAllUserIds().contains(username)) {

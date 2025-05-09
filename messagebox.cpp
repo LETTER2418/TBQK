@@ -38,8 +38,6 @@ MessageBox::MessageBox(QWidget *parent, bool showCancelButton)
     
     // 设置消息标签
     messageLabel->setStyleSheet("QLabel { color: white; font-size: 20px; }");
-    messageLabel->setAlignment(Qt::AlignCenter); // 文字居中
-    messageLabel->setWordWrap(true); // 添加自动换行
     
     // 居中显示
     messageLabel->move((width() - messageLabel->width()) / 2, (height() - messageLabel->height()) / 2);
@@ -58,10 +56,29 @@ MessageBox::~MessageBox()
 
 void MessageBox::setMessage(const QString &message)
 {
+    // 先设置文本
     messageLabel->setText(message);
-    messageLabel->adjustSize(); // 调整标签大小以适应文本
     
-    // 重新居中消息标签
+    // 设置最大宽度为窗口宽度的78%
+    int maxWidth = width() * 0.78;
+    
+    // 启用自动换行并设置固定宽度
+    messageLabel->setWordWrap(true);
+    messageLabel->setFixedWidth(maxWidth);
+    
+    // 调整大小以适应内容
+    messageLabel->adjustSize();
+    
+    // 检查文本是否为单行
+    if (!message.contains('\n') && messageLabel->height() <= messageLabel->fontMetrics().height() * 1.5) {
+        // 单行文本：水平居中对齐
+        messageLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    } else {
+        // 多行文本：左对齐
+        messageLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    }
+    
+    // 重新居中消息标签在窗口中的位置
     int x = (width() - messageLabel->width()) / 2;
     int y = (height() - messageLabel->height()) / 2;
     messageLabel->move(x, y);

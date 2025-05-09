@@ -41,8 +41,13 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     // 连接确认对话框的确认按钮
     connect(confirmMessageBox->closeButton, &Lbutton::clicked, this, [this]() {
         dataManager->clearAllData();
+        dataManager->saveToFile();
         confirmMessageBox->accept();
         successMessageBox->exec();
+    });
+
+    connect(successMessageBox->closeButton, &Lbutton::clicked, this, [this]() {
+        successMessageBox->accept();
     });
 
     // 连接确认对话框的取消按钮

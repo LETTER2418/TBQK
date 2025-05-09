@@ -27,7 +27,7 @@ public:
         JoinMode     // 加入房间模式
     };
 
-    explicit OnlineMsgBox(QWidget *parent = nullptr, SocketManager* manager = nullptr);
+    explicit OnlineMsgBox(QWidget *parent = nullptr,SocketManager* manager = nullptr);
     ~OnlineMsgBox();
     QString getLocalIP();
     void setBackgroundImage(const QString& path);
@@ -35,7 +35,7 @@ public:
     void setMode(Mode mode);  // 设置对话框模式
 
 signals:
-    void enterLevelMode();     // 进入关卡模式的信号
+    void enterLevelMode();     // 进入关卡模式的信号，同时设置在线模式
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -47,8 +47,6 @@ private slots:
 public slots:
     void startServer();
     void connectToServer();
-    void sendMessage();
-    void displayMessage(const QString& sender, const QString& message);
     void handleConnectionError(const QString& error);
     void handleClientConnected();
     void handleClientDisconnected();
@@ -59,14 +57,8 @@ private:
     QLabel *portLabel;
     QLineEdit *ipInput;
     QLineEdit *portInput;
-    QPushButton *serverButton;
-    QPushButton *clientButton;
-    QPushButton *sendButton;
     Lbutton *actionButton;
     Lbutton *cancelButton;
-    QLineEdit *messageInput;
-    QTextEdit *chatDisplay;
-    
     SocketManager *socketManager;
     bool isConnected;
     QPixmap backgroundImage;

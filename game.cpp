@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <QTimer>
 
-Game::Game(QWidget *parent) : QWidget(parent)
+Game::Game(QWidget *parent, DataManager *dataManager_) : QWidget(parent), dataManager(dataManager_)
 {
     initializeUI();
     setupConnections();
@@ -14,7 +14,6 @@ Game::Game(QWidget *parent) : QWidget(parent)
 
 Game::~Game()
 {
-    // Qt的父子对象系统会自动处理内存释放
 }
 
 // === UI初始化和更新 ===
@@ -63,12 +62,13 @@ void Game::setMap(MapData mapData)
     // 计算游戏的环数
     rings = 0;
     for (int i = 0; i < hexagons.size(); i++)
-        {
-            QPoint coord = hexagonIndexToCoord(i);
-            rings = qMax(rings, getHexagonRing(coord));
-        }
+    {
+        QPoint coord = hexagonIndexToCoord(i);
+        rings = qMax(rings, getHexagonRing(coord));
+    }
 
     resetGameState();
+    update();
 }
 
 // === 游戏状态管理 ===
@@ -112,12 +112,19 @@ void Game::handleGameCompletion()
 {
     // 停止计时器
     stopTimer();
+    
+    // 仅在非联机模式或服务器模式下发送带有完成信息的信号
+    // 客户端模式下不更新排行榜数据
+    if (!isOnlineMode || isServer) {
+        emit returnToLevelMode(true, penaltySeconds, stepCount, currentLevelId);
+    } else {
+        // 客户端模式只发送无需更新排行榜的信号
+        emit returnToLevelMode(false, penaltySeconds, stepCount, currentLevelId);
+    }
+    
     QString message = QString("恭喜完成！用时：%1").arg(timeText);
     messageBox->setMessage(message);
     messageBox->exec();
-
-    // 发送带有完成信息的信号
-    emit returnToLevelMode(true, penaltySeconds, stepCount, currentLevelId);
 }
 
 // === 六边形操作 ===
@@ -163,9 +170,9 @@ int Game::findClosestHexagon(const QPointF& clickPos)
 void Game::withdrawLastOperation()
 {
     if (operationHistory.isEmpty())
-        {
-            return;
-        }
+    {
+        return;
+    }
 
     Operation lastOp = operationHistory.last();
     hexagons[lastOp.hexagonIndex].color = lastOp.oldColor;
@@ -173,9 +180,9 @@ void Game::withdrawLastOperation()
     operationHistory.removeLast();
 
     if (!currentPath.isEmpty())
-        {
-            currentPath.removeLast();
-        }
+    {
+        currentPath.removeLast();
+    }
 
     update();
 
@@ -525,11 +532,8 @@ void Game::setCurrentLevelId(int id)
 
 void Game::setSocketManager(SocketManager* manager)
 {
-    socketManager = manager;
-    if (socketManager) {
-        connect(socketManager, &SocketManager::gameStateReceived,
-                this, &Game::onGameStateReceived);
-    }
+    this->socketManager = manager;
+    connect(socketManager, &SocketManager::gameStateReceived,this, &Game::onGameStateReceived);
 }
 
 void Game::onGameStateReceived(const MapData& mapData)
@@ -541,11 +545,31 @@ void Game::onGameStateReceived(const MapData& mapData)
     }
 }
 
-void Game::setOnlineMode(bool isServerMode, SocketManager* manager)
+void Game::setOnlineMode(bool isServer_, SocketManager* manager)
 {
-    this->isServer = isServerMode;
-    setSocketManager(manager); // 复用已有的 setSocketManager 方法
-                               // 如果 setSocketManager 除了赋值和连接信号外还有其他逻辑，
-                               // 需要确保这些逻辑得到保留。
+    isServer = isServer_;
+    isOnlineMode = (manager != nullptr);  // 根据 manager 是否为空来设置联机模式
+    
+    if (manager) {
+        setSocketManager(manager);
+        
+        // 创建并显示聊天窗口
+        if (onlineChat == nullptr) {
+            onlineChat = new OnlineChat(manager, this);
+            onlineChat->setWindowTitle("联机聊天");
+        }
+        onlineChat->show();
+    } else {
+        // 隐藏聊天窗口
+        if (onlineChat) {
+            onlineChat->hide();
+        }
+        socketManager = nullptr;
+    }
+}
+
+bool Game::getOnlineMode()
+{
+    return isOnlineMode;
 }
 

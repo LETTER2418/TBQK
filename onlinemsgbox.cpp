@@ -27,16 +27,6 @@ OnlineMsgBox::OnlineMsgBox(QWidget *parent, SocketManager* manager)
     portInput = new QLineEdit("8888", this);
     portInput->setMaximumWidth(100);
     
-    serverButton = new QPushButton("启动服务器", this);
-    clientButton = new QPushButton("连接到服务器", this);
-    
-    chatDisplay = new QTextEdit(this);
-    chatDisplay->setReadOnly(true);
-    
-    messageInput = new QLineEdit(this);
-    sendButton = new QPushButton("发送", this);
-    sendButton->setEnabled(false);
-    
     // 创建按钮
     cancelButton = new Lbutton(this, "取消", "black");
     actionButton = new Lbutton(this, "创建", "black");  // 默认显示"创建"
@@ -50,43 +40,25 @@ OnlineMsgBox::OnlineMsgBox(QWidget *parent, SocketManager* manager)
     topLayout->addWidget(portInput, 2, 1);
     
     QHBoxLayout *buttonLayout = new QHBoxLayout();
-    buttonLayout->addWidget(serverButton);
-    buttonLayout->addWidget(clientButton);
-    buttonLayout->addStretch();
     buttonLayout->addWidget(cancelButton);
     buttonLayout->addSpacing(20);
     buttonLayout->addWidget(actionButton);
     buttonLayout->addStretch();
     
-    QHBoxLayout *messageLayout = new QHBoxLayout();
-    messageLayout->addWidget(messageInput);
-    messageLayout->addWidget(sendButton);
     
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->addLayout(topLayout);
     mainLayout->addLayout(buttonLayout);
-    mainLayout->addWidget(chatDisplay);
-    mainLayout->addLayout(messageLayout);
     
     setLayout(mainLayout);
     
     // 设置窗口尺寸
     resize(300, 400);
     
-    // 在构造函数中连接信号，如果 socketManager 有效
-    if (socketManager) {
-        connect(socketManager, &SocketManager::newMessageReceived, this, &OnlineMsgBox::displayMessage);
-        connect(socketManager, &SocketManager::connectionError, this, &OnlineMsgBox::handleConnectionError);
-        connect(socketManager, &SocketManager::clientConnected, this, &OnlineMsgBox::handleClientConnected);
-        connect(socketManager, &SocketManager::clientDisconnected, this, &OnlineMsgBox::handleClientDisconnected);
-        connect(socketManager, &SocketManager::navigateToPageRequest, this, &OnlineMsgBox::handleNavigateRequest);
-    }
-    
-    // 连接UI控件的信号
-    connect(serverButton, &QPushButton::clicked, this, &OnlineMsgBox::startServer);
-    connect(clientButton, &QPushButton::clicked, this, &OnlineMsgBox::connectToServer);
-    connect(sendButton, &QPushButton::clicked, this, &OnlineMsgBox::sendMessage);
-    connect(messageInput, &QLineEdit::returnPressed, this, &OnlineMsgBox::sendMessage);//回车发送消息
+    connect(socketManager, &SocketManager::connectionError, this, &OnlineMsgBox::handleConnectionError);
+    connect(socketManager, &SocketManager::clientConnected, this, &OnlineMsgBox::handleClientConnected);
+    connect(socketManager, &SocketManager::clientDisconnected, this, &OnlineMsgBox::handleClientDisconnected);
+    connect(socketManager, &SocketManager::navigateToPageRequest, this, &OnlineMsgBox::handleNavigateRequest);
     
     // 连接取消和创建/加入按钮的信号
     connect(cancelButton, &QPushButton::clicked, this, &QWidget::hide);
@@ -174,14 +146,48 @@ OnlineMsgBox::~OnlineMsgBox()
 QString OnlineMsgBox::getLocalIP()
 {
     QString localIP = "未知";
-    const QHostAddress &localhost = QHostAddress(QHostAddress::LocalHost);
     
+    //遍历所有网络接口
+    foreach(QNetworkInterface networkInterface, QNetworkInterface::allInterfaces()) {
+        // 检查接口是否活跃且不是回环接口
+        if (networkInterface.flags().testFlag(QNetworkInterface::IsUp) && 
+            !networkInterface.flags().testFlag(QNetworkInterface::IsLoopBack)) {
+            
+            QString interfaceName = networkInterface.name();
+            QString humanReadableName = networkInterface.humanReadableName();
+            
+            // 扩展检测条件，包括更多可能的WLAN标识
+            bool isWlan = interfaceName.toLower().contains("wlan") || 
+                         humanReadableName.toLower().contains("wlan") ||
+                         humanReadableName.toLower().contains("wi-fi") ||
+                         humanReadableName.toLower().contains("wi fi") ||
+                         humanReadableName.toLower().contains("wireless") ||
+                         humanReadableName.toLower().contains("无线");
+            
+            // 如果接口名称或描述包含WLAN相关字样，或者是特定的网络接口类型
+            if (isWlan) {
+                // 获取此适配器的IPv4地址
+                foreach(QNetworkAddressEntry entry, networkInterface.addressEntries()) {
+                    QHostAddress ip = entry.ip();
+                    if (ip.protocol() == QAbstractSocket::IPv4Protocol && !ip.isLoopback()) {
+                        localIP = ip.toString();
+                        return localIP;
+                    }
+                }
+            }
+        }
+    }
+    
+    // 如果没找到WLAN适配器，则回退到获取任何可用的非本地IPv4地址
+    const QHostAddress &localhost = QHostAddress(QHostAddress::LocalHost);
     for (const QHostAddress &address: QNetworkInterface::allAddresses()) {
         if (address.protocol() == QAbstractSocket::IPv4Protocol && address != localhost) {
             localIP = address.toString();
+            qDebug() << "使用备用IPv4地址:" << localIP;
             break;
         }
     }
+    
     return localIP;
 }
 
@@ -189,7 +195,6 @@ void OnlineMsgBox::startServer()
 {
     if (!socketManager) {
         qWarning() << "SocketManager not set in OnlineMsgBox!";
-        chatDisplay->append("<系统> 内部错误：SocketManager 未设置");
         return;
     }
     
@@ -202,25 +207,14 @@ void OnlineMsgBox::startServer()
     
     // 假设SocketManager已实现StartServer方法
     if (socketManager->StartServer()) {
-        qDebug() << "服务器启动成功，端口:" << portInput->text();
-        chatDisplay->append("<系统> 服务器已启动，等待连接...");
-        serverButton->setEnabled(false);
-        clientButton->setEnabled(false);
-        sendButton->setEnabled(true);
         isConnected = true;
     } else {
         qDebug() << "服务器启动失败，端口:" << portInput->text();
-        chatDisplay->append("<系统> 服务器启动失败");
     }
 }
 
 void OnlineMsgBox::connectToServer()
 {
-    if (!socketManager) {
-        qWarning() << "SocketManager not set in OnlineMsgBox!";
-        chatDisplay->append("<系统> 内部错误：SocketManager 未设置");
-        return;
-    }
     
     QString ip = ipInput->text();
     bool ok = false;
@@ -231,62 +225,25 @@ void OnlineMsgBox::connectToServer()
     }
     
     qDebug() << "正在连接到服务器，IP:" << ip << "端口:" << portInput->text();
-    // 尝试连接，不再检查返回值
+
     socketManager->StartClient(ip);
-
-    // 更新UI为"正在连接"状态
-    chatDisplay->append("<系统> 正在连接到服务器...");
-    serverButton->setEnabled(false);
-    clientButton->setEnabled(false);
-    sendButton->setEnabled(false); // 在连接成功前禁用发送按钮
-    // isConnected 状态将在 handleClientConnected 中设置为 true
 }
 
-void OnlineMsgBox::sendMessage()
-{
-    if (isConnected && socketManager) {
-        QString message = messageInput->text().trimmed();
-        if (!message.isEmpty()) {
-            socketManager->SendChatMessage(message, "User");
-            messageInput->clear();
-        }
-    }
-}
-
-void OnlineMsgBox::displayMessage(const QString& sender, const QString& message)
-{
-    QString timestamp = QDateTime::currentDateTime().toString("[hh:mm:ss]");
-    chatDisplay->append(QString("%1 <%2> %3").arg(timestamp).arg(sender).arg(message));
-}
 
 void OnlineMsgBox::handleConnectionError(const QString& error)
 {
     qDebug() << "连接错误:" << error;
-    chatDisplay->append(QString("<系统> 错误: %1").arg(error));
-    // 连接失败，恢复按钮状态
-    serverButton->setEnabled(true);
-    clientButton->setEnabled(true);
-    sendButton->setEnabled(false);
     isConnected = false;
 }
 
 void OnlineMsgBox::handleClientConnected()
 {
-    qDebug() << "成功连接到服务器";
-    chatDisplay->append("<系统> 已连接到服务器");
-    serverButton->setEnabled(false); // 保持禁用状态
-    clientButton->setEnabled(false); // 保持禁用状态
-    sendButton->setEnabled(true);
     isConnected = true;
 }
 
 void OnlineMsgBox::handleClientDisconnected()
 {
     qDebug() << "客户端已断开连接";
-    chatDisplay->append("<系统> 客户端已断开连接");
-    serverButton->setEnabled(true);
-    clientButton->setEnabled(true);
-    sendButton->setEnabled(false);
     isConnected = false;
 }
 
@@ -306,6 +263,6 @@ void OnlineMsgBox::handleNavigateRequest(const QString& pageName)
         // 客户端收到指令，切换到levelModePage
         // 它通过发出 enterLevelMode 信号，让 MainWindow 处理页面切换
         emit enterLevelMode();
-        hide(); // 可能也需要隐藏当前的 OnlineMsgBox
+        hide();
     }
 }

@@ -1,20 +1,15 @@
 #ifndef WIDGET_H
 #define WIDGET_H
 
-#include <QStackedWidget>
-#include <QLabel>
-#include <QApplication>
+#include <QWidget>
 #include <QPixmap>
-#include <QDebug>
-#include <QGridLayout>
 #include <QFont>
-#include <Qwidget>
+#include <QPainter>
+#include <QPaintEvent>
 
-QT_BEGIN_NAMESPACE
 namespace Ui {
 class Widget;
 }
-QT_END_NAMESPACE
 
 class Widget : public QWidget
 {
@@ -23,9 +18,16 @@ class Widget : public QWidget
 public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
+    void setBackgroundImage();
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 private:
     Ui::Widget *ui;
+    QPixmap backgroundImage;
+    const QString backgroundImagePath=":\\image\\bg.jpg";
 
 };
 #endif // WIDGET_H

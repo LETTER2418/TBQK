@@ -29,7 +29,7 @@ SocketManager::~SocketManager()
         }
         delete clientSocket;
     }
-    
+
     // 清理定时器
     if (connectionTimer) {
         connectionTimer->stop();
@@ -57,18 +57,18 @@ bool SocketManager::StartServer()
         server->close();
         delete server;
     }
-    
+
     server = new QTcpServer(this);
-    
+
     // 连接信号
     connect(server, &QTcpServer::newConnection, this, &SocketManager::handleNewConnection);
-    
+
     // 尝试在指定端口上启动服务器
     if (!server->listen(QHostAddress::Any, SERVER_PORT)) {
         emit connectionError(QString("无法启动服务器: %1").arg(server->errorString()));
         return false;
     }
-    
+
     isServer = true;
     return true;
 }
@@ -84,20 +84,20 @@ void SocketManager::StartClient(const QString& serverAddress)
         }
         delete clientSocket;
     }
-    
+
     // 清理旧的定时器
     if (connectionTimer) {
         connectionTimer->stop();
         delete connectionTimer;
     }
-    
+
     // 创建新的定时器，设置为5秒超时
     connectionTimer = new QTimer(this);
     connectionTimer->setSingleShot(true);
     connect(connectionTimer, &QTimer::timeout, this, &SocketManager::handleConnectionTimeout);
-    
+
     clientSocket = new QTcpSocket(this);
-    
+
     // 连接信号
     connect(clientSocket, &QTcpSocket::connected, this, [this](){
         // 连接成功，停止定时器
@@ -112,7 +112,7 @@ void SocketManager::StartClient(const QString& serverAddress)
 
     // 尝试连接到服务器
     clientSocket->connectToHost(serverAddress, SERVER_PORT);
-    
+
     // 启动5秒定时器
     connectionTimer->start(5000);
 
@@ -127,7 +127,7 @@ void SocketManager::SendChatMessage(const QString& message, const QString& sende
     jsonMessage["sender"] = sender;
     jsonMessage["message"] = message;
     jsonMessage["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
-    
+
     if (isServer) {
         // 服务器广播消息给所有客户端
         for (QTcpSocket* clientSocket : clientSockets) {
@@ -147,7 +147,7 @@ void SocketManager::SendGameState(const MapData& mapData)
     jsonMessage["type"] = "gameState";
     jsonMessage["mapData"] = mapData.toJson();
     jsonMessage["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
-    
+
     if (isServer) {
         // 服务器广播游戏状态给所有客户端
         for (QTcpSocket* clientSocket : clientSockets) {
@@ -172,12 +172,12 @@ void SocketManager::handleNewConnection()
 {
     // 接收新的客户端连接
     QTcpSocket* clientSocket = server->nextPendingConnection();
-    
+
     // 连接信号
     connect(clientSocket, &QTcpSocket::disconnected, this, &SocketManager::handleClientDisconnected);
     connect(clientSocket, &QTcpSocket::readyRead, this, &SocketManager::handleReadyRead);
     connect(clientSocket, &QTcpSocket::errorOccurred, this, &SocketManager::handleError);
-    
+
     // 添加到客户端列表
     clientSockets.append(clientSocket);
     clientsState[clientSocket] = true; // 设置初始状态
@@ -195,7 +195,7 @@ void SocketManager::handleNewConnection()
 void SocketManager::handleClientDisconnected()
 {
     QTcpSocket* socket = qobject_cast<QTcpSocket*>(sender());
-    
+
     if (isServer) {
         // 服务器模式：处理客户端断开连接
         if (socket && clientSockets.contains(socket)) {
@@ -203,7 +203,7 @@ void SocketManager::handleClientDisconnected()
             clientSockets.removeOne(socket);
             clientsState.remove(socket);
             serverSendMsgList.remove(socket);
-            
+
             // 断开所有信号连接
             socket->disconnect();
             socket->deleteLater();
@@ -218,11 +218,11 @@ void SocketManager::handleReadyRead()
 {
     QTcpSocket* socket = qobject_cast<QTcpSocket*>(sender());
     if (!socket) return;
-    
+
     // 读取所有可用数据
     QByteArray data = socket->readAll();
     if (data.isEmpty()) return;
-    
+
     // 处理接收到的数据
     processReceivedData(socket, data);
 }
@@ -240,12 +240,12 @@ void SocketManager::handleError(QAbstractSocket::SocketError socketError)
 {
     QTcpSocket* socket = qobject_cast<QTcpSocket*>(sender());
     QString errorMsg;
-    
+
     // 如果定时器在运行，停止定时器
     if (connectionTimer && connectionTimer->isActive()) {
         connectionTimer->stop();
     }
-    
+
     if (socket) {
         errorMsg = socket->errorString();
     } else {
@@ -264,7 +264,7 @@ void SocketManager::handleError(QAbstractSocket::SocketError socketError)
                 errorMsg = "发生网络错误";
         }
     }
-    
+
     emit connectionError(errorMsg);
 }
 
@@ -280,22 +280,22 @@ bool SocketManager::ServerSendMsg(QTcpSocket* client, const QJsonObject& msg)
     if (!client || client->state() != QAbstractSocket::ConnectedState) {
         return false;
     }
-    
+
     // 直接实现发送逻辑，而不是调用返回 void 的 sendJson
     QJsonDocument doc(msg);
     QByteArray data = doc.toJson(QJsonDocument::Compact);
     data.append('\n');
-    
+
     qint64 bytesWritten = client->write(data);
     client->flush();
-    
+
     return (bytesWritten == data.size());
 }
 
 void SocketManager::ServerProcessClientSendMsgList(QTcpSocket* client)
 {
     if (!serverSendMsgList.contains(client)) return;
-    
+
     QQueue<QJsonObject>& msgQueue = serverSendMsgList[client];
     while (!msgQueue.isEmpty()) {
         QJsonObject msg = msgQueue.dequeue();
@@ -322,18 +322,18 @@ bool SocketManager::sendJson(QTcpSocket* socket, const QJsonObject& json)
     if (!socket || socket->state() != QAbstractSocket::ConnectedState) {
         return false;
     }
-    
+
     // 将JSON对象转换为文档再转换为字节数组
     QJsonDocument doc(json);
     QByteArray data = doc.toJson(QJsonDocument::Compact);
-    
+
     // 添加消息结束标记（可选，但建议）
     data.append('\n');
-    
+
     // 写入数据
     qint64 bytesWritten = socket->write(data);
     socket->flush();
-    
+
     return (bytesWritten == data.size());
 }
 
@@ -341,7 +341,7 @@ void SocketManager::processReceivedData(QTcpSocket* socket, const QByteArray& da
 {
     // 分割可能的多条JSON消息（假设以 '\n' 分隔）
     QList<QByteArray> jsonMessages = data.split('\n');
-    
+
     for (const QByteArray& jsonData : jsonMessages) {
         if (jsonData.trimmed().isEmpty()) {
             continue;
@@ -379,4 +379,36 @@ void SocketManager::processReceivedData(QTcpSocket* socket, const QByteArray& da
 bool SocketManager::isServerMode() const
 {
     return isServer;
+}
+
+void SocketManager::closeConnection()
+{
+    if (isServer) {
+        // 如果是服务器，断开所有客户端连接
+        for (QTcpSocket* socket : clientSockets) {
+            if (socket) {
+                socket->disconnectFromHost();
+                if (socket->state() != QAbstractSocket::UnconnectedState) {
+                    socket->waitForDisconnected();
+                }
+            }
+        }
+        clientSockets.clear();
+        
+        // 停止服务器监听
+        if (server) {
+            server->close();
+        }
+    } else {
+        // 如果是客户端，断开与服务器的连接
+        if (clientSocket) {
+            clientSocket->disconnectFromHost();
+            if (clientSocket->state() != QAbstractSocket::UnconnectedState) {
+                clientSocket->waitForDisconnected();
+            }
+        }
+    }
+    
+    // 重置状态
+    isServer = false;
 }

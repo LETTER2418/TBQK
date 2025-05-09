@@ -2,6 +2,11 @@
 
 MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedWidget(this))
 {
+    // 设置窗口标志，禁止拖拽
+    setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint | Qt::MSWindowsFixedSizeDialogHint);
+    // 禁用标题栏关闭按钮
+    //setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::MSWindowsFixedSizeDialogHint);
+
     // 设置应用图标
     QIcon appIcon(":/image/taiji.png");
     this->setWindowIcon(appIcon);
@@ -21,6 +26,10 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     // 退出按钮连接到窗口关闭
     QObject::connect(exitButton, &QPushButton::clicked, this, &QWidget::close);
 
+    // 定义按钮和布局边距的局部变量
+    int buttonHorizontalSpacing = 200; // 按钮水平间距
+    int buttonVerticalSpacing = 100;    // 按钮垂直间距
+
     // 创建按钮的网格布局
     QGridLayout *layout = new QGridLayout();
     layout->addWidget(startButton, 0, 0);
@@ -28,10 +37,15 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     layout->addWidget(settingButton, 0, 1);
     layout->addWidget(exitButton, 1, 1);
 
+    // 设置按钮之间的水平和垂直间距
+    layout->setHorizontalSpacing(buttonHorizontalSpacing);
+    layout->setVerticalSpacing(buttonVerticalSpacing);
+
+
     // 创建一个 QWidget 作为中央部件
     QWidget *buttonWidget = new QWidget(mainPage);
     buttonWidget->setLayout(layout);
-    buttonWidget->setFixedSize(400, 200);  // 固定大小
+    // buttonWidget->setFixedSize(400, 200);  // 固定大小
 
     // 创建一个布局让 buttonWidget 居中
     QVBoxLayout *page1Layout = new QVBoxLayout(mainPage);
@@ -56,8 +70,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     saveRandomMapMsgBox->hide();
     saveCustomMapMsgBox = new SaveMapMsgBox(this);
     saveCustomMapMsgBox->hide();
-    gamePage = new Game(this);
-    gamePage->hide();
+    gamePage = new Game(this, dataManager);
     rankPage = new RankPage(this, dataManager);
     settingPage = new Setting(this, dataManager);
     onlineModePage = new OnlineMode(this, socketManager);
@@ -72,7 +85,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     {
         pageStack->setCurrentWidget(mainPage);
     });
-    
+
     connect(settingPage->backButton, &QPushButton::clicked, this, [this]()
     {
         pageStack->setCurrentWidget(mainPage);
@@ -87,7 +100,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     {
         pageStack->setCurrentWidget(aboutPage);
     });
-    
+
     connect(settingButton, &QPushButton::clicked, this, [this]()
     {
         pageStack->setCurrentWidget(settingPage);
@@ -111,25 +124,35 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
         pageStack->setCurrentWidget(levelEditorPage);
     });
 
-     connect(menuPage->levelModeButton, &QPushButton::clicked, this, [this]()
+    connect(menuPage->levelModeButton, &QPushButton::clicked, this, [this]()
     {
         pageStack->setCurrentWidget(levelModePage);
     });
 
-      connect(menuPage->rankButton, &QPushButton::clicked, this, [this]()
+    connect(menuPage->rankButton, &QPushButton::clicked, this, [this]()
     {
         pageStack->setCurrentWidget(rankPage);
     });
-    
+
     connect(menuPage->onlineButton, &QPushButton::clicked, this, [this]()
     {
         pageStack->setCurrentWidget(onlineModePage);
     });
 
-    // 连接在线模式的信号
+    connect(onlineModePage->cancelButton, &QPushButton::clicked, this, [this]()
+    {
+        socketManager->closeConnection();  // 关闭连接
+        if (gamePage->getOnlineMode())
+            {
+                gamePage->setOnlineMode(false, nullptr);  // 重置游戏页面的联机模式
+            }
+        pageStack->setCurrentWidget(menuPage);
+    });
+
     connect(onlineModePage->msgBox, &OnlineMsgBox::enterLevelMode, this, [this]()
     {
         pageStack->setCurrentWidget(levelModePage);
+        gamePage->setOnlineMode(true, socketManager);
     });
 
     connect(levelEditorPage->backButton, &QPushButton::clicked, this, [this]()
@@ -157,17 +180,27 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
         {
             connect(levelModePage->buttons[i], &QPushButton::clicked, this, [this, i]()
             {
-               bool isHost = (this->socketManager && this->socketManager->isServerMode());
-
-               if (isHost) { // 如果是服务器端
-                   MapData mapData = dataManager->getMap(i + 1);
-                   gamePage->setOnlineMode(isHost, this->socketManager);
-                   this->socketManager->SendGameState(mapData);
-                   gamePage->setMap(mapData);
-                   pageStack->setCurrentWidget(gamePage);
-               } else {
-                   qDebug() << "客户端已选择关卡，等待服务器数据...";
-               }
+                if (gamePage->getOnlineMode())
+                    {
+                        if (socketManager->isServerMode())   // 如果是服务器端
+                            {
+                                MapData mapData = dataManager->getMap(i + 1);
+                                gamePage->setOnlineMode(true, socketManager);
+                                socketManager->SendGameState(mapData);
+                                gamePage->setMap(mapData);
+                                pageStack->setCurrentWidget(gamePage);
+                            }
+                        else
+                            {
+                                qDebug() << "客户端已选择关卡，等待服务器数据...";
+                            }
+                    }
+                else
+                    {
+                        MapData mapData = dataManager->getMap(i + 1);
+                        gamePage->setMap(mapData);
+                        pageStack->setCurrentWidget(gamePage);
+                    }
             });
         }
 
@@ -217,19 +250,31 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
         dataManager->saveToFile();
     });
 
-    
+
 
     connect(levelModePage->backButton, &QPushButton::clicked, this, [this]()
     {
-        pageStack->setCurrentWidget(menuPage);
+        if (gamePage->getOnlineMode())
+            {
+                pageStack->setCurrentWidget(onlineModePage);
+            }
+        else
+            {
+                pageStack->setCurrentWidget(menuPage);
+            }
     });
 
     connect(gamePage->backButton, &QPushButton::clicked, this, [this]()
     {
-        pageStack->setCurrentWidget(levelModePage);
+        if (gamePage->getOnlineMode())
+            {
+                pageStack->setCurrentWidget(onlineModePage);
+            }
+        else
+            {
+                pageStack->setCurrentWidget(levelModePage);
+            }
     });
-
-   
 
     connect(rankPage->backButton, &QPushButton::clicked, this, [this]()
     {
@@ -239,12 +284,12 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     // 连接游戏完成时返回关卡模式的信号
     connect(gamePage, &Game::returnToLevelMode, this, [this](bool completed, int penaltySeconds, int steps, int levelId)
     {
-        if (completed && !currentUserId.isEmpty()) {
+        // 只有当游戏完成并且有有效用户ID时才更新排行榜
+        if (completed && !currentUserId.isEmpty())
+        {
             // 更新排行榜
             dataManager->updateRanking(levelId, currentUserId, penaltySeconds, steps);
-            // 确保数据保存到文件
-            dataManager->saveToFile();
-         pageStack->setCurrentWidget(levelModePage);
+            pageStack->setCurrentWidget(rankPage);
         }
         
     });
@@ -264,7 +309,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     pageStack->addWidget(onlineModePage);
 
     // 设置默认显示的页面
-    this->pageStack->setCurrentWidget(startPage);
+    this->pageStack->setCurrentWidget(mainPage);
 
     // 主布局
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
@@ -274,12 +319,13 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
 
 void MainWindow::onClientReceivedGameState(const MapData& mapData)
 {
-    if (socketManager && !socketManager->isServerMode()) { // 确保是客户端
-        qDebug() << "客户端接收到 gameState, 准备加载关卡: " << mapData.id;
-        gamePage->setOnlineMode(false, this->socketManager); // 配置gamePage为客户端模式
-        gamePage->setMap(mapData);                           // 设置地图
-        pageStack->setCurrentWidget(gamePage);             // 切换到游戏页面
-    }
+    if (socketManager && !socketManager->isServerMode())   // 确保是客户端
+        {
+            qDebug() << "客户端接收到 gameState, 准备加载关卡: " << mapData.id;
+            gamePage->setOnlineMode(true, socketManager); // 配置gamePage为客户端模式
+            gamePage->setMap(mapData);                           // 设置地图
+            pageStack->setCurrentWidget(gamePage);             // 切换到游戏页面
+        }
 }
 
 MainWindow::~MainWindow()

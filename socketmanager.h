@@ -24,6 +24,7 @@ public:
     void SendChatMessage(const QString& message, const QString& sender = "User");
     void SendGameState(const MapData& mapData);  // 发送游戏状态
     QJsonObject CreateMsg();
+    void closeConnection();  // 关闭连接
 
     bool isServerMode() const; // 用于检查当前是否为服务器模式
 
