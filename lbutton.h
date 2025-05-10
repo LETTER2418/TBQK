@@ -22,6 +22,12 @@ public:
     // 构造函数，接收按钮文字
     explicit Lbutton(QWidget *parent = nullptr, const QString &text="Lbutton");
     explicit Lbutton(QWidget *parent, const QString &text, QString color, int fontSize=12);
+    
+    // 设置按钮音量
+    void setButtonVolume(float volume);
+    
+    // 设为public成员，以便外部访问
+    QAudioOutput *audioOutput; // 音频输出
 
 protected:
     // 重写paintEvent实现自定义绘制
@@ -33,7 +39,6 @@ private slots:
 
 private:
     QMediaPlayer *player;     // 用于播放按钮点击音效
-    QAudioOutput *audioOutput; // 音频输出
     QTimer *timer;             // 定时器，用于更新流光效果
     int gradientOffset;        // 流光偏移量
     static const QString soundFilePath;

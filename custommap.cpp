@@ -356,7 +356,6 @@ void CustomMap::solvePuzzle()
     // 枚举所有解决方案
     if (!solutions.empty())
         {
-            std::cout << "开始寻找一笔联通的解决方案：\n";
             bool foundValidSolution = false;
             int minFlips = INT_MAX;
             QVector<QPoint> bestSolutionPath;

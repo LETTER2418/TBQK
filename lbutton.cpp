@@ -113,3 +113,11 @@ void Lbutton::updateGradient()
         }
     update(); // 触发重绘
 }
+
+// 设置按钮音量
+void Lbutton::setButtonVolume(float volume)
+{
+    if (audioOutput) {
+        audioOutput->setVolume(volume);
+    }
+}

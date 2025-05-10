@@ -2,21 +2,33 @@
 #define ABOUT_H
 
 #include <QWidget>
-#include "lbutton.h"
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QScrollArea>
+#include "lbutton.h" 
 
 class About : public QWidget
 {
     Q_OBJECT
 
 public:
-
-    About(QWidget *parent = nullptr);
-
+    explicit About(QWidget *parent = nullptr); // Use explicit for single-argument constructors
     ~About();
 
     Lbutton *backButton;
 private:
-
+    QVBoxLayout *mainLayout;
+    QScrollArea *scrollArea;
+    QWidget *contentWidget;
+    QVBoxLayout *contentLayout;
+    QLabel *titleLabel;
+    QLabel *introLabel;
+    QLabel *rulesTitleLabel;
+    QLabel *rulesContentLabel;
+    QLabel *featuresTitleLabel;
+    QLabel *featuresContentLabel;
+    QLabel *rankingTitleLabel;
+    QLabel *rankingContentLabel;
 };
 
 #endif // ABOUT_H
