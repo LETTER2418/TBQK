@@ -6,6 +6,7 @@
 #include <qlineedit.h>
 #include "messagebox.h"
 #include "datamanager.h"
+#include "socketmanager.h"
 
 class Start : public QWidget
 {
@@ -13,7 +14,7 @@ class Start : public QWidget
 
 public:
 
-    Start(QWidget*, DataManager*);
+    Start(QWidget*, DataManager*, SocketManager*);
     void onLoginClicked();
     void onRegisterClicked();
     ~Start();
@@ -25,12 +26,14 @@ public:
     Lbutton *registerButton;
     Lbutton *guestButton;
     Lbutton *showPasswordButton;
-    QString getAccount() const;
+
+    QString currentUserId;;
 
 private:
     QLineEdit *accountLineEdit;
     QLineEdit *passwordLineEdit;
     DataManager *dataManager;
+    SocketManager *socketManager;
 };
 
 #endif // START_H

@@ -46,10 +46,10 @@ OnlineChat::~OnlineChat()
    
 }
 
-void OnlineChat::displayMessage(const QString& sender, const QString& message)
+void OnlineChat::displayMessage(const QString& userId, const QString& message)
 {
     QString timestamp = QDateTime::currentDateTime().toString("[hh:mm:ss]");
-    chatDisplay->append(QString("%1 <%2> %3").arg(timestamp).arg(sender).arg(message));
+    chatDisplay->append(QString("%1 <%2>: %3").arg(timestamp).arg(userId).arg(message));
 }
 
 void OnlineChat::paintEvent(QPaintEvent *event)
@@ -67,7 +67,15 @@ void OnlineChat::sendMessage()
 {
         QString message = messageInput->text().trimmed();
         if (!message.isEmpty()) {
-            socketManager->SendChatMessage(message); 
+            // 获取本地用户ID
+            QString localUserId = socketManager->getLocalUserId();
+            if (localUserId.isEmpty()) {
+                localUserId = "User"; // 如果获取不到 UserId，使用默认值
+            }
+
+            socketManager->SendChatMessage(message, localUserId); 
+            // 立即在本地显示自己发送的消息
+            displayMessage(localUserId, message);
             messageInput->clear();
         }
 }

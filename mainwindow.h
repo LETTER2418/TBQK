@@ -34,8 +34,6 @@ private slots:
     void onClientReceivedGameState(const MapData& mapData);
 
 private:
-    QString currentUserId;  // 当前登录的用户ID
-
     QStackedWidget *pageStack;
 
     //button

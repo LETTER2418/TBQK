@@ -17,7 +17,7 @@ public:
     ~OnlineChat();
 
 public slots:
-    void displayMessage(const QString& sender, const QString& message);
+    void displayMessage(const QString& userId, const QString& message);
 
 protected:
     void paintEvent(QPaintEvent *event) override;

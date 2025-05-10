@@ -18,6 +18,7 @@ public:
     void generateHexagons(int r= 3, QColor c1 = Qt::black, QColor c2 = Qt::white, QColor c3 = Qt::green);
     MapData getMapData();
     void setId(int id_);
+    void solvePuzzle();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -25,13 +26,11 @@ protected:
     void drawHexagon(QPainter &painter, const QPointF &center, int radius);
 
 private:
-    void solvePuzzle();
     // 计算路径的得分（访问的边数）
     double calculatePathScore(const QVector<int>& path, const QVector<QVector<int>>& graph);
     // 模拟退火算法判断是否能一笔联通，并返回最佳路径
     bool simulatedAnnealing(const QVector<QVector<int>>& graph, QVector<int>& bestPath);
     
-    Lbutton *solveButton;
     MessageBox *messageBox;
     QVector<HexCell> hexagons;
     int radius = 50;

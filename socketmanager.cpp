@@ -160,6 +160,26 @@ void SocketManager::SendGameState(const MapData& mapData)
     }
 }
 
+void SocketManager::SendLeaveRoomMessage()
+{
+    // 创建JSON消息对象
+    QJsonObject jsonMessage;
+    jsonMessage["type"] = "leaveRoom";
+    jsonMessage["sender"] = localUserId;
+    jsonMessage["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
+
+    if (isServer) {
+        // 服务器广播消息给所有客户端
+        for (QTcpSocket* clientSocket : clientSockets) {
+            ServerAddSendMsgList(clientSocket, jsonMessage);
+        }
+        ServerProcessClientsSendMsgList();
+    } else if (clientSocket && clientSocket->state() == QAbstractSocket::ConnectedState) {
+        // 客户端发送消息给服务器
+        sendJson(clientSocket, jsonMessage);
+    }
+}
+
 QJsonObject SocketManager::CreateMsg()
 {
     // 创建一个基本的JSON消息结构
@@ -367,11 +387,17 @@ void SocketManager::processReceivedData(QTcpSocket* socket, const QByteArray& da
             mapData.fromJson(mapDataJson);
             emit gameStateReceived(mapData);
         }
-        else if (type == "navigateTo") { // 处理新的导航消息类型
+        else if (type == "navigateTo") {
             QString pageName = json["page"].toString();
             if (!pageName.isEmpty()) {
                 emit navigateToPageRequest(pageName);
             }
+        }
+        else if (type == "leaveRoom") {
+            // 处理退出房间消息
+            QString sender = json["sender"].toString();
+            emit newMessageReceived("系统", QString("%1退出房间").arg(sender));
+            emit roomLeft();
         }
     }
 }
@@ -383,6 +409,11 @@ bool SocketManager::isServerMode() const
 
 void SocketManager::closeConnection()
 {
+    // 在关闭连接前发送退出房间消息
+    if (isServer || (clientSocket && clientSocket->state() == QAbstractSocket::ConnectedState)) {
+        SendLeaveRoomMessage();
+    }
+
     if (isServer) {
         // 如果是服务器，断开所有客户端连接
         for (QTcpSocket* socket : clientSockets) {
@@ -394,21 +425,38 @@ void SocketManager::closeConnection()
             }
         }
         clientSockets.clear();
+        clientsState.clear();
+        serverSendMsgList.clear();
         
         // 停止服务器监听
         if (server) {
             server->close();
+            delete server;
+            server = nullptr;
         }
     } else {
         // 如果是客户端，断开与服务器的连接
         if (clientSocket) {
             clientSocket->disconnectFromHost();
-            if (clientSocket->state() != QAbstractSocket::UnconnectedState) {
+            if (clientSocket->state() != QAbstractSocket::UnconnectedState)
+             {
                 clientSocket->waitForDisconnected();
             }
+            delete clientSocket;
+            clientSocket = nullptr;
         }
     }
     
     // 重置状态
     isServer = false;
+}
+
+void SocketManager::setLocalUserId(const QString& userId)
+{
+    localUserId = userId;
+}
+
+QString SocketManager::getLocalUserId() const
+{
+    return localUserId;
 }

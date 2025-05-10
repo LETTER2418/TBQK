@@ -8,7 +8,7 @@
 #include "socketmanager.h"
 #include "onlinechat.h"
 #include "datamanager.h"
-
+#include <QSpinBox>
 
 // 定义操作结构体，用于记录每次操作
 struct Operation {
@@ -37,9 +37,13 @@ signals:
 protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 private slots:
     void onGameStateReceived(const MapData& mapData);  // 处理接收到的游戏状态
+    void onRadiusAdjustButtonClicked(); // 处理半径调整按钮点击事件
+    void onRadiusSpinBoxChanged(int value); // 处理半径调整输入框变化事件
+    void resetCurrentLevel(); // 重置关卡
 
 private:
     // === UI初始化和更新 ===
@@ -49,7 +53,7 @@ private:
     void drawGameTimer(QPainter &painter);
     
     // === 游戏状态管理 ===
-    void resetGameState();
+    void resetGameState(bool fromResetButton = false);
     bool checkGameComplete();
     void handleGameCompletion();
     
@@ -58,6 +62,7 @@ private:
     void flipHexagon(int index);
     int findClosestHexagon(const QPointF& clickPos);
     void withdrawLastOperation();
+    void resetHexagons(const QVector<HexCell>& currentHexagons, int radius1, int radius2);
     
     // === 路径管理 ===
     bool isConnectedToPath(int index);
@@ -78,10 +83,16 @@ private:
 
     // === 关卡管理 ===
     void setCurrentLevelId(int id);
+
+    // === 偏移量 ===
+    QPointF getOffset();
     
     Lbutton *hintButton;
     Lbutton *withdrawButton;
     Lbutton *pathToggleButton;
+    Lbutton *radiusAdjustButton; // 半径调整按钮
+    Lbutton *resetButton;        // 重置按钮
+    QSpinBox *radiusSpinBox;     // 半径调整输入框
     MessageBox *messageBox;
     QVector<QPoint> path;         // 提示路径
     QVector<int> currentPath;     // 用户当前的操作路径，存储六边形索引
@@ -93,6 +104,7 @@ private:
     QTimer* highlightTimer;       // 高亮效果定时器
     int highlightedHexIndex = -1; // 当前高亮的六边形索引
     bool isShowingHint = false;   // 是否正在显示提示
+    bool isAutoRadius = false;    // 是否为自动调整半径模式，默认为手动
     int radius = 50;
     QPointF center = QPointF(850, 440);
     QColor color1, color2, color3;

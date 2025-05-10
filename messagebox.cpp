@@ -1,12 +1,14 @@
 // MessageBox.cpp
 #include "messagebox.h"
 #include <QFileInfo>
+#include <QScreen>
+#include <QGuiApplication>
 
 MessageBox::MessageBox(QWidget *parent, bool showCancelButton)
     : QWidget(parent), messageLabel(new QLabel(this)), eventLoop(nullptr), dialogCode(0)
 {
     this->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
-    this->setGeometry(700, 250, 300, 400);
+    this->resize(300, 400);
 
     // 创建closeButton
     closeButton = new Lbutton(this, "确认");
@@ -86,6 +88,38 @@ void MessageBox::setMessage(const QString &message)
 
 int MessageBox::exec()
 {
+    if (parentWidget()) {
+        // 获取父窗口所在的屏幕
+        QScreen* parentScreen = parentWidget()->screen();
+        if (parentScreen) {
+            // 获取父窗口在屏幕上的全局位置
+            QPoint parentGlobalPos = parentWidget()->mapToGlobal(QPoint(0, 0));
+            QRect parentRect = parentWidget()->geometry();
+            
+            // 计算消息框在父窗口屏幕上的位置
+            int x = parentGlobalPos.x() + (parentRect.width() - this->width()) / 2;
+            int y = parentGlobalPos.y() + (parentRect.height() - this->height()) / 2;
+            
+            // 确保消息框完全在父窗口所在的屏幕内
+            QRect screenGeometry = parentScreen->geometry();
+            x = qBound(screenGeometry.left(), x, screenGeometry.right() - this->width());
+            y = qBound(screenGeometry.top(), y, screenGeometry.bottom() - this->height());
+            
+            this->move(x, y);
+        } else {
+            // 如果无法获取父窗口的屏幕，则使用默认的居中逻辑
+            QRect parentRect = parentWidget()->geometry();
+            this->move(parentRect.x() + (parentRect.width() - this->width()) / 2,
+                      parentRect.y() + (parentRect.height() - this->height()) / 2);
+        }
+    } else {
+        // 如果没有父控件，则居中于主屏幕
+        QScreen *screen = QGuiApplication::primaryScreen();
+        QRect screenGeometry = screen->geometry();
+        this->move((screenGeometry.width() - this->width()) / 2,
+                  (screenGeometry.height() - this->height()) / 2);
+    }
+
     // 显示对话框
     show();
     raise();

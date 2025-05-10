@@ -65,7 +65,6 @@ HEADERS += \
     widget.h
 
 FORMS += \
-    levelmode.ui \
     widget.ui
 
 # Default rules for deployment.

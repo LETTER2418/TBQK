@@ -47,6 +47,7 @@ void RankPage::setupUI()
 
     // 创建标题标签
     titleLabel = new QLabel("游戏排行榜", this);
+    titleLabel->setStyleSheet("color: white;");
     QFont titleFont;
     titleFont.setPointSize(24);
     titleFont.setBold(true);
@@ -86,10 +87,11 @@ void RankPage::setupUI()
 
     QHBoxLayout *selectorLayout = new QHBoxLayout();
 
-    // 创建标签并设置与levelSelector相同的字体大小
+    // 创建标签并设置与levelSelector相同的字体大小并设置白色
     QLabel *levelLabel = new QLabel("选择关卡:", this);
     QFont labelFont = levelSelector->font();
     levelLabel->setFont(labelFont);
+    levelLabel->setStyleSheet("color: white;");
 
     selectorLayout->addWidget(levelLabel);
     selectorLayout->addWidget(levelSelector);

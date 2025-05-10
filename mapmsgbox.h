@@ -7,6 +7,9 @@
 #include <QComboBox>
 #include "lbutton.h"
 #include <QPainter>
+#include <QShowEvent>
+#include <QScreen>
+#include <QGuiApplication>
 
 class MapMsgBox : public QWidget
 {
@@ -26,8 +29,11 @@ private slots:
     void openColorDialog2();
     void openColorDialog3();
 
-private:
+protected:
     void paintEvent(QPaintEvent *event) override;
+    void showEvent(QShowEvent *event) override;
+
+private:
     void setupUI();
 
     QPixmap backgroundImage;

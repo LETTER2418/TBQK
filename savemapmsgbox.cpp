@@ -2,12 +2,15 @@
 #include <QLabel> 
 #include <QPixmap> 
 #include <QFont> 
+#include <QGuiApplication>
+#include <QScreen>
+#include <QShowEvent>
 
 SaveMapMsgBox::SaveMapMsgBox(QWidget *parent)
     : QWidget(parent)
 {
     this->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
-    this->setGeometry(700, 250, 300, 400);
+    this->resize(300, 400);
     this->setStyleSheet("QLabel{min-width: 10px; min-height: 10px;} QComboBox { min-height: 30px; font-size: 12pt; } "); 
 
     // 设置背景标签
@@ -74,6 +77,21 @@ SaveMapMsgBox::SaveMapMsgBox(QWidget *parent)
 SaveMapMsgBox::~SaveMapMsgBox()
 {
     // Qt handles child widgets, manual deletion usually not needed unless using raw pointers without parent
+}
+
+void SaveMapMsgBox::showEvent(QShowEvent *event)
+{
+    if (parentWidget()) {
+        QRect parentRect = parentWidget()->geometry();
+        this->move(parentRect.x() + (parentRect.width() - this->width()) / 2,
+                   parentRect.y() + (parentRect.height() - this->height()) / 2);
+    } else {
+        QScreen *screen = QGuiApplication::primaryScreen();
+        QRect screenGeometry = screen->geometry();
+        this->move((screenGeometry.width() - this->width()) / 2,
+                   (screenGeometry.height() - this->height()) / 2);
+    }
+    QWidget::showEvent(event);
 }
 
 

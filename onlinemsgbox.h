@@ -27,7 +27,7 @@ public:
         JoinMode     // 加入房间模式
     };
 
-    explicit OnlineMsgBox(QWidget *parent = nullptr,SocketManager* manager = nullptr);
+    explicit OnlineMsgBox(QWidget *parent,SocketManager* manager);
     ~OnlineMsgBox();
     QString getLocalIP();
     void setBackgroundImage(const QString& path);

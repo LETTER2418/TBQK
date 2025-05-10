@@ -1,30 +1,65 @@
 #include "start.h"
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QMessageBox>
 
-Start::Start(QWidget *parent, DataManager *dataManager_):QWidget(parent), dataManager(dataManager_)
+Start::Start(QWidget *parent, DataManager *dataManager_, SocketManager *socketManager_):QWidget(parent), dataManager(dataManager_), socketManager(socketManager_)
 {
-    // 创建按钮
+    // 创建按钮和输入框
     backButton = new Lbutton(this, "返回");
-    backButton->move(0, 0);
-
-    // 创建账号和密码输入框
+    loginButton = new Lbutton(this, "登录");
+    registerButton = new Lbutton(this, "注册");
+    guestButton = new Lbutton(this, "游客模式");
+    showPasswordButton = new Lbutton(this, "显示密码");
+    
     accountLineEdit = new QLineEdit(this);
     accountLineEdit->setPlaceholderText("请输入账号");
-    accountLineEdit->setFixedSize(200,50);
-    accountLineEdit->move(700,400);
     accountLineEdit->setText("1"); // 设置默认文本为"1"
-
+    accountLineEdit->setFixedSize(200, 50);
+    
     passwordLineEdit = new QLineEdit(this);
     passwordLineEdit->setPlaceholderText("请输入密码");
     passwordLineEdit->setEchoMode(QLineEdit::Password); // 设置密码框隐藏输入的文字
-    passwordLineEdit->move(700,500);
-    passwordLineEdit->setFixedSize(200,50);
     passwordLineEdit->setText("1"); // 设置默认文本为"1"
+    passwordLineEdit->setFixedSize(200, 50);
 
-    // 创建显示密码按钮
-    showPasswordButton = new Lbutton(this,"显示密码");
-    showPasswordButton->move(910, 500); // 按钮放在密码框右侧
+    // 创建主布局
+    QHBoxLayout *mainLayout = new QHBoxLayout(this);
+    
+    // 创建左侧按钮布局
+    QVBoxLayout *buttonLayout = new QVBoxLayout();
+    buttonLayout->addWidget(backButton);
+    buttonLayout->addStretch(1); 
+    buttonLayout->addWidget(registerButton);
+    buttonLayout->addStretch(1); 
+    buttonLayout->addWidget(loginButton);
+    buttonLayout->addStretch(1); 
+    buttonLayout->addWidget(guestButton);
+    
+    // 创建中央输入框布局
+    QVBoxLayout *inputLayout = new QVBoxLayout();
+    inputLayout->addStretch();
+    
+    // 账号输入框布局
+    QHBoxLayout *accountLayout = new QHBoxLayout();
+    accountLayout->addWidget(accountLineEdit);
+    accountLayout->addStretch();
+    
+    // 密码输入框布局
+    QHBoxLayout *passwordLayout = new QHBoxLayout();
+    passwordLayout->addWidget(passwordLineEdit);
+    passwordLayout->addWidget(showPasswordButton);
+    passwordLayout->addStretch();
+    
+    inputLayout->addLayout(accountLayout);
+    inputLayout->addLayout(passwordLayout);
+    inputLayout->addStretch();
+    
+    // 添加布局到主布局
+    mainLayout->addLayout(buttonLayout);
+    mainLayout->addStretch(1);
+    mainLayout->addLayout(inputLayout);
+    mainLayout->addStretch(1);
 
     // 连接按钮的点击事件到槽函数
     connect(showPasswordButton, &Lbutton::clicked, this, [this]() {
@@ -38,14 +73,6 @@ Start::Start(QWidget *parent, DataManager *dataManager_):QWidget(parent), dataMa
         }
     });
 
-    // 创建其他按钮
-    registerButton = new Lbutton(this, "注册");
-    loginButton = new Lbutton(this, "登录");
-    guestButton = new Lbutton(this, "游客模式");
-    registerButton->move(0,250);
-    loginButton->move(0,500);
-    guestButton->move(0,750);
-
     connect(loginButton, &QPushButton::clicked, this, &Start::onLoginClicked);
     connect(registerButton, &QPushButton::clicked, this, &Start::onRegisterClicked);
 
@@ -55,15 +82,6 @@ Start::Start(QWidget *parent, DataManager *dataManager_):QWidget(parent), dataMa
     connect(NOmessageBox->closeButton, &Lbutton::clicked, this, [this]() {
         NOmessageBox->accept();  // 调用 QMessageBox 的 accept
     });
-}
-
-QString Start::getAccount() const
-{
-    QString account = accountLineEdit->text();
-    if (account.isEmpty()) {
-        return "tourist";
-    }
-    return account;
 }
 
 void Start::onLoginClicked()
@@ -81,7 +99,8 @@ void Start::onLoginClicked()
     if (dataManager->checkPassword(username, password)) {
         YESmessageBox->setMessage("成功登录！");
         YESmessageBox->exec();
-        // 登录成功后的处理，比如跳转到主界面
+        currentUserId = username;
+        socketManager->setLocalUserId(username);
     }
     else {
         NOmessageBox->setMessage("账号或密码错误！");
@@ -94,10 +113,15 @@ void Start::onRegisterClicked()
     QString username = accountLineEdit->text();
     QString password = passwordLineEdit->text();
 
+    if (username=="系统") {
+        NOmessageBox->setMessage("账号不符合规范！");
+        NOmessageBox->exec();
+        return;
+    }
+
     if (username.isEmpty() || password.isEmpty()) {
         NOmessageBox->setMessage("账号和密码不能为空！");
         NOmessageBox->exec();
-        //QMessageBox::warning(this, "输入错误", "账号和密码不能为空！");
         return;
     }
 
@@ -105,24 +129,19 @@ void Start::onRegisterClicked()
     if (dataManager->getAllUserIds().contains(username)) {
         NOmessageBox->setMessage("该账号已存在！");
         NOmessageBox->exec();
-        //QMessageBox::warning(this, "注册失败", "该账号已存在！");
         return;
     }
 
     // 添加新用户
     dataManager->addUser(username, password);
     dataManager->saveToFile();  // 保存到文件
-    
+
     NOmessageBox->setMessage("账号注册成功！");
     NOmessageBox->exec();
-    //QMessageBox::information(this, "注册成功", "账号注册成功！");
-    // 注册成功后的处理，比如跳转到登录界面
+
 }
 
 
 Start::~Start()
 {
-    //如果 QObject（或其子类，如 QWidget、QPushButton 等）有 parent,对象树会自动管理生命周期，不需要手动 delete
-    delete YESmessageBox;
-    delete NOmessageBox;
 }

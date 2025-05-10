@@ -193,11 +193,6 @@ QString OnlineMsgBox::getLocalIP()
 
 void OnlineMsgBox::startServer()
 {
-    if (!socketManager) {
-        qWarning() << "SocketManager not set in OnlineMsgBox!";
-        return;
-    }
-    
     bool ok = false;
     int port = portInput->text().toInt(&ok);
     if (!ok || port <= 0 || port > 65535) {
@@ -223,8 +218,6 @@ void OnlineMsgBox::connectToServer()
         QMessageBox::warning(this, "错误", "请输入有效的端口号(1-65535)");
         return;
     }
-    
-    qDebug() << "正在连接到服务器，IP:" << ip << "端口:" << portInput->text();
 
     socketManager->StartClient(ip);
 }
@@ -243,7 +236,6 @@ void OnlineMsgBox::handleClientConnected()
 
 void OnlineMsgBox::handleClientDisconnected()
 {
-    qDebug() << "客户端已断开连接";
     isConnected = false;
 }
 

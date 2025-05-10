@@ -3,14 +3,31 @@
 #include <QMouseEvent>
 #include <cmath>
 #include <cstdlib>
+#include <QGridLayout>
 
 RandomMap::RandomMap(QWidget *parent) : QWidget(parent)
 {
     backButton = new Lbutton(this, "返回");
     backButton->move(0, 0);
     saveButton = new Lbutton(this, "保存");
-    saveButton->move(1300, 400);
     id = 0;
+
+    QGridLayout *mainLayout = new QGridLayout(this);
+
+    // saveButton 放置在第1行第2列
+    mainLayout->addWidget(saveButton, 1, 2);
+
+    // 设置列伸展
+    mainLayout->setColumnStretch(0, 0); // 第0列 不伸展
+    mainLayout->setColumnStretch(1, 1); // 第1列 (中间列) 伸展，占据多余空间
+    mainLayout->setColumnStretch(2, 0); // 第2列 (saveButton所在列) 不伸展
+
+    // 设置行伸展
+    mainLayout->setRowStretch(0, 1);  
+    mainLayout->setRowStretch(1, 1);  
+    mainLayout->setRowStretch(2, 1);
+
+    setLayout(mainLayout);
 }
 
 RandomMap::~RandomMap()
@@ -141,12 +158,24 @@ void RandomMap::paintEvent(QPaintEvent *event)
 
 void RandomMap::drawHexagon(QPainter &painter, const QPointF &center, int radius)
 {
+    // 获取当前窗口的中心点
+    QPointF currentWidgetCenter = QPointF(this->width() / 2.0, this->height() / 2.0);
+    // 获取游戏布局的原始中心点 (从 MapData 加载到 this->center 成员变量)
+    QPointF originalLayoutCenter = this->center;
+
+    // 计算偏移量：当前窗口中心 - 原始布局中心
+    QPointF offset = currentWidgetCenter - originalLayoutCenter;
+
+    // 将偏移量应用到传入的六边形逻辑中心点上，得到最终的绘制中心点
+    QPointF finalDrawCenter = center + offset;
+
     QPolygonF hexagon;
     for (int i = 0; i < 6; ++i)
         {
             double angle = M_PI / 3 * i;
-            double x = center.x() + radius * std::cos(angle);
-            double y = center.y() + radius * std::sin(angle);
+            // 使用 finalDrawCenter 进行绘制
+            double x = finalDrawCenter.x() + radius * cos(angle);
+            double y = finalDrawCenter.y() + radius * sin(angle);
             hexagon << QPointF(x, y);
         }
     painter.drawPolygon(hexagon);

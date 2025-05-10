@@ -4,7 +4,10 @@
 #include <QWidget>
 #include <QComboBox>
 #include <QLabel>
-#include "lbutton.h" 
+#include "lbutton.h"
+#include <QShowEvent>
+#include <QScreen>
+#include <QGuiApplication>
 
 class SaveMapMsgBox : public QWidget
 {
@@ -16,6 +19,9 @@ public:
 
 signals:
     void sendMsg(int);  // 发送消息的信号
+
+protected:
+    void showEvent(QShowEvent *event) override;
 
 private:
     QComboBox *comboBox;

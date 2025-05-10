@@ -19,7 +19,6 @@ public:
     Lbutton *buttons[12];
 
 private:
-    Ui::LevelMode *ui;
 };
 
 #endif // LEVELMODE_H

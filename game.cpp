@@ -1,10 +1,12 @@
-#include "game.h"
-
 #include <QPainter>
 #include <QMouseEvent>
 #include <cmath>
 #include <cstdlib>
 #include <QTimer>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QResizeEvent>
+#include "game.h"
 
 Game::Game(QWidget *parent, DataManager *dataManager_) : QWidget(parent), dataManager(dataManager_)
 {
@@ -23,16 +25,47 @@ void Game::initializeUI()
     hintButton = new Lbutton(this, "提示");
     withdrawButton = new Lbutton(this, "撤销");
     pathToggleButton = new Lbutton(this, "显示路径");
+    radiusAdjustButton = new Lbutton(this, isAutoRadius ? "手动调整半径" : "自动调整半径");
+    resetButton = new Lbutton(this, "重置");
+    radiusSpinBox = new QSpinBox(this);
+
+    radiusSpinBox->setRange(10, 60);
+    radiusSpinBox->setValue(radius);
+    radiusSpinBox->setEnabled(!isAutoRadius);
+    radiusSpinBox->setFixedWidth(140);
+    radiusSpinBox->setFixedHeight(50);
 
     backButton->move(0, 0);
-    hintButton->move(1400, 200);
-    withdrawButton->move(1400, 400);
-    pathToggleButton->move(1400, 600);
 
     messageBox = new MessageBox(this);
 
     gameTimer = new QTimer(this);
     gameTimer->setInterval(1000);
+
+    // 创建按钮的垂直布局
+    QVBoxLayout *buttonColumnLayout = new QVBoxLayout();
+    buttonColumnLayout->setSpacing(100); // 设置按钮间的间距
+    buttonColumnLayout->addStretch(1); // 按钮组上方的弹性空间
+    buttonColumnLayout->addWidget(hintButton);
+    buttonColumnLayout->addStretch(1);
+    buttonColumnLayout->addWidget(withdrawButton);
+    buttonColumnLayout->addStretch(1);
+    buttonColumnLayout->addWidget(resetButton);
+    buttonColumnLayout->addStretch(1);
+    buttonColumnLayout->addWidget(pathToggleButton);
+    buttonColumnLayout->addStretch(1);
+    buttonColumnLayout->addWidget(radiusAdjustButton);
+    buttonColumnLayout->addStretch(1);
+    buttonColumnLayout->addWidget(radiusSpinBox);
+    buttonColumnLayout->addStretch(1); // 按钮组下方的弹性空间
+
+    // 创建主水平布局
+    QHBoxLayout *mainLayout = new QHBoxLayout(this); // 'this' 将此布局设置为主控件的布局
+    mainLayout->addStretch(10); // 左侧的弹性空间 (游戏区域)，占据更多比例
+    mainLayout->addLayout(buttonColumnLayout, 1); // 右侧的按钮列，占据较小比例
+
+    // 可以设置主布局的边距，使按钮列与窗口右边缘有一定距离
+    mainLayout->setContentsMargins(10, 10, 10, 10); // 例如：所有边缘都有10px的边距
 }
 
 void Game::setupConnections()
@@ -45,6 +78,9 @@ void Game::setupConnections()
     {
         messageBox->accept();
     });
+    connect(radiusAdjustButton, &QPushButton::clicked, this, &Game::onRadiusAdjustButtonClicked);
+    connect(radiusSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &Game::onRadiusSpinBoxChanged);
+    connect(resetButton, &QPushButton::clicked, this, &Game::resetCurrentLevel);
 }
 
 void Game::setMap(MapData mapData)
@@ -62,29 +98,42 @@ void Game::setMap(MapData mapData)
     // 计算游戏的环数
     rings = 0;
     for (int i = 0; i < hexagons.size(); i++)
-    {
-        QPoint coord = hexagonIndexToCoord(i);
-        rings = qMax(rings, getHexagonRing(coord));
-    }
+        {
+            QPoint coord = hexagonIndexToCoord(i);
+            rings = qMax(rings, getHexagonRing(coord));
+        }
 
     resetGameState();
+    resizeEvent(nullptr);
     update();
 }
 
 // === 游戏状态管理 ===
-void Game::resetGameState()
+void Game::resetGameState(bool fromResetButton)
 {
     currentPath.clear();
     operationHistory.clear();
     flippedHexagons.clear();
     currentHintIndex = -1;
-    showPath = true;
-    penaltySeconds = 0;
+
     stepCount = 0;
     isShowingHint = false;
     highlightedHexIndex = -1;
-    pathToggleButton->setText("隐藏路径");
-    startTimer();
+
+    if (!fromResetButton)
+        {
+            hintButton->setEnabled(true);
+            withdrawButton->setEnabled(true);
+            pathToggleButton->setEnabled(true);
+            radiusAdjustButton->setEnabled(true);
+            radiusSpinBox->setEnabled(!isAutoRadius);
+            showPath = true;
+            penaltySeconds = 0;
+            pathToggleButton->setText("隐藏路径");
+            startTimer();
+        }
+
+
 }
 
 bool Game::checkGameComplete()
@@ -112,16 +161,28 @@ void Game::handleGameCompletion()
 {
     // 停止计时器
     stopTimer();
-    
+
     // 仅在非联机模式或服务器模式下发送带有完成信息的信号
     // 客户端模式下不更新排行榜数据
-    if (!isOnlineMode || isServer) {
-        emit returnToLevelMode(true, penaltySeconds, stepCount, currentLevelId);
-    } else {
-        // 客户端模式只发送无需更新排行榜的信号
-        emit returnToLevelMode(false, penaltySeconds, stepCount, currentLevelId);
-    }
-    
+    if (!isOnlineMode || isServer)
+        {
+            emit returnToLevelMode(true, penaltySeconds, stepCount, currentLevelId);
+        }
+    else
+        {
+            // 客户端模式也应发送游戏完成的信号 (true)
+            emit returnToLevelMode(false, penaltySeconds, stepCount, currentLevelId);
+        }
+
+    if (isOnlineMode)
+        {
+            hintButton->setEnabled(false);
+            withdrawButton->setEnabled(false);
+            pathToggleButton->setEnabled(false);
+            radiusAdjustButton->setEnabled(false);
+            radiusSpinBox->setEnabled(false);
+        }
+
     QString message = QString("恭喜完成！用时：%1").arg(timeText);
     messageBox->setMessage(message);
     messageBox->exec();
@@ -170,9 +231,9 @@ int Game::findClosestHexagon(const QPointF& clickPos)
 void Game::withdrawLastOperation()
 {
     if (operationHistory.isEmpty())
-    {
-        return;
-    }
+        {
+            return;
+        }
 
     Operation lastOp = operationHistory.last();
     hexagons[lastOp.hexagonIndex].color = lastOp.oldColor;
@@ -180,9 +241,9 @@ void Game::withdrawLastOperation()
     operationHistory.removeLast();
 
     if (!currentPath.isEmpty())
-    {
-        currentPath.removeLast();
-    }
+        {
+            currentPath.removeLast();
+        }
 
     update();
 
@@ -191,6 +252,36 @@ void Game::withdrawLastOperation()
         {
             emit returnToLevelMode(false, penaltySeconds, stepCount, currentLevelId);
         }
+}
+
+void Game::resetHexagons(const QVector<HexCell>& currentHexagons, int radius1, int radius2)
+{
+    //radius1是原始半径，radius2是新半径
+    QVector<HexCell> newHexagons;
+
+    double scaleFactor = static_cast<double>(radius2) / static_cast<double>(radius1);
+    QPointF pivotCenter = center; // 使用 this->center 作为缩放的中心点
+
+    newHexagons.reserve(currentHexagons.size()); // 预分配内存以提高效率
+
+    for (const HexCell& oldCell : currentHexagons)
+        {
+            HexCell newCell;
+            newCell.color = oldCell.color; // 保持颜色不变
+
+            // 计算六边形中心相对于 pivotCenter 的位置
+            QPointF relativePos = oldCell.center - pivotCenter;
+
+            // 根据缩放因子调整相对位置
+            QPointF newRelativePos = relativePos * scaleFactor;
+
+            // 计算新的绝对中心位置
+            newCell.center = pivotCenter + newRelativePos;
+
+            newHexagons.append(newCell);
+        }
+
+    hexagons = newHexagons;
 }
 
 // === 路径管理 ===
@@ -251,11 +342,12 @@ void Game::paintEvent(QPaintEvent *event)
     // 绘制路径
     if (showPath && !currentPath.isEmpty())
         {
+            QPointF offset = getOffset();
             painter.setPen(QPen(color3, 4));
             for (int i = 0; i < currentPath.size() - 1; ++i)
                 {
-                    QPointF start = hexagons[currentPath[i]].center;
-                    QPointF end = hexagons[currentPath[i + 1]].center;
+                    QPointF start = hexagons[currentPath[i]].center + offset;
+                    QPointF end = hexagons[currentPath[i + 1]].center + offset;
                     painter.drawLine(start, end);
                 }
         }
@@ -266,13 +358,24 @@ void Game::paintEvent(QPaintEvent *event)
 
 void Game::mousePressEvent(QMouseEvent *event)
 {
+    static int clickCount = -1;
+    clickCount++;
+
+    // 在联机模式下，如果游戏已完成，则不处理点击事件
+    if (clickCount && isOnlineMode && checkGameComplete())
+        {
+            return;
+        }
+
     // 如果正在显示提示，忽略点击事件
     if (isShowingHint)
         {
             return;
         }
 
-    int hexIndex = findClosestHexagon(event->pos());
+    QPointF offset = getOffset();
+
+    int hexIndex = findClosestHexagon(event->pos() - offset);
 
     if (hexIndex != -1 && canFlipHexagon(hexIndex))
         {
@@ -283,6 +386,37 @@ void Game::mousePressEvent(QMouseEvent *event)
                     handleGameCompletion();
                 }
         }
+}
+
+void Game::resizeEvent(QResizeEvent *event)
+{
+    Q_UNUSED(event);
+    int oldRadius = radius;
+
+    if (isAutoRadius)
+        {
+            int newRadius = 50;
+            if (rings == 3)
+                {
+                    float ratio = 0.61;
+                    int radius1 = ratio / 2 / (2 * rings + 1) * width();
+                    int radius2 = ratio / sqrt(3) / (2 * rings + 1) * height();
+                    newRadius = fmin(radius1, radius2);
+                }
+            else if (rings == 4)
+                {
+                    float ratio = 0.61;
+                    int radius1 = ratio / 2 / (2 * rings + 1) * width();
+                    int radius2 = ratio / sqrt(3) / (2 * rings + 1) * height();
+                    newRadius = fmin(radius1, radius2);
+                }
+            radius = newRadius;
+            radiusSpinBox->blockSignals(true);
+            radiusSpinBox->setValue(radius);
+            radiusSpinBox->blockSignals(false);
+        }
+    resetHexagons(hexagons, oldRadius, radius);
+    update();
 }
 
 // === 计时系统 ===
@@ -323,7 +457,7 @@ void Game::drawGameTimer(QPainter &painter)
     int textHeight = fm.height();
 
     // 修改位置到左侧正中间
-    int x = 100; // 左侧位置
+    int x = 10; // 左侧位置
     int y = height() / 2; // 垂直居中
 
     painter.drawText(x, y + textHeight / 2 - fm.descent(), timeText);
@@ -384,12 +518,16 @@ int Game::coordToHexagonIndex(const QPoint& coord)
 
 void Game::drawHexagon(QPainter &painter, const QPointF &center, int radius)
 {
+    QPointF offset = getOffset();
+    QPointF finalDrawCenter = center + offset;
+
     QPolygonF hexagon;
     for (int i = 0; i < 6; ++i)
         {
             double angle = M_PI / 3 * i;
-            double x = center.x() + radius * cos(angle);
-            double y = center.y() + radius * sin(angle);
+            // 使用 finalDrawCenter 进行绘制
+            double x = finalDrawCenter.x() + radius * cos(angle);
+            double y = finalDrawCenter.y() + radius * sin(angle);
             hexagon << QPointF(x, y);
         }
     painter.drawPolygon(hexagon);
@@ -397,65 +535,108 @@ void Game::drawHexagon(QPainter &painter, const QPointF &center, int radius)
 
 void Game::showNextHint()
 {
-    // 原有的提示逻辑
-    if (path.isEmpty())
+    if (path.isEmpty()) // 没有解法路径
         {
+            if(messageBox)
+                {
+                    messageBox->setMessage("当前关卡没有可用提示。");
+                    messageBox->exec();
+                }
             return;
         }
 
-    // 增加罚时（30秒）
+    // 增加罚时
     penaltySeconds += 30;
 
-    if (currentPath.isEmpty())
+    if (currentPath.isEmpty()) // 玩家未开始
         {
-            QPoint nextCoord = path.first();
             currentHintIndex = 0;
-            highlightHexagon(nextCoord);
+            highlightHexagon(path.first());
             return;
         }
 
-    bool isMatchingPath = true;
-    for (int i = 0; i < currentPath.size(); i++)
+    // --- 检查是否重置 ---
+    int diffCount = 0;
+    int commonLength = 0;
+    for (int i = 0; i < qMin(currentPath.size(), path.size()); ++i)
         {
-            if (i >= path.size())
+            if (hexagonIndexToCoord(currentPath[i]) != path[i])
                 {
-                    isMatchingPath = false;
+                    diffCount = currentPath.size() - i;
                     break;
                 }
-
-            QPoint currentCoord = hexagonIndexToCoord(currentPath[i]);
-            if (currentCoord != path[i])
-                {
-                    isMatchingPath = false;
-                    break;
-                }
-        }
-    if(isMatchingPath && currentPath.size() == path.size())
-        {
-            qDebug() << "path错误！！！！";
+            commonLength++;
         }
 
-    if (isMatchingPath && currentPath.size() < path.size())
+    // 如果玩家路径比标准路径长，且前面都匹配，则多出部分算差异
+    if (!diffCount && currentPath.size() > path.size())
         {
-            QPoint nextCoord = path[currentPath.size()];
-            highlightHexagon(nextCoord);
+            diffCount = currentPath.size() - path.size();
+        }
+
+    // 只有当差异超过一半才重置
+    if ( diffCount > commonLength)
+        {
+            resetButton->setStyleSheet("background: rgba(255, 255, 255, 0.2);");
+            QTimer::singleShot(250, this, [this]()
+            {
+                resetButton->setStyleSheet("QPushButton {"
+                                           "background: rgba(255, 255, 255, 0);"
+                                           "border: none;"
+                                           "color:white"
+                                           "}"
+
+                                           "QPushButton:hover {"
+                                           "background: rgba(255, 255, 255, 0.2);"
+                                           "}");
+            });
         }
     else
         {
-            withdrawButton->setStyleSheet("background: rgba(255, 255, 255, 0.2);");
-            QTimer::singleShot(1000, this, [this]()
-            {
-                withdrawButton->setStyleSheet("QPushButton {"
-                                              "background: rgba(255, 255, 255, 0);"
-                                              "border: none;"
-                                              "color:white"
-                                              "}"
+            bool isMatchingPath = true;
+            for (int i = 0; i < currentPath.size(); i++)
+                {
+                    if (i >= path.size())
+                        {
+                            isMatchingPath = false;
+                            break;
+                        }
 
-                                              "QPushButton:hover {"
-                                              "background: rgba(255, 255, 255, 0.2);"
-                                              "}");
-            });
+                    QPoint currentCoord = hexagonIndexToCoord(currentPath[i]);
+                    if (currentCoord != path[i])
+                        {
+                            isMatchingPath = false;
+                            break;
+                        }
+                }
+            if(isMatchingPath && currentPath.size() == path.size())
+                {
+                    qDebug() << "path错误！！！！";
+                }
+
+            if (isMatchingPath && currentPath.size() < path.size())
+                {
+                    QPoint nextCoord = path[currentPath.size()];
+                    highlightHexagon(nextCoord);
+                }
+            else
+                {
+                    withdrawButton->setStyleSheet("background: rgba(255, 255, 255, 0.2);");
+                    QTimer::singleShot(250, this, [this]()
+                    {
+                        withdrawButton->setStyleSheet("QPushButton {"
+                                                      "background: rgba(255, 255, 255, 0);"
+                                                      "border: none;"
+                                                      "color:white"
+                                                      "}"
+
+                                                      "QPushButton:hover {"
+                                                      "background: rgba(255, 255, 255, 0.2);"
+                                                      "}");
+                    });
+                }
         }
+
 }
 
 void Game::highlightHexagon(const QPoint& coord)
@@ -532,44 +713,117 @@ void Game::setCurrentLevelId(int id)
 
 void Game::setSocketManager(SocketManager* manager)
 {
-    this->socketManager = manager;
-    connect(socketManager, &SocketManager::gameStateReceived,this, &Game::onGameStateReceived);
+    socketManager = manager;
+    connect(socketManager, &SocketManager::gameStateReceived, this, &Game::onGameStateReceived);
 }
 
 void Game::onGameStateReceived(const MapData& mapData)
 {
     // 如果不是服务器，则更新游戏状态
-    if (!isServer) {
-        setMap(mapData);
-        update();
-    }
+    if (!isServer)
+        {
+            setMap(mapData);
+            update();
+        }
+}
+
+void Game::onRadiusAdjustButtonClicked()
+{
+    isAutoRadius = !isAutoRadius;
+    radiusAdjustButton->setText(isAutoRadius ? "手动调整半径" : "自动调整半径");
+    radiusSpinBox->setEnabled(!isAutoRadius);
+
+    if (isAutoRadius)
+        {
+            resizeEvent(nullptr);
+        }
+    else
+        {
+            radiusSpinBox->setValue(radius);
+        }
+    update();
+}
+
+void Game::onRadiusSpinBoxChanged(int value)
+{
+    if (!isAutoRadius)
+        {
+            int oldRadius = radius;
+            radius = value;
+            resetHexagons(hexagons, oldRadius, radius);
+            update();
+        }
 }
 
 void Game::setOnlineMode(bool isServer_, SocketManager* manager)
 {
     isServer = isServer_;
     isOnlineMode = (manager != nullptr);  // 根据 manager 是否为空来设置联机模式
-    
-    if (manager) {
-        setSocketManager(manager);
-        
-        // 创建并显示聊天窗口
-        if (onlineChat == nullptr) {
-            onlineChat = new OnlineChat(manager, this);
-            onlineChat->setWindowTitle("联机聊天");
+
+    if (manager)
+        {
+            setSocketManager(manager);
+
+            // 创建并显示聊天窗口
+            if (onlineChat == nullptr)
+                {
+                    onlineChat = new OnlineChat(manager, this);
+                    onlineChat->setWindowTitle("联机聊天");
+                }
+            onlineChat->show();
         }
-        onlineChat->show();
-    } else {
-        // 隐藏聊天窗口
-        if (onlineChat) {
-            onlineChat->hide();
+    else
+        {
+            // 隐藏聊天窗口
+            if (onlineChat)
+                {
+                    onlineChat->hide();
+                }
+            socketManager = nullptr;
         }
-        socketManager = nullptr;
-    }
 }
 
 bool Game::getOnlineMode()
 {
     return isOnlineMode;
 }
+
+// === 偏移量 ===
+QPointF Game::getOffset()
+{
+    // 获取当前窗口的中心点
+    QPointF currentWidgetCenter = QPointF(this->width() / 2.0, this->height() / 2.0);
+    // 获取游戏布局的原始中心点 (从 MapData 加载到 this->center 成员变量)
+    QPointF originalLayoutCenter = this->center;
+
+    // 计算偏移量：当前窗口中心 - 原始布局中心
+    QPointF offset = currentWidgetCenter - originalLayoutCenter;
+    return offset;
+}
+
+void Game::resetCurrentLevel()
+{
+    // 核心重置逻辑: 获取初始地图数据以恢复六边形颜色等
+    if (dataManager && currentLevelId != 0)   // 确保 currentLevelId 有效
+        {
+            MapData initialMapData = dataManager->getMap(currentLevelId);
+            // 恢复六边形颜色到初始状态
+            for(int i = 0; i < hexagons.size() && i < initialMapData.hexagons.size(); ++i)
+                {
+                    hexagons[i].color = initialMapData.hexagons[i].color;
+                }
+        }
+    else
+        {
+            qWarning() << "resetCurrentLevel: Cannot reset colors from DataManager due to invalid currentLevelId or no DataManager.";
+        }
+
+    // 调用 resetGameState() 清理玩家进度、计时器（部分）、按钮状态等
+    resetGameState(true);
+
+    // 触发界面刷新
+    update();
+}
+
+
 
