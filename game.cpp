@@ -539,7 +539,7 @@ void Game::showNextHint()
         {
             if(messageBox)
                 {
-                    messageBox->setMessage("当前关卡没有可用提示。");
+                    messageBox->setMessage("当前关卡没有可用提示");
                     messageBox->exec();
                 }
             return;

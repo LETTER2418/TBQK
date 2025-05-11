@@ -433,7 +433,7 @@ void CustomMap::solvePuzzle()
 
             if (!foundValidSolution)
                 {
-                    messageBox->setMessage("未找到可以一笔联通的解决方案。");
+                    messageBox->setMessage("未找到解决方案");
                     messageBox->exec();
                 }
             else
@@ -451,7 +451,7 @@ void CustomMap::solvePuzzle()
         }
     else
         {
-             messageBox->setMessage("未找到可以满足条件的解决方案。");
+             messageBox->setMessage("无解");
              messageBox->exec();
         }
 }

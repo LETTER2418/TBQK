@@ -24,14 +24,16 @@ protected:
 
 private slots:
     void sendMessage();
-
+    void toggleVisibility();
+    
 private:
     SocketManager* socketManager;  
     QTextEdit* chatDisplay;
     QLineEdit* messageInput;
     Lbutton* sendButton;
+    Lbutton* visToggleButton;
     QVBoxLayout* mainLayout;
-    QHBoxLayout* inputLayout;
+    QHBoxLayout* buttonLayout;
     QPixmap backgroundImage;
     const QString backgroundImagePath=":\\image\\msg.png"; 
 };

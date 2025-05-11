@@ -306,7 +306,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     pageStack->addWidget(onlineModePage);
 
     // 设置默认显示的页面
-    this->pageStack->setCurrentWidget(aboutPage);
+    this->pageStack->setCurrentWidget(menuPage);
 
     // 主布局
     QVBoxLayout *mainLayout = new QVBoxLayout(this);

@@ -6,7 +6,7 @@ OnlineChat::OnlineChat(SocketManager* manager, QWidget *parent)
     : QWidget{parent},
       socketManager(manager) // Initialize socketManager
 {
-    this->setGeometry(20, 450, 300, 400);
+    this->setGeometry(0, 450, 300, 380);
     
     // Create UI elements
     chatDisplay = new QTextEdit(this);
@@ -14,16 +14,20 @@ OnlineChat::OnlineChat(SocketManager* manager, QWidget *parent)
 
     messageInput = new QLineEdit(this);
     sendButton = new Lbutton(this,"发送");
+    visToggleButton = new Lbutton(this,"隐藏聊天");
+
     messageInput->setFixedHeight(sendButton->height());
 
-    // Layouts
-    inputLayout = new QHBoxLayout();
-    inputLayout->addWidget(messageInput);
-    inputLayout->addWidget(sendButton);
+    buttonLayout = new QHBoxLayout();
+    buttonLayout->addWidget(visToggleButton);
+    buttonLayout->addWidget(sendButton);
 
     mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(chatDisplay);
-    mainLayout->addLayout(inputLayout);
+    mainLayout->addWidget(messageInput);
+    mainLayout->addLayout(buttonLayout);
+   // mainLayout->setGeometry(0, 450, 300, 400);
+    //mainLayout->setContentsMargins(0, 0, 0, 0);
 
     setLayout(mainLayout);
 
@@ -31,6 +35,7 @@ OnlineChat::OnlineChat(SocketManager* manager, QWidget *parent)
     connect(socketManager, &SocketManager::newMessageReceived, this, &OnlineChat::displayMessage);
     connect(sendButton, &QPushButton::clicked, this, &OnlineChat::sendMessage);
     connect(messageInput, &QLineEdit::returnPressed, this, &OnlineChat::sendMessage);
+    connect(visToggleButton, &QPushButton::clicked, this, &OnlineChat::toggleVisibility);
 
     QFileInfo checkFile(backgroundImagePath);
     if (checkFile.exists() && checkFile.isFile()) {
@@ -78,4 +83,21 @@ void OnlineChat::sendMessage()
             displayMessage(localUserId, message);
             messageInput->clear();
         }
+}
+
+void OnlineChat::toggleVisibility()
+{
+    if (chatDisplay->isVisible())
+     {
+        visToggleButton->setText("显示聊天");
+        chatDisplay->hide();
+        messageInput->hide();
+        sendButton->hide();
+    } else 
+    {
+        visToggleButton->setText("隐藏聊天");
+        chatDisplay->show();
+        messageInput->show();
+        sendButton->show();
+    }
 }

@@ -10,9 +10,8 @@ OnlineMsgBox::OnlineMsgBox(QWidget *parent, SocketManager* manager)
     , usingGif(false)
     , currentMode(CreateMode)  // 默认创建模式
 {
-    setWindowTitle("在线聊天");
     this->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
-    this->setGeometry(700, 250, 300, 400);
+    setFixedSize(300, 400);
 
     // 加载背景图片/视频
     //setBackgroundImage(":/image/msg.png");
@@ -20,12 +19,24 @@ OnlineMsgBox::OnlineMsgBox(QWidget *parent, SocketManager* manager)
     
     // 创建UI组件
     ipLabel = new QLabel("服务器IP:", this);
-    localIPLabel = new QLabel("本机IP: " + getLocalIP(), this);
+    localIPLabel = new QLabel("本机IP:      " + getLocalIP(), this);
     portLabel = new QLabel("端口:", this);
+    
+    // 设置字体大小
+    int fontSize = 12;
+    QFont labelFont;
+    labelFont.setPointSize(fontSize); // 增大文字大小
+    ipLabel->setFont(labelFont);
+    localIPLabel->setFont(labelFont);
+    portLabel->setFont(labelFont);
     
     ipInput = new QLineEdit("127.0.0.1", this);
     portInput = new QLineEdit("8888", this);
     portInput->setMaximumWidth(100);
+    
+    // 为输入框设置相同的字体大小
+    ipInput->setFont(labelFont);
+    portInput->setFont(labelFont);
     
     // 创建按钮
     cancelButton = new Lbutton(this, "取消", "black");
@@ -33,27 +44,29 @@ OnlineMsgBox::OnlineMsgBox(QWidget *parent, SocketManager* manager)
 
     // 布局
     QGridLayout *topLayout = new QGridLayout();
+    topLayout->setContentsMargins(10, 5, 10, 5); // 设置上边距较小，使标签更靠近顶部
     topLayout->addWidget(localIPLabel, 0, 0, 1, 2);
-    topLayout->addWidget(ipLabel, 1, 0);
-    topLayout->addWidget(ipInput, 1, 1);
-    topLayout->addWidget(portLabel, 2, 0);
-    topLayout->addWidget(portInput, 2, 1);
+    topLayout->setRowMinimumHeight(1, 15); // 添加15像素的垂直间距
+    topLayout->addWidget(ipLabel, 2, 0);
+    topLayout->addWidget(ipInput, 2, 1);
+    topLayout->setRowMinimumHeight(3, 15); // 添加15像素的垂直间距
+    topLayout->addWidget(portLabel, 4, 0);
+    topLayout->addWidget(portInput, 4, 1);
     
     QHBoxLayout *buttonLayout = new QHBoxLayout();
     buttonLayout->addWidget(cancelButton);
-    buttonLayout->addSpacing(20);
+    buttonLayout->addStretch(1);
     buttonLayout->addWidget(actionButton);
-    buttonLayout->addStretch();
+    //buttonLayout->addStretch();
     
     
     QVBoxLayout *mainLayout = new QVBoxLayout();
+    mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->addLayout(topLayout);
+    mainLayout->addStretch(1); // 添加一个弹性空间，将内容推向顶部
     mainLayout->addLayout(buttonLayout);
     
     setLayout(mainLayout);
-    
-    // 设置窗口尺寸
-    resize(300, 400);
     
     connect(socketManager, &SocketManager::connectionError, this, &OnlineMsgBox::handleConnectionError);
     connect(socketManager, &SocketManager::clientConnected, this, &OnlineMsgBox::handleClientConnected);
@@ -256,5 +269,20 @@ void OnlineMsgBox::handleNavigateRequest(const QString& pageName)
         // 它通过发出 enterLevelMode 信号，让 MainWindow 处理页面切换
         emit enterLevelMode();
         hide();
+    }
+}
+
+// 添加showEvent函数实现居中显示
+void OnlineMsgBox::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+    
+    // 如果有父控件，则在父控件中居中显示
+    if (parentWidget()) {
+        QRect parentRect = parentWidget()->rect();
+        QRect childRect = rect();
+        int x = (parentRect.width() - childRect.width()) / 2;
+        int y = (parentRect.height() - childRect.height()) / 2;
+        move(x, y);
     }
 }
