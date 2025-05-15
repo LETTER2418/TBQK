@@ -10,8 +10,5 @@
         <file>image/next.png</file>
         <file>image/pause.png</file>
         <file>image/play.png</file>
-        <file>music/Powerful_K - 跨时空的梦·续.mp3</file>
-        <file>music/Powerful_K - 星之云.mp3</file>
-        <file>music/逐鹿 - 剩下的盛夏 (纯音乐).mp3</file>
     </qresource>
 </RCC>
