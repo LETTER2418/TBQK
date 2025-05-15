@@ -168,6 +168,7 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     musicPlayerBox->setStyleSheet("QGroupBox { color: white; border: 1px solid white; border-radius: 5px; margin-top: 15px; } QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 10px 0 10px; }");
     
     QVBoxLayout *musicLayout = new QVBoxLayout();
+    musicLayout->setContentsMargins(20, 20, 20, 20);
     musicLayout->setSpacing(15);
     
     // 创建布局
