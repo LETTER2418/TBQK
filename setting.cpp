@@ -26,15 +26,6 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     backButton = new Lbutton(this, "返回");
     backButton->move(0, 0);
 
-    // 创建标题标签
-    QLabel *titleLabel = new QLabel("设置", this);
-    QFont titleFont;
-    titleFont.setPointSize(28);
-    titleFont.setBold(true);
-    titleLabel->setFont(titleFont);
-    titleLabel->setAlignment(Qt::AlignCenter);
-    titleLabel->setStyleSheet("QLabel { color: white; }");
-
     // 创建清除数据按钮
     //clearDataButton = new Lbutton(this, "清除所有数据");
     
@@ -95,10 +86,40 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     buttonVolumeSlider->setFixedWidth(200);
     buttonVolumeSlider->setMinimumHeight(30);
     
-    playButton = new Lbutton(this, "播放");
-    pauseButton = new Lbutton(this, "暂停");
-    nextButton = new Lbutton(this, "下一首");
-    prevButton = new Lbutton(this, "上一首");
+    // 创建音乐控制图标按钮
+    playButton = new QToolButton(this);
+    playButton->setIcon(QIcon(":/image/play.png"));
+    playButton->setIconSize(QSize(40, 40));
+    playButton->setToolTip("播放");
+    playButton->setStyleSheet("QToolButton { background-color: transparent; border: none; }");
+    playButton->setFixedSize(50, 50);
+    playButton->installEventFilter(this);
+    
+    pauseButton = new QToolButton(this);
+    pauseButton->setIcon(QIcon(":/image/pause.png"));
+    pauseButton->setIconSize(QSize(40, 40));
+    pauseButton->setToolTip("暂停");
+    pauseButton->setStyleSheet("QToolButton { background-color: transparent; border: none; }");
+    pauseButton->setFixedSize(50, 50);
+    pauseButton->hide(); // 初始隐藏暂停按钮
+    pauseButton->installEventFilter(this);
+    
+    prevButton = new QToolButton(this);
+    prevButton->setIcon(QIcon(":/image/last.png"));
+    prevButton->setIconSize(QSize(40, 40));
+    prevButton->setToolTip("上一首");
+    prevButton->setStyleSheet("QToolButton { background-color: transparent; border: none; }");
+    prevButton->setFixedSize(50, 50);
+    prevButton->installEventFilter(this);
+    
+    nextButton = new QToolButton(this);
+    nextButton->setIcon(QIcon(":/image/next.png"));
+    nextButton->setIconSize(QSize(40, 40));
+    nextButton->setToolTip("下一首");
+    nextButton->setStyleSheet("QToolButton { background-color: transparent; border: none; }");
+    nextButton->setFixedSize(50, 50);
+    nextButton->installEventFilter(this);
+    
     openFileButton = new Lbutton(this, "打开音乐");
     removeSongButton = new Lbutton(this, "删除选中歌曲");
     
@@ -107,8 +128,8 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     playModeComboBox->addItem("顺序播放");
     playModeComboBox->addItem("随机播放");
     playModeComboBox->setCurrentIndex(1); // 默认顺序播放
-    playModeComboBox->setStyleSheet("QComboBox { color: white; background-color: rgba(40, 40, 40, 180); font-size: 14pt; min-height: 30px; max-width: 105px; padding-left: 2px; }"
-                                   "QComboBox QAbstractItemView { background-color: rgb(50, 100, 200); color: white; }");
+    playModeComboBox->setStyleSheet("QComboBox { color: white; background-color: rgb(100, 100, 255); font-size: 14pt; min-height: 30px; max-width: 105px; padding-left: 10px; }"
+                                   "QComboBox QAbstractItemView { background-color: rgb(40, 40, 40); color: white; }");
     
     // 创建歌单列表
     playlistWidget = new QListWidget(this);
@@ -149,10 +170,20 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     QVBoxLayout *musicLayout = new QVBoxLayout();
     musicLayout->setSpacing(15);
     
+    // 创建布局
     QHBoxLayout *controlButtonLayout = new QHBoxLayout();
-    controlButtonLayout->addWidget(playButton);
-    controlButtonLayout->addWidget(pauseButton);
+    
+    // 创建播放/暂停按钮容器
+    QWidget *playPauseContainer = new QWidget(this);
+    playPauseContainer->setFixedSize(100, 100);
+    QVBoxLayout *playPauseLayout = new QVBoxLayout(playPauseContainer);
+    playPauseLayout->setContentsMargins(0, 0, 0, 0);
+    playPauseLayout->addWidget(playButton);
+    playPauseLayout->addWidget(pauseButton);
+    
+    
     controlButtonLayout->addWidget(prevButton);
+    controlButtonLayout->addWidget(playPauseContainer);
     controlButtonLayout->addWidget(nextButton);
     controlButtonLayout->setSpacing(15);
     
@@ -194,7 +225,6 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
 
     // 创建主布局
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->addWidget(titleLabel);
     
     // 创建水平布局来放置头像和音乐播放器
     QHBoxLayout *topContentLayout = new QHBoxLayout();
@@ -210,10 +240,20 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     mainLayout->setContentsMargins(50, 80, 50, 50);
 
     // 连接音乐播放器信号和槽
-    connect(playButton, &Lbutton::clicked, this, &Setting::playMusic);
-    connect(pauseButton, &Lbutton::clicked, this, &Setting::pauseMusic);
-    connect(nextButton, &Lbutton::clicked, this, &Setting::nextSong);
-    connect(prevButton, &Lbutton::clicked, this, &Setting::previousSong);
+    connect(playButton, &QToolButton::clicked, this, [this]() {
+        playMusic();
+        playButton->hide();
+        pauseButton->show();
+    });
+    
+    connect(pauseButton, &QToolButton::clicked, this, [this]() {
+        pauseMusic();
+        pauseButton->hide();
+        playButton->show();
+    });
+    
+    connect(nextButton, &QToolButton::clicked, this, &Setting::nextSong);
+    connect(prevButton, &QToolButton::clicked, this, &Setting::previousSong);
     connect(openFileButton, &Lbutton::clicked, this, &Setting::openMusicFile);
     connect(removeSongButton, &Lbutton::clicked, this, &Setting::removeSongFromPlaylist);
     connect(volumeSlider, &QSlider::valueChanged, this, &Setting::setVolume);
@@ -230,6 +270,17 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
 
     // 加载保存的歌单
     loadPlaylist();
+
+    // 监听播放状态变化
+    connect(musicPlayer, &QMediaPlayer::playbackStateChanged, this, [this](QMediaPlayer::PlaybackState state) {
+        if (state == QMediaPlayer::PlayingState) {
+            playButton->hide();
+            pauseButton->show();
+        } else {
+            pauseButton->hide();
+            playButton->show();
+        }
+    });
 }
 
 Setting::~Setting()
@@ -245,6 +296,14 @@ void Setting::playMusic()
     if (playlist.isEmpty()) {
         openMusicFile();
     } else if (musicPlayer->playbackState() != QMediaPlayer::PlayingState) {
+        // 如果当前没有正在播放的歌曲（source为空），则选择第一首歌曲
+        if (musicPlayer->source().isEmpty() && !playlist.isEmpty()) {
+            currentIndex = 0;
+            musicPlayer->setSource(QUrl::fromLocalFile(playlist.at(currentIndex)));
+            QFileInfo fileInfo(playlist.at(currentIndex));
+            currentSongLabel->setText("正在播放: " + fileInfo.baseName());
+            playlistWidget->setCurrentRow(currentIndex);
+        }
         musicPlayer->play();
     }
 }
@@ -282,7 +341,7 @@ void Setting::nextSong()
     
     musicPlayer->setSource(QUrl::fromLocalFile(playlist.at(currentIndex)));
     QFileInfo fileInfo(playlist.at(currentIndex));
-    currentSongLabel->setText("正在播放: " + fileInfo.fileName());
+    currentSongLabel->setText("正在播放: " + fileInfo.baseName());
     musicPlayer->play();
     
     // 更新歌单中的选中项
@@ -301,7 +360,7 @@ void Setting::previousSong()
     
     musicPlayer->setSource(QUrl::fromLocalFile(playlist.at(currentIndex)));
     QFileInfo fileInfo(playlist.at(currentIndex));
-    currentSongLabel->setText("正在播放: " + fileInfo.fileName());
+    currentSongLabel->setText("正在播放: " + fileInfo.baseName());
     musicPlayer->play();
     
     // 更新歌单中的选中项
@@ -339,7 +398,7 @@ void Setting::updatePlaylistDisplay()
     
     for (const QString &filePath : playlist) {
         QFileInfo fileInfo(filePath);
-        playlistWidget->addItem(fileInfo.fileName());
+        playlistWidget->addItem(fileInfo.baseName());
     }
     
     if (currentIndex >= 0 && currentIndex < playlist.size()) {
@@ -352,7 +411,7 @@ void Setting::openMusicFile()
     QStringList files = QFileDialog::getOpenFileNames(
         this,
         "选择音乐文件",
-        QDir::homePath(),
+        QString("D:/Programming/QtProject/TBQK/music"),
         "音频文件 (*.mp3 *.wav *.flac *.ogg *.m4a)"
     );
     
@@ -369,7 +428,7 @@ void Setting::openMusicFile()
             
             musicPlayer->setSource(QUrl::fromLocalFile(playlist.at(currentIndex)));
             QFileInfo fileInfo(playlist.at(currentIndex));
-            currentSongLabel->setText("正在播放: " + fileInfo.fileName());
+            currentSongLabel->setText("正在播放: " + fileInfo.baseName());
             musicPlayer->play();
             
             // 更新歌单显示
@@ -412,7 +471,7 @@ void Setting::onMediaStatusChanged(QMediaPlayer::MediaStatus status)
             if (!playlist.isEmpty()) {
                 musicPlayer->setSource(QUrl::fromLocalFile(playlist.at(currentIndex)));
                 QFileInfo fileInfo(playlist.at(currentIndex));
-                currentSongLabel->setText("正在播放: " + fileInfo.fileName());
+                currentSongLabel->setText("正在播放: " + fileInfo.baseName());
                 musicPlayer->play();
                 
                 // 更新歌单中的选中项
@@ -430,7 +489,7 @@ void Setting::onPlaylistItemDoubleClicked(QListWidgetItem *item)
         currentIndex = row;
         musicPlayer->setSource(QUrl::fromLocalFile(playlist.at(currentIndex)));
         QFileInfo fileInfo(playlist.at(currentIndex));
-        currentSongLabel->setText("正在播放: " + fileInfo.fileName());
+        currentSongLabel->setText("正在播放: " + fileInfo.baseName());
         musicPlayer->play();
     }
 }
@@ -457,7 +516,7 @@ void Setting::addSongToPlaylist(const QString &filePath)
     if (!playlist.contains(filePath)) {
         playlist.append(filePath);
         QFileInfo fileInfo(filePath);
-        playlistWidget->addItem(fileInfo.fileName());
+        playlistWidget->addItem(fileInfo.baseName());
         
         // 保存更新后的歌单
         savePlaylistToFile();
@@ -582,4 +641,26 @@ void Setting::saveAvatarPath()
         file.write(doc.toJson());
         file.close();
     }
+}
+
+// 添加事件过滤器实现
+bool Setting::eventFilter(QObject *watched, QEvent *event)
+{
+    // 检查是否是我们关注的按钮
+    QToolButton *button = qobject_cast<QToolButton*>(watched);
+    if (button && (button == playButton || button == pauseButton || 
+                  button == prevButton || button == nextButton)) {
+        
+        if (event->type() == QEvent::Enter) {
+            // 鼠标进入时放大图标
+            button->setIconSize(QSize(48, 48));
+            return true;
+        } else if (event->type() == QEvent::Leave) {
+            // 鼠标离开时恢复图标大小
+            button->setIconSize(QSize(40, 40));
+            return true;
+        }
+    }
+    
+    return QWidget::eventFilter(watched, event);
 }

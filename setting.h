@@ -10,6 +10,8 @@
 #include <QComboBox>
 #include <QListWidget>
 #include <QPixmap>
+#include <QToolButton>
+#include <QEvent>
 #include "lbutton.h"
 #include "datamanager.h"
 #include "messagebox.h"
@@ -41,6 +43,9 @@ public:
     // 头像相关方法
     void loadAvatar();  // 加载头像
     void saveAvatarPath();  // 保存头像路径
+    
+    // 事件过滤器
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
     DataManager *dataManager;
@@ -52,10 +57,10 @@ private:
     QAudioOutput *musicAudioOutput; // 音频输出
     QSlider *volumeSlider;          // 音量滑块
     QSlider *buttonVolumeSlider;    // 按钮音效音量滑块
-    Lbutton *playButton;            // 播放按钮
-    Lbutton *pauseButton;           // 暂停按钮
-    Lbutton *nextButton;            // 下一首按钮
-    Lbutton *prevButton;            // 上一首按钮
+    QToolButton *playButton;        // 播放按钮
+    QToolButton *pauseButton;       // 暂停按钮
+    QToolButton *nextButton;        // 下一首按钮
+    QToolButton *prevButton;        // 上一首按钮
     Lbutton *openFileButton;        // 打开文件按钮
     Lbutton *removeSongButton;      // 删除歌曲按钮
     QLabel *currentSongLabel;       // 当前歌曲标签

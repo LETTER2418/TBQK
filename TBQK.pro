@@ -78,5 +78,8 @@ RESOURCES += \
 DISTFILES += \
     image/太极.png \
     image/太极.png \
-    image/太极.svg
+    image/太极.svg \
+    music/Powerful_K - 星之云.mp3 \
+    music/Powerful_K - 跨时空的梦·续.mp3 \
+    music/逐鹿 - 剩下的盛夏 (纯音乐).mp3
 
