@@ -11,6 +11,9 @@
 #include <QJsonArray>
 #include <QFile>
 #include <QDir>
+#include <QPainter>
+#include <QBrush>
+#include <QFileDialog>
 
 Setting::Setting(QWidget *parent, DataManager *dataManager_)
     : QWidget(parent), dataManager(dataManager_), currentIndex(0), currentPlayMode(SequentialPlay)
@@ -33,7 +36,7 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     titleLabel->setStyleSheet("QLabel { color: white; }");
 
     // 创建清除数据按钮
-    clearDataButton = new Lbutton(this, "清除所有数据");
+    //clearDataButton = new Lbutton(this, "清除所有数据");
     
     // 创建消息框
     confirmMessageBox = new MessageBox(this, true);
@@ -43,9 +46,9 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     successMessageBox->setMessage("所有数据已清除！");
 
     // 连接清除数据按钮点击事件
-    connect(clearDataButton, &Lbutton::clicked, this, [this]() {
-        confirmMessageBox->exec();
-    });
+    // connect(clearDataButton, &Lbutton::clicked, this, [this]() {
+    //     confirmMessageBox->exec();
+    // });
 
     // 连接确认对话框的确认按钮
     connect(confirmMessageBox->closeButton, &Lbutton::clicked, this, [this]() {
@@ -104,7 +107,8 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     playModeComboBox->addItem("顺序播放");
     playModeComboBox->addItem("随机播放");
     playModeComboBox->setCurrentIndex(1); // 默认顺序播放
-    playModeComboBox->setStyleSheet("QComboBox { color: white; background-color: rgba(40, 40, 40, 180); font-size: 14pt; min-height: 30px; }");
+    playModeComboBox->setStyleSheet("QComboBox { color: white; background-color: rgba(40, 40, 40, 180); font-size: 14pt; min-height: 30px; max-width: 105px; padding-left: 2px; }"
+                                   "QComboBox QAbstractItemView { background-color: rgb(50, 100, 200); color: white; }");
     
     // 创建歌单列表
     playlistWidget = new QListWidget(this);
@@ -114,10 +118,31 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     playlistWidget->setMinimumHeight(200);
     playlistWidget->setAlternatingRowColors(true);
 
-    // 创建音乐播放器布局
-    QGroupBox *musicPlayerBox = new QGroupBox("音乐播放器", this);
+    // 创建头像相关控件
+    avatarLabel = new QLabel(this);
+    avatarLabel->setFixedSize(120, 120);
+    avatarLabel->setStyleSheet("QLabel { background-color: rgba(40, 40, 40, 150); border: 2px solid white; border-radius: 60px; }");
+    avatarLabel->setAlignment(Qt::AlignCenter);
+    
+    uploadAvatarButton = new Lbutton(this, "更换头像");
+    
+    // 创建头像布局
+    QVBoxLayout *avatarLayout = new QVBoxLayout();
+    avatarLayout->addWidget(avatarLabel, 0, Qt::AlignCenter);
+    avatarLayout->addWidget(uploadAvatarButton, 0, Qt::AlignCenter);
+    avatarLayout->setSpacing(10);
+    
     QFont groupBoxFont;
     groupBoxFont.setPointSize(16);
+
+    QGroupBox *avatarBox = new QGroupBox("用户头像", this);
+    avatarBox->setFont(groupBoxFont);
+    avatarBox->setStyleSheet("QGroupBox { color: white; border: 1px solid white; border-radius: 5px; margin-top: 15px; } QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 10px 0 10px; }");
+    avatarBox->setLayout(avatarLayout);
+    avatarBox->setFixedWidth(200);
+
+    // 创建音乐播放器布局
+    QGroupBox *musicPlayerBox = new QGroupBox("音乐播放器", this);
     musicPlayerBox->setFont(groupBoxFont);
     musicPlayerBox->setStyleSheet("QGroupBox { color: white; border: 1px solid white; border-radius: 5px; margin-top: 15px; } QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 10px 0 10px; }");
     
@@ -135,7 +160,7 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     fileControlLayout->addWidget(openFileButton);
     fileControlLayout->addWidget(removeSongButton);
     fileControlLayout->addWidget(playModeComboBox);
-    fileControlLayout->setSpacing(15);
+    fileControlLayout->setSpacing(400);
     
     QHBoxLayout *volumeLayout = new QHBoxLayout();
     QLabel *volumeLabel = new QLabel("音乐音量:", this);
@@ -156,21 +181,28 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     playlistLabel->setFont(labelFont);
     playlistLabel->setStyleSheet("QLabel { color: white; font-weight: bold; }");
     
+    musicLayout->addWidget(playlistLabel);
+    musicLayout->addWidget(playlistWidget);
     musicLayout->addWidget(currentSongLabel);
     musicLayout->addLayout(controlButtonLayout);
     musicLayout->addLayout(fileControlLayout);
     musicLayout->addLayout(volumeLayout);
     musicLayout->addLayout(buttonVolumeLayout);
-    musicLayout->addWidget(playlistLabel);
-    musicLayout->addWidget(playlistWidget);
+
     
     musicPlayerBox->setLayout(musicLayout);
 
     // 创建主布局
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(titleLabel);
-    mainLayout->addWidget(musicPlayerBox);
-    mainLayout->addWidget(clearDataButton, 0, Qt::AlignCenter);
+    
+    // 创建水平布局来放置头像和音乐播放器
+    QHBoxLayout *topContentLayout = new QHBoxLayout();
+    topContentLayout->addWidget(avatarBox);
+    topContentLayout->addWidget(musicPlayerBox);
+    
+    mainLayout->addLayout(topContentLayout);
+    //mainLayout->addWidget(clearDataButton, 0, Qt::AlignCenter);
     mainLayout->addStretch();
     mainLayout->setSpacing(20);
     
@@ -189,6 +221,12 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     connect(playModeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &Setting::onPlayModeChanged);
     connect(musicPlayer, &QMediaPlayer::mediaStatusChanged, this, &Setting::onMediaStatusChanged);
     connect(playlistWidget, &QListWidget::itemDoubleClicked, this, &Setting::onPlaylistItemDoubleClicked);
+
+    // 连接头像上传按钮信号
+    connect(uploadAvatarButton, &Lbutton::clicked, this, &Setting::uploadAvatar);
+    
+    // 加载头像
+    loadAvatar();
 
     // 加载保存的歌单
     loadPlaylist();
@@ -453,5 +491,95 @@ void Setting::removeSongFromPlaylist()
             currentSongLabel->setText("无正在播放的音乐");
             currentIndex = 0;
         }
+    }
+}
+
+void Setting::uploadAvatar()
+{
+    QString filePath = QFileDialog::getOpenFileName(
+        this,
+        "选择头像图片",
+        QDir::homePath(),
+        "图片文件 (*.png *.jpg *.jpeg *.bmp *.gif)"
+    );
+    
+    if (!filePath.isEmpty()) {
+        // 加载并显示头像
+        QPixmap pixmap(filePath);
+        if (!pixmap.isNull()) {
+            // 保存头像路径
+            avatarPath = filePath;
+            
+            // 调整图像大小为圆形并显示
+            QPixmap scaledPixmap = pixmap.scaled(120, 120, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+            QPixmap roundedPixmap(scaledPixmap.size());
+            roundedPixmap.fill(Qt::transparent);
+            
+            QPainter painter(&roundedPixmap);
+            painter.setRenderHint(QPainter::Antialiasing);
+            painter.setPen(Qt::NoPen);
+            painter.setBrush(QBrush(scaledPixmap));
+            painter.drawEllipse(roundedPixmap.rect());
+            
+            avatarLabel->setPixmap(roundedPixmap);
+            
+            // 保存头像路径
+            saveAvatarPath();
+        }
+    }
+}
+
+void Setting::loadAvatar()
+{
+    QFile file(avatarConfigPath);
+    if (file.open(QIODevice::ReadOnly)) {
+        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+        file.close();
+        
+        if (doc.isObject()) {
+            QJsonObject obj = doc.object();
+            if (obj.contains("avatarPath")) {
+                avatarPath = obj["avatarPath"].toString();
+                
+                // 检查文件是否存在
+                QFileInfo fileInfo(avatarPath);
+                if (fileInfo.exists()) {
+                    // 加载并显示头像
+                    QPixmap pixmap(avatarPath);
+                    if (!pixmap.isNull()) {
+                        // 调整图像大小为圆形并显示
+                        QPixmap scaledPixmap = pixmap.scaled(120, 120, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+                        QPixmap roundedPixmap(scaledPixmap.size());
+                        roundedPixmap.fill(Qt::transparent);
+                        
+                        QPainter painter(&roundedPixmap);
+                        painter.setRenderHint(QPainter::Antialiasing);
+                        painter.setPen(Qt::NoPen);
+                        painter.setBrush(QBrush(scaledPixmap));
+                        painter.drawEllipse(roundedPixmap.rect());
+                        
+                        avatarLabel->setPixmap(roundedPixmap);
+                    }
+                }
+            }
+        }
+    } else {
+        // 默认显示空头像或默认头像
+        avatarLabel->setText("无头像");
+        avatarLabel->setStyleSheet("QLabel { color: white; background-color: rgba(40, 40, 40, 150); border: 2px solid white; border-radius: 60px; }");
+    }
+}
+
+void Setting::saveAvatarPath()
+{
+    QJsonObject obj;
+    obj["avatarPath"] = avatarPath;
+    
+    QJsonDocument doc(obj);
+    QFile file(avatarConfigPath);
+    
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(doc.toJson());
+        file.close();
     }
 }

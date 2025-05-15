@@ -9,6 +9,7 @@
 #include <QLabel>
 #include <QComboBox>
 #include <QListWidget>
+#include <QPixmap>
 #include "lbutton.h"
 #include "datamanager.h"
 #include "messagebox.h"
@@ -22,7 +23,7 @@ public:
     ~Setting();
 
     Lbutton *backButton;    // 返回按钮
-    Lbutton *clearDataButton; // 清除数据按钮
+    //Lbutton *clearDataButton; // 清除数据按钮
 
     // 音乐播放器相关方法
     void playMusic();
@@ -36,6 +37,10 @@ public:
     void savePlaylistToFile();   // 保存歌单到本地
     void addSongToPlaylist(const QString &filePath);  // 添加歌曲到歌单
     void removeSongFromPlaylist();  // 从歌单中删除歌曲
+    
+    // 头像相关方法
+    void loadAvatar();  // 加载头像
+    void saveAvatarPath();  // 保存头像路径
 
 private:
     DataManager *dataManager;
@@ -57,6 +62,12 @@ private:
     QComboBox *playModeComboBox;    // 播放模式选择框
     QListWidget *playlistWidget;    // 歌单显示列表
     
+    // 头像相关控件和变量
+    QLabel *avatarLabel;            // 头像显示标签
+    Lbutton *uploadAvatarButton;    // 上传头像按钮
+    QString avatarPath;             // 头像文件路径
+    const QString avatarConfigPath = "avatar.json"; // 头像配置文件路径
+    
     QStringList playlist;           // 播放列表
     int currentIndex;               // 当前播放索引
     enum PlayMode {
@@ -72,6 +83,7 @@ private slots:
     void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
     void openMusicFile();
     void onPlaylistItemDoubleClicked(QListWidgetItem *item);
+    void uploadAvatar();  // 上传头像槽函数
 };
 
 #endif // SETTING_H
