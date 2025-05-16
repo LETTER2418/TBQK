@@ -100,7 +100,18 @@ void Start::onLoginClicked()
         YESmessageBox->setMessage("成功登录！");
         YESmessageBox->exec();
         currentUserId = username;
+        dataManager->setCurrentUserId(username); // 使用setter方法设置当前用户ID
         socketManager->setLocalUserId(username);
+        
+        // 获取用户设置中的头像路径
+        QJsonObject userData = dataManager->getUserSettings(username);
+        
+        // 如果有临时头像路径且用户设置中不包含头像路径，则保存临时头像路径
+        if (!userData.contains("avatarPath") && !dataManager->getAvatarPath().isEmpty()) {
+            userData["avatarPath"] = dataManager->getAvatarPath();
+            dataManager->updateUserSettings(username, userData);
+            dataManager->saveToFile();
+        }
     }
     else {
         NOmessageBox->setMessage("账号或密码错误！");

@@ -189,10 +189,6 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
                                 gamePage->setMap(mapData);
                                 pageStack->setCurrentWidget(gamePage);
                             }
-                        else
-                            {
-                               // qDebug() << "客户端已选择关卡，等待服务器数据...";
-                            }
                     }
                 else
                     {
@@ -306,7 +302,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     pageStack->addWidget(onlineModePage);
 
     // 设置默认显示的页面
-    this->pageStack->setCurrentWidget(settingPage);
+    this->pageStack->setCurrentWidget(startPage);
 
     // 主布局
     QVBoxLayout *mainLayout = new QVBoxLayout(this);

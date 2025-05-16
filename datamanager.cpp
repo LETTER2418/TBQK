@@ -270,3 +270,33 @@ void DataManager::clearAllData()
     maps.clear();
     rankings.clear();
 }
+
+// 获取用户设置
+QJsonObject DataManager::getUserSettings(const QString &userId) const
+{
+    // 检查用户是否存在
+    if (!users.contains(userId)) {
+        return QJsonObject(); // 返回空对象
+    }
+    
+    // 获取用户数据中的settings字段
+    UserData userData = users[userId];
+    QJsonObject settings = userData.settings;
+    
+    return settings;
+}
+
+// 更新用户设置
+bool DataManager::updateUserSettings(const QString &userId, const QJsonObject &settings)
+{
+    // 检查用户是否存在
+    if (!users.contains(userId)) {
+        return false;
+    }
+    
+    // 更新用户设置
+    users[userId].settings = settings;
+    
+    // 保存到文件
+    return saveToFile();
+}

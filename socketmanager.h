@@ -10,6 +10,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QTimer>
+#include <QPixmap>
 #include "mapdata.h"
 
 class SocketManager : public QObject
@@ -24,20 +25,31 @@ public:
     void SendChatMessage(const QString& message, const QString& sender = "User");
     void SendGameState(const MapData& mapData);  // 发送游戏状态
     void SendLeaveRoomMessage(); // 新增：发送退出房间消息
+    void SendAvatarImage(const QPixmap& avatar, const QString& userId); // 新增：发送头像图像数据
     QJsonObject CreateMsg();
     void closeConnection();  // 关闭连接
     bool isServerMode() const; // 用于检查当前是否为服务器模式
     void setLocalUserId(const QString& userId);
     QString getLocalUserId() const;
+    
+    // 获取客户端连接列表
+    QList<QTcpSocket*> getClientSockets() const { return clientSockets; }
+    
+    // 获取客户端套接字（客户端模式）
+    QTcpSocket* getClientSocket() const { return clientSocket; }
+    
+    // 发送JSON数据
+    bool sendJson(QTcpSocket* socket, const QJsonObject& json);
 
 signals:
-    void newMessageReceived(const QString& sender, const QString& message);
+    void newMessageReceived(const QString& sender, const QString& message, bool isSelfMessage);
     void clientConnected();
     void clientDisconnected();
     void connectionError(const QString& error);
     void gameStateReceived(const MapData& mapData);  // 接收游戏状态的信号
     void navigateToPageRequest(const QString& pageName); // 新增信号，请求页面导航
     void roomLeft(); // 新增：对方退出房间的信号
+    void avatarImageReceived(const QString& userId, const QPixmap& avatar); // 新增：接收到头像图像的信号
 
 private slots:
     void handleNewConnection();
@@ -59,14 +71,11 @@ private:
 
     void ServerAddSendMsgList(QTcpSocket* client, const QJsonObject& msg);
     bool ServerSendMsg(QTcpSocket* client, const QJsonObject& msg);
-    void ServerProcessClientSendMsgList(QTcpSocket* client);
-    void ServerProcessClientsSendMsgList();
-    QJsonObject ServerRecvMsg(QTcpSocket* client); // Will be part of handleReadyRead
-
-    // Helper for sending JSON
-    bool sendJson(QTcpSocket* socket, const QJsonObject& json);
+    void ServerProcessClientSendMsgList(QTcpSocket* client);    
+    void ServerProcessClientsSendMsgList();       
+    
     // Helper for processing received data
-    void processReceivedData(QTcpSocket* socket, const QByteArray& data);
+    void processReceivedData(const QByteArray& data);
 };
 
 #endif // SOCKETMANAGER_H

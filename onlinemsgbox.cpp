@@ -279,10 +279,10 @@ void OnlineMsgBox::showEvent(QShowEvent *event)
     
     // 如果有父控件，则在父控件中居中显示
     if (parentWidget()) {
-        QRect parentRect = parentWidget()->rect();
+        QPoint parentCenter = parentWidget()->mapToGlobal(parentWidget()->rect().center());
         QRect childRect = rect();
-        int x = (parentRect.width() - childRect.width()) / 2;
-        int y = (parentRect.height() - childRect.height()) / 2;
+        int x = parentCenter.x() - childRect.width() / 2;
+        int y = parentCenter.y() - childRect.height() / 2;
         move(x, y);
     }
 }

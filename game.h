@@ -92,6 +92,7 @@ private:
     Lbutton *pathToggleButton;
     Lbutton *radiusAdjustButton; // 半径调整按钮
     Lbutton *resetButton;        // 重置按钮
+    Lbutton *chatButton;         // 聊天按钮
     QSpinBox *radiusSpinBox;     // 半径调整输入框
     MessageBox *messageBox;
     QVector<QPoint> path;         // 提示路径

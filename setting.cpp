@@ -192,7 +192,7 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     fileControlLayout->addWidget(openFileButton);
     fileControlLayout->addWidget(removeSongButton);
     fileControlLayout->addWidget(playModeComboBox);
-    fileControlLayout->setSpacing(400);
+    //fileControlLayout->setSpacing(40);
     
     QHBoxLayout *volumeLayout = new QHBoxLayout();
     QLabel *volumeLabel = new QLabel("音乐音量:", this);
@@ -559,7 +559,7 @@ void Setting::uploadAvatar()
     QString filePath = QFileDialog::getOpenFileName(
         this,
         "选择头像图片",
-        QDir::homePath(),
+        QString("D:\\Image\\Pictures\\好看"),
         "图片文件 (*.png *.jpg *.jpeg *.bmp *.gif)"
     );
     
@@ -583,64 +583,75 @@ void Setting::uploadAvatar()
             
             avatarLabel->setPixmap(roundedPixmap);
             
-            // 保存头像路径
-            saveAvatarPath();
+            // 将头像路径保存到DataManager的临时路径
+            if (dataManager) {
+                dataManager->setAvatarPath(filePath);
+            }
+            
+            // 仅在用户已登录时保存头像路径
+            if (dataManager && !dataManager->getCurrentUserId().isEmpty()) {
+                saveAvatarPath();
+            }
         }
     }
 }
 
 void Setting::loadAvatar()
 {
-    QFile file(avatarConfigPath);
-    if (file.open(QIODevice::ReadOnly)) {
-        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-        file.close();
+    // 从DataManager中读取头像路径
+    if (dataManager) {
+        // 获取配置中的avatarPath
+        QJsonObject userData = dataManager->getUserSettings(dataManager->getCurrentUserId());
         
-        if (doc.isObject()) {
-            QJsonObject obj = doc.object();
-            if (obj.contains("avatarPath")) {
-                avatarPath = obj["avatarPath"].toString();
-                
-                // 检查文件是否存在
-                QFileInfo fileInfo(avatarPath);
-                if (fileInfo.exists()) {
-                    // 加载并显示头像
-                    QPixmap pixmap(avatarPath);
-                    if (!pixmap.isNull()) {
-                        // 调整图像大小为圆形并显示
-                        QPixmap scaledPixmap = pixmap.scaled(120, 120, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
-                        QPixmap roundedPixmap(scaledPixmap.size());
-                        roundedPixmap.fill(Qt::transparent);
-                        
-                        QPainter painter(&roundedPixmap);
-                        painter.setRenderHint(QPainter::Antialiasing);
-                        painter.setPen(Qt::NoPen);
-                        painter.setBrush(QBrush(scaledPixmap));
-                        painter.drawEllipse(roundedPixmap.rect());
-                        
-                        avatarLabel->setPixmap(roundedPixmap);
-                    }
+        if (userData.contains("avatarPath")) {
+            avatarPath = userData["avatarPath"].toString();
+            
+            // 检查文件是否存在
+            QFileInfo fileInfo(avatarPath);
+            if (fileInfo.exists()) {
+                // 加载并显示头像
+                QPixmap pixmap(avatarPath);
+                if (!pixmap.isNull()) {
+                    // 调整图像大小为圆形并显示
+                    QPixmap scaledPixmap = pixmap.scaled(120, 120, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+                    QPixmap roundedPixmap(scaledPixmap.size());
+                    roundedPixmap.fill(Qt::transparent);
+                    
+                    QPainter painter(&roundedPixmap);
+                    painter.setRenderHint(QPainter::Antialiasing);
+                    painter.setPen(Qt::NoPen);
+                    painter.setBrush(QBrush(scaledPixmap));
+                    painter.drawEllipse(roundedPixmap.rect());
+                    
+                    avatarLabel->setPixmap(roundedPixmap);
+                    return;
                 }
             }
         }
-    } else {
-        // 默认显示空头像或默认头像
-        avatarLabel->setText("无头像");
-        avatarLabel->setStyleSheet("QLabel { color: white; background-color: rgba(40, 40, 40, 150); border: 2px solid white; border-radius: 60px; }");
     }
+    
+    // 默认显示空头像或默认头像
+    avatarLabel->setText("无头像");
+    avatarLabel->setStyleSheet("QLabel { color: white; background-color: rgba(40, 40, 40, 150); border: 2px solid white; border-radius: 60px; }");
 }
 
 void Setting::saveAvatarPath()
 {
-    QJsonObject obj;
-    obj["avatarPath"] = avatarPath;
-    
-    QJsonDocument doc(obj);
-    QFile file(avatarConfigPath);
-    
-    if (file.open(QIODevice::WriteOnly)) {
-        file.write(doc.toJson());
-        file.close();
+    // 将头像路径保存到DataManager中
+    if (dataManager) {
+        // 获取当前用户ID
+        QString userId = dataManager->getCurrentUserId();
+        if (!userId.isEmpty()) {
+            // 获取当前用户设置
+            QJsonObject userData = dataManager->getUserSettings(userId);
+            
+            // 添加头像路径
+            userData["avatarPath"] = avatarPath;
+            
+            // 更新用户设置并保存
+            dataManager->updateUserSettings(userId, userData);
+            dataManager->saveToFile();
+        }
     }
 }
 

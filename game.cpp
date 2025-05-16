@@ -27,6 +27,11 @@ void Game::initializeUI()
     pathToggleButton = new Lbutton(this, "显示路径");
     radiusAdjustButton = new Lbutton(this, isAutoRadius ? "手动调整半径" : "自动调整半径");
     resetButton = new Lbutton(this, "重置");
+    chatButton = new Lbutton(this, "聊天");
+    
+    // 初始时聊天按钮为禁用状态，只有在联机模式下才启用
+    chatButton->setEnabled(false);
+    
     radiusSpinBox = new QSpinBox(this);
 
     radiusSpinBox->setRange(10, 60);
@@ -35,14 +40,20 @@ void Game::initializeUI()
     radiusSpinBox->setFixedWidth(140);
     radiusSpinBox->setFixedHeight(50);
 
-    backButton->move(0, 0);
+    // 创建单独的返回按钮和聊天按钮布局
+    QVBoxLayout *backChatLayout = new QVBoxLayout();
+    backChatLayout->addWidget(backButton);
+    backChatLayout->addStretch(1); // 中间添加弹性空间
+    backChatLayout->addWidget(chatButton);
+    backChatLayout->setSpacing(10); // 设置这两个按钮之间的间距较小
+    backChatLayout->setContentsMargins(10, 10, 10, 10);
 
     messageBox = new MessageBox(this);
 
     gameTimer = new QTimer(this);
     gameTimer->setInterval(1000);
 
-    // 创建按钮的垂直布局
+    // 创建主要按钮的垂直布局
     QVBoxLayout *buttonColumnLayout = new QVBoxLayout();
     buttonColumnLayout->setSpacing(100); // 设置按钮间的间距
     buttonColumnLayout->addStretch(1); // 按钮组上方的弹性空间
@@ -60,12 +71,13 @@ void Game::initializeUI()
     buttonColumnLayout->addStretch(1); // 按钮组下方的弹性空间
 
     // 创建主水平布局
-    QHBoxLayout *mainLayout = new QHBoxLayout(this); // 'this' 将此布局设置为主控件的布局
-    mainLayout->addStretch(10); // 左侧的弹性空间 (游戏区域)，占据更多比例
+    QHBoxLayout *mainLayout = new QHBoxLayout(this);
+    mainLayout->addLayout(backChatLayout, 0); // 左侧放置返回和聊天按钮，不拉伸
+    mainLayout->addStretch(10); // 中间的弹性空间 (游戏区域)，占据更多比例
     mainLayout->addLayout(buttonColumnLayout, 1); // 右侧的按钮列，占据较小比例
 
-    // 可以设置主布局的边距，使按钮列与窗口右边缘有一定距离
-    mainLayout->setContentsMargins(10, 10, 10, 10); // 例如：所有边缘都有10px的边距
+    // 设置主布局的边距
+    mainLayout->setContentsMargins(0, 0, 0, 0);
 }
 
 void Game::setupConnections()
@@ -81,6 +93,71 @@ void Game::setupConnections()
     connect(radiusAdjustButton, &QPushButton::clicked, this, &Game::onRadiusAdjustButtonClicked);
     connect(radiusSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &Game::onRadiusSpinBoxChanged);
     connect(resetButton, &QPushButton::clicked, this, &Game::resetCurrentLevel);
+    
+    // 添加返回按钮点击事件，隐藏联机聊天窗口
+    connect(backButton, &QPushButton::clicked, this, [this]() {
+        // 如果在联机模式下，显示退出房间提醒
+        if (isOnlineMode && socketManager) {
+            if (messageBox) {
+                messageBox->setMessage("确定要退出房间吗？");
+                int result = messageBox->exec();
+                
+                if (result == QDialog::Accepted) {
+                    // 用户确认退出房间
+                    if (socketManager) {
+                        socketManager->SendLeaveRoomMessage();
+                    }
+                    
+                    // 隐藏并清空聊天窗口
+                    if (onlineChat) {
+                        onlineChat->hide();
+                        onlineChat->clearChatHistory();
+                    }
+                    
+                    // 发送未完成的信号
+                    emit returnToLevelMode(false, penaltySeconds, stepCount, currentLevelId);
+                }
+                return; // 如果取消，则不执行后续的返回操作
+            }
+        }
+        
+        // 非联机模式或无需确认
+        if (onlineChat && onlineChat->isVisible()) {
+            onlineChat->hide();
+        }
+        
+        // 发送未完成的信号
+        emit returnToLevelMode(false, penaltySeconds, stepCount, currentLevelId);
+    });
+    
+    connect(chatButton, &QPushButton::clicked, this, [this]()
+    {
+        if (onlineChat && isOnlineMode)
+        {
+            // 如果当前窗口可见，则居中显示
+            if (!onlineChat->isVisible())
+            {
+                // 计算父窗口的中心位置
+                QPoint parentCenter = this->mapToGlobal(QPoint(this->width()/2, this->height()/2));
+                // 计算聊天窗口应该显示的位置
+                QPoint chatPos = QPoint(
+                    parentCenter.x() - onlineChat->width()/2,
+                    parentCenter.y() - onlineChat->height()/2
+                );
+                onlineChat->move(chatPos);
+            }
+            onlineChat->show();
+        }
+        else
+        {
+            // 在非联机模式下点击聊天按钮给出提示
+            if (messageBox)
+            {
+                messageBox->setMessage("请先进入联机模式才能使用聊天功能");
+                messageBox->exec();
+            }
+        }
+    });
 }
 
 void Game::setMap(MapData mapData)
@@ -127,6 +204,7 @@ void Game::resetGameState(bool fromResetButton)
             pathToggleButton->setEnabled(true);
             radiusAdjustButton->setEnabled(true);
             radiusSpinBox->setEnabled(!isAutoRadius);
+            chatButton->setEnabled(isOnlineMode);
             showPath = true;
             penaltySeconds = 0;
             pathToggleButton->setText("隐藏路径");
@@ -763,14 +841,38 @@ void Game::setOnlineMode(bool isServer_, SocketManager* manager)
     if (manager)
         {
             setSocketManager(manager);
-
-            // 创建并显示聊天窗口
+            
+            // 创建或重用聊天窗口
             if (onlineChat == nullptr)
                 {
-                    onlineChat = new OnlineChat(manager, this);
-                    onlineChat->setWindowTitle("联机聊天");
+                    onlineChat = new OnlineChat(manager, dataManager, this);
                 }
-            onlineChat->show();
+            
+            // 设置窗口标题
+            onlineChat->setWindowTitle("联机聊天");
+            
+            // 清空历史聊天记录（重新进入房间）
+            onlineChat->clearChatHistory();
+            
+            // 加载用户头像 - 无论是否已有用户头像，都重新获取一次
+            if (socketManager) {
+                QString localUserId = socketManager->getLocalUserId();
+                
+                // 重置头像设置，强制重新获取
+                onlineChat->setUserAvatar(localUserId);
+                
+                // 设置短延迟后发送头像，确保头像数据能够被接收方处理
+                QTimer::singleShot(300, onlineChat, &OnlineChat::sendCurrentUserAvatar);
+                
+                // 再次延迟发送一次，以确保稳定传输
+                QTimer::singleShot(1000, onlineChat, &OnlineChat::sendCurrentUserAvatar);
+            }
+            
+            // 启用聊天按钮
+            if (chatButton)
+                {
+                    chatButton->setEnabled(true);
+                }
         }
     else
         {
@@ -780,6 +882,12 @@ void Game::setOnlineMode(bool isServer_, SocketManager* manager)
                     onlineChat->hide();
                 }
             socketManager = nullptr;
+            
+            // 禁用聊天按钮
+            if (chatButton)
+                {
+                    chatButton->setEnabled(false);
+                }
         }
 }
 

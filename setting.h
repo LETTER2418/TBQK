@@ -71,7 +71,6 @@ private:
     QLabel *avatarLabel;            // 头像显示标签
     Lbutton *uploadAvatarButton;    // 上传头像按钮
     QString avatarPath;             // 头像文件路径
-    const QString avatarConfigPath = "avatar.json"; // 头像配置文件路径
     
     QStringList playlist;           // 播放列表
     int currentIndex;               // 当前播放索引

@@ -2,6 +2,8 @@
 #include <QHostAddress>
 #include <QNetworkInterface>
 #include <QDateTime>
+#include <QBuffer>
+#include <QPixmap>
 
 SocketManager::SocketManager(QObject *parent)
     : QObject(parent)
@@ -180,6 +182,34 @@ void SocketManager::SendLeaveRoomMessage()
     }
 }
 
+void SocketManager::SendAvatarImage(const QPixmap& avatar, const QString& userId)
+{
+    // 将QPixmap转换为字节数组
+    QByteArray byteArray;
+    QBuffer buffer(&byteArray);
+    buffer.open(QIODevice::WriteOnly);
+    avatar.save(&buffer, "PNG");
+    buffer.close();
+    
+    // 创建JSON消息对象
+    QJsonObject jsonMessage;
+    jsonMessage["type"] = "avatar_data";
+    jsonMessage["userId"] = userId;
+    jsonMessage["avatar_data"] = QString(byteArray.toBase64()); // Base64编码图片数据
+    jsonMessage["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
+
+    if (isServer) {
+        // 服务器广播图片数据给所有客户端
+        for (QTcpSocket* clientSocket : clientSockets) {
+            ServerAddSendMsgList(clientSocket, jsonMessage);
+        }
+        ServerProcessClientsSendMsgList();
+    } else if (clientSocket && clientSocket->state() == QAbstractSocket::ConnectedState) {
+        // 客户端发送图片数据给服务器
+        sendJson(clientSocket, jsonMessage);
+    }
+}
+
 QJsonObject SocketManager::CreateMsg()
 {
     // 创建一个基本的JSON消息结构
@@ -244,7 +274,7 @@ void SocketManager::handleReadyRead()
     if (data.isEmpty()) return;
 
     // 处理接收到的数据
-    processReceivedData(socket, data);
+    processReceivedData(data);
 }
 
 void SocketManager::handleConnectionTimeout()
@@ -330,13 +360,6 @@ void SocketManager::ServerProcessClientsSendMsgList()
     }
 }
 
-QJsonObject SocketManager::ServerRecvMsg(QTcpSocket* client)
-{
-    // 注意：这个方法在当前实现中不需要，
-    // 因为数据接收和处理在handleReadyRead()和processReceivedData()中完成
-    return QJsonObject();
-}
-
 bool SocketManager::sendJson(QTcpSocket* socket, const QJsonObject& json)
 {
     if (!socket || socket->state() != QAbstractSocket::ConnectedState) {
@@ -357,7 +380,7 @@ bool SocketManager::sendJson(QTcpSocket* socket, const QJsonObject& json)
     return (bytesWritten == data.size());
 }
 
-void SocketManager::processReceivedData(QTcpSocket* socket, const QByteArray& data)
+void SocketManager::processReceivedData(const QByteArray& data)
 {
     // 分割可能的多条JSON消息（假设以 '\n' 分隔）
     QList<QByteArray> jsonMessages = data.split('\n');
@@ -379,7 +402,34 @@ void SocketManager::processReceivedData(QTcpSocket* socket, const QByteArray& da
         if (type == "chat") {
             QString sender = json["sender"].toString();
             QString message = json["message"].toString();
-            emit newMessageReceived(sender, message);
+            
+            // 检查是否是特殊的用户存在消息
+            if (message == "__USER_PRESENCE__") {
+                // 这是用户存在通知
+                qDebug() << "接收到用户存在通知: " << sender;
+                
+                // 如果是对方用户ID
+                if (sender != localUserId) {
+                    // 更新对方用户名
+                    emit newMessageReceived(sender, "", false);
+                    
+                    // 回应用户存在消息
+                    SendChatMessage("__USER_ID_RESPONSE__", localUserId);
+                }
+            }
+            // 检查是否是用户ID响应
+            else if (message == "__USER_ID_RESPONSE__") {
+                // 这是对方发来的ID响应
+                if (sender != localUserId) {
+                    qDebug() << "接收到远程用户ID响应: " << sender;
+                    // 更新对方用户名
+                    emit newMessageReceived(sender, "", false);
+                }
+            }
+            else {
+                // 正常聊天消息
+                emit newMessageReceived(sender, message, false);
+            }
         }
         else if (type == "gameState") {
             QJsonObject mapDataJson = json["mapData"].toObject();
@@ -393,10 +443,25 @@ void SocketManager::processReceivedData(QTcpSocket* socket, const QByteArray& da
                 emit navigateToPageRequest(pageName);
             }
         }
+        else if (type == "avatar_data") {
+            // 处理头像数据
+            QString userId = json["userId"].toString();
+            QString base64Data = json["avatar_data"].toString();
+            
+            if (!userId.isEmpty() && !base64Data.isEmpty()) {
+                // 将Base64数据转换为QByteArray
+                QByteArray imageData = QByteArray::fromBase64(base64Data.toLatin1());
+                QPixmap avatar;
+                avatar.loadFromData(imageData);
+                
+                // 发送头像数据信号
+                emit avatarImageReceived(userId, avatar);
+            }
+        }
         else if (type == "leaveRoom") {
             // 处理退出房间消息
             QString sender = json["sender"].toString();
-            emit newMessageReceived("系统", QString("%1退出房间").arg(sender));
+            // 只发送房间离开信号，不发送系统消息
             emit roomLeft();
         }
     }
