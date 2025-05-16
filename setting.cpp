@@ -14,9 +14,14 @@
 #include <QPainter>
 #include <QBrush>
 #include <QFileDialog>
+#include <QPropertyAnimation>
+#include <QEasingCurve>
+#include <QTransform>
+#include <QPainterPath>
 
 Setting::Setting(QWidget *parent, DataManager *dataManager_)
-    : QWidget(parent), dataManager(dataManager_), currentIndex(0), currentPlayMode(SequentialPlay)
+    : QWidget(parent), dataManager(dataManager_), currentIndex(0), currentPlayMode(SequentialPlay),
+      avatarRotateAnimation(nullptr), avatarRotationAngle(0.0)
 {
     // 设置应用图标
     QIcon appIcon(":/image/taiji.png");
@@ -145,6 +150,19 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     avatarLabel->setStyleSheet("QLabel { background-color: rgba(40, 40, 40, 150); border: 2px solid white; border-radius: 60px; }");
     avatarLabel->setAlignment(Qt::AlignCenter);
     
+    // 为头像标签安装事件过滤器
+    avatarLabel->installEventFilter(this);
+    
+    // 创建旋转动画
+    avatarRotateAnimation = new QPropertyAnimation(this, "avatarRotationAngle");
+    avatarRotateAnimation->setDuration(500); // 动画持续时间，单位毫秒
+    avatarRotateAnimation->setEasingCurve(QEasingCurve::OutCubic); // 动画缓动曲线
+    connect(avatarRotateAnimation, &QPropertyAnimation::valueChanged, this, [this](const QVariant &value) {
+        // 更新旋转角度并重新绘制头像
+        avatarRotationAngle = value.toDouble();
+        updateAvatarRotation();
+    });
+    
     uploadAvatarButton = new Lbutton(this, "更换头像");
     
     // 创建头像布局
@@ -173,6 +191,7 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     
     // 创建布局
     QHBoxLayout *controlButtonLayout = new QHBoxLayout();
+    controlButtonLayout->setAlignment(Qt::AlignCenter); // 设置整体布局居中
     
     // 创建播放/暂停按钮容器
     QWidget *playPauseContainer = new QWidget(this);
@@ -181,12 +200,15 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     playPauseLayout->setContentsMargins(0, 0, 0, 0);
     playPauseLayout->addWidget(playButton);
     playPauseLayout->addWidget(pauseButton);
-    
-    
+    playPauseLayout->setAlignment(Qt::AlignCenter); // 设置按钮在容器中居中
+
+    controlButtonLayout->addStretch(1);
     controlButtonLayout->addWidget(prevButton);
+     controlButtonLayout->addStretch(1);
     controlButtonLayout->addWidget(playPauseContainer);
+     controlButtonLayout->addStretch(1);
     controlButtonLayout->addWidget(nextButton);
-    controlButtonLayout->setSpacing(15);
+     controlButtonLayout->addStretch(1);
     
     QHBoxLayout *fileControlLayout = new QHBoxLayout();
     fileControlLayout->addWidget(openFileButton);
@@ -290,6 +312,9 @@ Setting::~Setting()
     delete successMessageBox;
     delete musicPlayer;
     delete musicAudioOutput;
+    
+    // 清理动画
+    delete avatarRotateAnimation;
 }
 
 void Setting::playMusic()
@@ -567,30 +592,51 @@ void Setting::uploadAvatar()
         // 加载并显示头像
         QPixmap pixmap(filePath);
         if (!pixmap.isNull()) {
-            // 保存头像路径
+            // 保存临时头像路径（仍然保存原始路径用于显示）
             avatarPath = filePath;
             
-            // 调整图像大小为圆形并显示
-            QPixmap scaledPixmap = pixmap.scaled(120, 120, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
-            QPixmap roundedPixmap(scaledPixmap.size());
+            // 确保头像尺寸与容器尺寸一致
+            int size = qMin(avatarLabel->width(), avatarLabel->height());
+            
+            // 先将图像缩放为正方形，保持宽高比
+            QPixmap squarePixmap = pixmap.scaled(size, size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            
+            // 创建圆形遮罩
+            QPixmap roundedPixmap(size, size);
             roundedPixmap.fill(Qt::transparent);
             
             QPainter painter(&roundedPixmap);
             painter.setRenderHint(QPainter::Antialiasing);
-            painter.setPen(Qt::NoPen);
-            painter.setBrush(QBrush(scaledPixmap));
-            painter.drawEllipse(roundedPixmap.rect());
             
+            // 创建圆形裁剪路径
+            QPainterPath path;
+            path.addEllipse(0, 0, size, size);
+            painter.setClipPath(path);
+            
+            // 计算居中绘制的位置
+            int x = (size - squarePixmap.width()) / 2;
+            int y = (size - squarePixmap.height()) / 2;
+            
+            // 绘制头像
+            painter.drawPixmap(x, y, squarePixmap);
+            painter.end();
+            
+            // 保存原始圆形头像以便旋转
+            originalAvatarPixmap = roundedPixmap;
+            
+            // 显示头像
             avatarLabel->setPixmap(roundedPixmap);
             
-            // 将头像路径保存到DataManager的临时路径
+            // 将未处理的原始头像存储到DataManager中以便保存文件
             if (dataManager) {
+                // 临时保存原始头像
                 dataManager->setAvatarPath(filePath);
-            }
-            
-            // 仅在用户已登录时保存头像路径
-            if (dataManager && !dataManager->getCurrentUserId().isEmpty()) {
-                saveAvatarPath();
+                
+                // 仅在用户已登录时保存头像文件
+                if (!dataManager->getCurrentUserId().isEmpty()) {
+                    // 保存头像文件
+                    dataManager->saveAvatarFile(dataManager->getCurrentUserId(), pixmap);
+                }
             }
         }
     }
@@ -598,66 +644,75 @@ void Setting::uploadAvatar()
 
 void Setting::loadAvatar()
 {
-    // 从DataManager中读取头像路径
-    if (dataManager) {
-        // 获取配置中的avatarPath
-        QJsonObject userData = dataManager->getUserSettings(dataManager->getCurrentUserId());
+    // 从DataManager中读取头像
+    if (dataManager && !dataManager->getCurrentUserId().isEmpty()) {
+        // 直接加载头像文件
+        QPixmap pixmap = dataManager->loadAvatarFile(dataManager->getCurrentUserId());
         
-        if (userData.contains("avatarPath")) {
-            avatarPath = userData["avatarPath"].toString();
+        if (!pixmap.isNull()) {
+            // 确保头像尺寸与容器尺寸一致
+            int size = qMin(avatarLabel->width(), avatarLabel->height());
             
-            // 检查文件是否存在
-            QFileInfo fileInfo(avatarPath);
-            if (fileInfo.exists()) {
-                // 加载并显示头像
-                QPixmap pixmap(avatarPath);
-                if (!pixmap.isNull()) {
-                    // 调整图像大小为圆形并显示
-                    QPixmap scaledPixmap = pixmap.scaled(120, 120, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
-                    QPixmap roundedPixmap(scaledPixmap.size());
-                    roundedPixmap.fill(Qt::transparent);
-                    
-                    QPainter painter(&roundedPixmap);
-                    painter.setRenderHint(QPainter::Antialiasing);
-                    painter.setPen(Qt::NoPen);
-                    painter.setBrush(QBrush(scaledPixmap));
-                    painter.drawEllipse(roundedPixmap.rect());
-                    
-                    avatarLabel->setPixmap(roundedPixmap);
-                    return;
-                }
-            }
+            // 先将图像缩放为正方形，保持宽高比
+            QPixmap squarePixmap = pixmap.scaled(size, size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            
+            // 创建圆形遮罩
+            QPixmap roundedPixmap(size, size);
+            roundedPixmap.fill(Qt::transparent);
+            
+            QPainter painter(&roundedPixmap);
+            painter.setRenderHint(QPainter::Antialiasing);
+            
+            // 创建圆形裁剪路径
+            QPainterPath path;
+            path.addEllipse(0, 0, size, size);
+            painter.setClipPath(path);
+            
+            // 计算居中绘制的位置
+            int x = (size - squarePixmap.width()) / 2;
+            int y = (size - squarePixmap.height()) / 2;
+            
+            // 绘制头像
+            painter.drawPixmap(x, y, squarePixmap);
+            painter.end();
+            
+            // 保存原始圆形头像以便旋转
+            originalAvatarPixmap = roundedPixmap;
+            
+            // 显示头像
+            avatarLabel->setPixmap(roundedPixmap);
+            return;
         }
     }
     
     // 默认显示空头像或默认头像
     avatarLabel->setText("无头像");
     avatarLabel->setStyleSheet("QLabel { color: white; background-color: rgba(40, 40, 40, 150); border: 2px solid white; border-radius: 60px; }");
-}
-
-void Setting::saveAvatarPath()
-{
-    // 将头像路径保存到DataManager中
-    if (dataManager) {
-        // 获取当前用户ID
-        QString userId = dataManager->getCurrentUserId();
-        if (!userId.isEmpty()) {
-            // 获取当前用户设置
-            QJsonObject userData = dataManager->getUserSettings(userId);
-            
-            // 添加头像路径
-            userData["avatarPath"] = avatarPath;
-            
-            // 更新用户设置并保存
-            dataManager->updateUserSettings(userId, userData);
-            dataManager->saveToFile();
-        }
-    }
+    originalAvatarPixmap = QPixmap(); // 清空原始头像
 }
 
 // 添加事件过滤器实现
 bool Setting::eventFilter(QObject *watched, QEvent *event)
 {
+    // 检查是否是头像标签
+    if (watched == avatarLabel) {
+        if (event->type() == QEvent::Enter) {
+            // 鼠标进入时旋转头像
+            avatarRotateAnimation->stop();
+            avatarRotateAnimation->setStartValue(avatarRotationAngle);
+            avatarRotateAnimation->setEndValue(180.0);
+            avatarRotateAnimation->start();
+            return true;
+        } else if (event->type() == QEvent::Leave) {
+            // 鼠标离开时恢复头像
+            avatarRotateAnimation->stop();
+            avatarRotateAnimation->setStartValue(avatarRotationAngle);
+            avatarRotateAnimation->setEndValue(0.0);
+            avatarRotateAnimation->start();
+            return true;
+        }
+    }
+    
     // 检查是否是我们关注的按钮
     QToolButton *button = qobject_cast<QToolButton*>(watched);
     if (button && (button == playButton || button == pauseButton || 
@@ -675,4 +730,67 @@ bool Setting::eventFilter(QObject *watched, QEvent *event)
     }
     
     return QWidget::eventFilter(watched, event);
+}
+
+// 设置旋转角度并触发更新
+void Setting::setAvatarRotationAngle(double angle)
+{
+    avatarRotationAngle = angle;
+    updateAvatarRotation();
+}
+
+// 更新头像旋转显示
+void Setting::updateAvatarRotation()
+{
+    // 如果没有头像或原始头像未保存，则不执行旋转
+    if (avatarLabel->pixmap(Qt::ReturnByValue).isNull() || originalAvatarPixmap.isNull())
+        return;
+    
+    // 获取头像尺寸
+    int size = qMin(avatarLabel->width(), avatarLabel->height());
+    
+    // 创建临时画布用于旋转
+    QPixmap tempPixmap(size, size);
+    tempPixmap.fill(Qt::transparent);
+    
+    // 创建变换矩阵进行旋转
+    QTransform transform;
+    transform.translate(size/2, size/2); // 移动到中心点
+    transform.rotate(avatarRotationAngle); // 旋转
+    transform.translate(-size/2, -size/2); // 移回原位置
+    
+    // 在临时画布上绘制旋转后的图像
+    QPainter tempPainter(&tempPixmap);
+    tempPainter.setRenderHint(QPainter::Antialiasing);
+    tempPainter.setRenderHint(QPainter::SmoothPixmapTransform);
+    tempPainter.setTransform(transform);
+    
+    // 计算原始图像在临时画布上的绘制位置，保证居中
+    QRect sourceRect = originalAvatarPixmap.rect();
+    QRect targetRect(0, 0, size, size);
+    
+    // 在临时画布上绘制原始图像（不应用遮罩）
+    tempPainter.drawPixmap(targetRect, originalAvatarPixmap, sourceRect);
+    tempPainter.end();
+    
+    // 创建最终的圆形头像
+    QPixmap finalPixmap(size, size);
+    finalPixmap.fill(Qt::transparent);
+    
+    QPainter finalPainter(&finalPixmap);
+    finalPainter.setRenderHint(QPainter::Antialiasing);
+    
+    // 创建圆形路径
+    QPainterPath path;
+    path.addEllipse(0, 0, size, size);
+    
+    // 设置裁剪路径，只绘制圆形区域内的内容
+    finalPainter.setClipPath(path);
+    
+    // 绘制旋转后的图像到最终画布，保证圆形
+    finalPainter.drawPixmap(0, 0, tempPixmap);
+    finalPainter.end();
+    
+    // 设置最终的圆形头像
+    avatarLabel->setPixmap(finalPixmap);
 }

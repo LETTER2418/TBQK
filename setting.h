@@ -2,26 +2,31 @@
 #define SETTING_H
 
 #include <QWidget>
+#include <QLabel>
+#include <QLineEdit>
+#include <QSlider>
+#include <QListWidget>
+#include <QComboBox>
 #include <QMediaPlayer>
 #include <QAudioOutput>
-#include <QSlider>
-#include <QFileDialog>
-#include <QLabel>
-#include <QComboBox>
-#include <QListWidget>
-#include <QPixmap>
 #include <QToolButton>
+#include <QPropertyAnimation>
+#include <QGraphicsEffect>
 #include <QEvent>
+#include <QFileDialog>
+#include <QTransform>
 #include "lbutton.h"
-#include "datamanager.h"
 #include "messagebox.h"
+#include "datamanager.h"
 
 class Setting : public QWidget
 {
     Q_OBJECT
+    // 添加旋转角度属性，使动画系统可以访问
+    Q_PROPERTY(double avatarRotationAngle READ getAvatarRotationAngle WRITE setAvatarRotationAngle)
 
 public:
-    explicit Setting(QWidget *parent = nullptr, DataManager *dataManager = nullptr);
+    explicit Setting(QWidget *parent = nullptr, DataManager *dataManager_ = nullptr);
     ~Setting();
 
     Lbutton *backButton;    // 返回按钮
@@ -42,10 +47,13 @@ public:
     
     // 头像相关方法
     void loadAvatar();  // 加载头像
-    void saveAvatarPath();  // 保存头像路径
     
     // 事件过滤器
     bool eventFilter(QObject *watched, QEvent *event) override;
+
+    // 旋转角度的getter和setter
+    double getAvatarRotationAngle() const { return avatarRotationAngle; }
+    void setAvatarRotationAngle(double angle);
 
 private:
     DataManager *dataManager;
@@ -82,12 +90,18 @@ private:
     PlayMode currentPlayMode;       // 当前播放模式
     const QString playlistFilePath = "playlist.json";  // 歌单保存路径
 
+    // 头像旋转动画相关
+    QPropertyAnimation *avatarRotateAnimation;
+    double avatarRotationAngle;  // 当前旋转角度
+    QPixmap originalAvatarPixmap; // 原始头像图像
+
 private slots:
     void onPlayModeChanged(int index);
     void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
     void openMusicFile();
     void onPlaylistItemDoubleClicked(QListWidgetItem *item);
     void uploadAvatar();  // 上传头像槽函数
+    void updateAvatarRotation(); // 更新头像旋转
 };
 
 #endif // SETTING_H

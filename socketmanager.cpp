@@ -3,7 +3,6 @@
 #include <QNetworkInterface>
 #include <QDateTime>
 #include <QBuffer>
-#include <QPixmap>
 
 SocketManager::SocketManager(QObject *parent)
     : QObject(parent)
@@ -12,7 +11,7 @@ SocketManager::SocketManager(QObject *parent)
     , isServer(false)
     , connectionTimer(nullptr)
 {
-    // 初始化服务器和客户端相关变量
+    
 }
 
 SocketManager::~SocketManager()
@@ -135,7 +134,7 @@ void SocketManager::SendChatMessage(const QString& message, const QString& sende
         for (QTcpSocket* clientSocket : clientSockets) {
             ServerAddSendMsgList(clientSocket, jsonMessage);
         }
-        ServerProcessClientsSendMsgList();
+        ServerProcessSendClientsMsgList();
     } else if (clientSocket && clientSocket->state() == QAbstractSocket::ConnectedState) {
         // 客户端发送消息给服务器
         sendJson(clientSocket, jsonMessage);
@@ -155,7 +154,7 @@ void SocketManager::SendGameState(const MapData& mapData)
         for (QTcpSocket* clientSocket : clientSockets) {
             ServerAddSendMsgList(clientSocket, jsonMessage);
         }
-        ServerProcessClientsSendMsgList();
+        ServerProcessSendClientsMsgList();
     } else if (clientSocket && clientSocket->state() == QAbstractSocket::ConnectedState) {
         // 客户端发送游戏状态给服务器
         sendJson(clientSocket, jsonMessage);
@@ -175,7 +174,7 @@ void SocketManager::SendLeaveRoomMessage()
         for (QTcpSocket* clientSocket : clientSockets) {
             ServerAddSendMsgList(clientSocket, jsonMessage);
         }
-        ServerProcessClientsSendMsgList();
+        ServerProcessSendClientsMsgList();
     } else if (clientSocket && clientSocket->state() == QAbstractSocket::ConnectedState) {
         // 客户端发送消息给服务器
         sendJson(clientSocket, jsonMessage);
@@ -203,19 +202,11 @@ void SocketManager::SendAvatarImage(const QPixmap& avatar, const QString& userId
         for (QTcpSocket* clientSocket : clientSockets) {
             ServerAddSendMsgList(clientSocket, jsonMessage);
         }
-        ServerProcessClientsSendMsgList();
+        ServerProcessSendClientsMsgList();
     } else if (clientSocket && clientSocket->state() == QAbstractSocket::ConnectedState) {
         // 客户端发送图片数据给服务器
         sendJson(clientSocket, jsonMessage);
     }
-}
-
-QJsonObject SocketManager::CreateMsg()
-{
-    // 创建一个基本的JSON消息结构
-    QJsonObject jsonMsg;
-    jsonMsg["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
-    return jsonMsg;
 }
 
 void SocketManager::handleNewConnection()
@@ -238,8 +229,18 @@ void SocketManager::handleNewConnection()
     navigateMsg["type"] = "navigateTo";
     navigateMsg["page"] = "levelModePage";
     ServerAddSendMsgList(clientSocket, navigateMsg);
+    
+    // 发送服务器用户ID - 使用空消息，直接发送用户ID
+    if (!localUserId.isEmpty()) {
+        QJsonObject userIdMsg;
+        userIdMsg["type"] = "chat";
+        userIdMsg["sender"] = localUserId;
+        userIdMsg["message"] = ""; // 发送空消息，只传递ID
+        userIdMsg["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
+        ServerAddSendMsgList(clientSocket, userIdMsg);
+    }
 
-    ServerProcessClientSendMsgList(clientSocket); // 统一处理消息队列
+    ServerProcessSendClientMsgList(clientSocket); // 统一处理消息队列
 }
 
 void SocketManager::handleClientDisconnected()
@@ -342,7 +343,7 @@ bool SocketManager::ServerSendMsg(QTcpSocket* client, const QJsonObject& msg)
     return (bytesWritten == data.size());
 }
 
-void SocketManager::ServerProcessClientSendMsgList(QTcpSocket* client)
+void SocketManager::ServerProcessSendClientMsgList(QTcpSocket* client)
 {
     if (!serverSendMsgList.contains(client)) return;
 
@@ -353,10 +354,10 @@ void SocketManager::ServerProcessClientSendMsgList(QTcpSocket* client)
     }
 }
 
-void SocketManager::ServerProcessClientsSendMsgList()
+void SocketManager::ServerProcessSendClientsMsgList()
 {
     for (QTcpSocket* client : clientSockets) {
-        ServerProcessClientSendMsgList(client);
+        ServerProcessSendClientMsgList(client);
     }
 }
 
@@ -403,33 +404,8 @@ void SocketManager::processReceivedData(const QByteArray& data)
             QString sender = json["sender"].toString();
             QString message = json["message"].toString();
             
-            // 检查是否是特殊的用户存在消息
-            if (message == "__USER_PRESENCE__") {
-                // 这是用户存在通知
-                qDebug() << "接收到用户存在通知: " << sender;
-                
-                // 如果是对方用户ID
-                if (sender != localUserId) {
-                    // 更新对方用户名
-                    emit newMessageReceived(sender, "", false);
-                    
-                    // 回应用户存在消息
-                    SendChatMessage("__USER_ID_RESPONSE__", localUserId);
-                }
-            }
-            // 检查是否是用户ID响应
-            else if (message == "__USER_ID_RESPONSE__") {
-                // 这是对方发来的ID响应
-                if (sender != localUserId) {
-                    qDebug() << "接收到远程用户ID响应: " << sender;
-                    // 更新对方用户名
-                    emit newMessageReceived(sender, "", false);
-                }
-            }
-            else {
-                // 正常聊天消息
-                emit newMessageReceived(sender, message, false);
-            }
+            // 如果是空消息，就只更新用户名，否则显示正常聊天消息
+            emit newMessageReceived(sender, message, false);
         }
         else if (type == "gameState") {
             QJsonObject mapDataJson = json["mapData"].toObject();

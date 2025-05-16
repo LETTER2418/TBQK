@@ -103,14 +103,14 @@ void Start::onLoginClicked()
         dataManager->setCurrentUserId(username); // 使用setter方法设置当前用户ID
         socketManager->setLocalUserId(username);
         
-        // 获取用户设置中的头像路径
-        QJsonObject userData = dataManager->getUserSettings(username);
-        
-        // 如果有临时头像路径且用户设置中不包含头像路径，则保存临时头像路径
-        if (!userData.contains("avatarPath") && !dataManager->getAvatarPath().isEmpty()) {
-            userData["avatarPath"] = dataManager->getAvatarPath();
-            dataManager->updateUserSettings(username, userData);
-            dataManager->saveToFile();
+        // 检查是否有临时头像需要保存
+        if (!dataManager->getAvatarPath().isEmpty()) {
+            // 加载临时头像
+            QPixmap tempAvatar(dataManager->getAvatarPath());
+            if (!tempAvatar.isNull()) {
+                // 保存头像文件
+                dataManager->saveAvatarFile(username, tempAvatar);
+            }
         }
     }
     else {

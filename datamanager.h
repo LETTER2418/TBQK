@@ -6,6 +6,7 @@
 #include <QMap>
 #include <QVector>
 #include <QJsonObject>
+#include <QPixmap>
 #include "mapdata.h"
 #include "userdata.h"
 #include "ranking.h"
@@ -52,6 +53,11 @@ public:
     // 头像路径相关操作
     QString getAvatarPath() const { return tempAvatarPath; }
     void setAvatarPath(const QString &path) { tempAvatarPath = path; }
+    
+    // 头像文件相关操作
+    bool saveAvatarFile(const QString &userId, const QPixmap &avatar);
+    QPixmap loadAvatarFile(const QString &userId) const;
+    QString getAvatarDir() const { return "avatars"; } // 头像存储目录
 
 private:
     QMap<QString, UserData> users; // 用户ID -> 用户数据

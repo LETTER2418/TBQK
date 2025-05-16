@@ -7,6 +7,9 @@
 #include <QJsonArray>
 #include <algorithm>
 #include <QFileInfo>
+#include <QDir>
+#include <QDateTime>
+
 
 DataManager::DataManager(QObject *parent) : QObject(parent)
 {
@@ -299,4 +302,60 @@ bool DataManager::updateUserSettings(const QString &userId, const QJsonObject &s
     
     // 保存到文件
     return saveToFile();
+}
+
+// 保存用户头像到文件
+bool DataManager::saveAvatarFile(const QString &userId, const QPixmap &avatar)
+{
+    // 确保头像目录存在
+    QDir avatarDir(getAvatarDir());
+    if (!avatarDir.exists()) {
+        if (!avatarDir.mkpath(".")) {
+            qWarning() << "无法创建头像目录：" << getAvatarDir();
+            return false;
+        }
+    }
+    
+    // 使用毫秒级时间戳作为文件名，确保唯一性
+    QString timestamp = QString::number(QDateTime::currentDateTime().toMSecsSinceEpoch());
+    QString avatarFileName = timestamp + ".png";
+    QString avatarFilePath = avatarDir.filePath(avatarFileName);
+    
+    // 保存头像
+    if (!avatar.save(avatarFilePath, "PNG")) {
+        qWarning() << "无法保存头像：" << avatarFilePath;
+        return false;
+    }
+    
+    // 更新用户设置中的头像路径（保存相对路径）
+    QJsonObject settings = getUserSettings(userId);
+    settings["avatarFile"] = avatarFileName;  // 只保存文件名
+    
+    return updateUserSettings(userId, settings);
+}
+
+// 加载用户头像
+QPixmap DataManager::loadAvatarFile(const QString &userId) const
+{
+    // 获取用户设置
+    QJsonObject settings = getUserSettings(userId);
+    QPixmap avatar;
+    
+    // 检查设置中是否有头像文件
+    if (settings.contains("avatarFile")) {
+        // 构建头像文件路径
+        QString avatarFileName = settings["avatarFile"].toString();
+        QString avatarFilePath = QDir(getAvatarDir()).filePath(avatarFileName);
+        
+        // 检查文件是否存在
+        QFileInfo fileInfo(avatarFilePath);
+        if (fileInfo.exists()) {
+            // 加载头像
+            avatar.load(avatarFilePath);
+            return avatar;
+        }
+    }
+    
+    // 如果加载失败，返回空的QPixmap
+    return avatar;
 }

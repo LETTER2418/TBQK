@@ -68,7 +68,7 @@ public slots:
     void displayMessage(const QString& userId, const QString& message, bool isSelfMessage = false);
     
     // 加载用户自定义头像
-    void setUserAvatar(const QString& userId, const QString& avatarPath = "");
+    void setUserAvatar(const QString& userId);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
