@@ -1,9 +1,9 @@
 #include "onlinemode.h"
-#include <QMessageBox>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QLabel>
 #include "socketmanager.h"
+#include <QDateTime>
 
 OnlineMode::OnlineMode(QWidget *parent, SocketManager* manager)
     : QWidget(parent),

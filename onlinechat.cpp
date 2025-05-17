@@ -22,6 +22,7 @@ ChatBubble::ChatBubble(const QString &text, bool isSelf, QPixmap avatar, QWidget
 
     // 创建布局
     QHBoxLayout *layout = new QHBoxLayout(this);
+    layout->setContentsMargins(5, 5, 5, 5);
 
     // 创建头像标签
     avatarLabel = new QLabel(this);
@@ -29,8 +30,14 @@ ChatBubble::ChatBubble(const QString &text, bool isSelf, QPixmap avatar, QWidget
     avatarLabel->setScaledContents(true);
     avatarLabel->setPixmap(avatar);
 
+    // 设置最大气泡宽度
+    int maxWidth = 250; // 增加气泡最大宽度
+    
+    // 使用静态方法处理文本
+    QString processedText = insertLineBreaks(text, maxWidth, font());
+    
     // 创建消息标签
-    messageLabel = new QLabel(text, this);
+    messageLabel = new QLabel(processedText, this);
     messageLabel->setWordWrap(true);
     messageLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
@@ -41,30 +48,30 @@ ChatBubble::ChatBubble(const QString &text, bool isSelf, QPixmap avatar, QWidget
     // 设置最大宽度
     QFontMetrics fm(messageLabel->font());
     int textWidth = fm.horizontalAdvance(text);
-    int maxWidth = 200; // 气泡最大宽度
 
     if (textWidth > maxWidth)
-        {
-            messageLabel->setFixedWidth(maxWidth);
-        }
+    {
+        messageLabel->setFixedWidth(maxWidth);
+    }
     else
-        {
-            messageLabel->setMinimumWidth(textWidth + 20); // 添加一些边距
-        }
+    {
+        // 增加边距确保文本完全显示
+        messageLabel->setMinimumWidth(textWidth + 30);
+    }
 
     // 根据是否是自己的消息来布局
     if (isSelf)
-        {
-            layout->addStretch();
-            layout->addWidget(messageLabel);
-            layout->addWidget(avatarLabel);
-        }
+    {
+        layout->addStretch();
+        layout->addWidget(messageLabel);
+        layout->addWidget(avatarLabel);
+    }
     else
-        {
-            layout->addWidget(avatarLabel);
-            layout->addWidget(messageLabel);
-            layout->addStretch();
-        }
+    {
+        layout->addWidget(avatarLabel);
+        layout->addWidget(messageLabel);
+        layout->addStretch();
+    }
 
     setLayout(layout);
 }
@@ -461,4 +468,53 @@ void OnlineChat::showEvent(QShowEvent *event)
     QTimer::singleShot(500, this, &OnlineChat::announceUserPresence);
 }
 
+// 根据文本内容和最大宽度插入换行符（ChatBubble静态方法）
+QString ChatBubble::insertLineBreaks(const QString &text, int maxWidth, const QFont &font)
+{
+    QFontMetrics fm(font);
+    QString result;
+    QString currentLine;
+    
+    // 为显示留出一些边距空间
+    int safeWidth = maxWidth - 20; // 减去20像素作为安全边距
+    
+    // 处理中文和非空格分隔的语言
+    // 按字符处理
+    for (int i = 0; i < text.length(); ++i)
+    {
+        QChar ch = text.at(i);
+        QString testLine = currentLine + ch;
+        
+        // 如果字符是换行符，直接添加并重置当前行
+        if (ch == '\n')
+        {
+            result += currentLine + '\n';
+            currentLine.clear();
+            continue;
+        }
+        
+        // 测量当前行加上新字符的宽度
+        int lineWidth = fm.horizontalAdvance(testLine);
+        
+        if (lineWidth <= safeWidth)
+        {
+            // 如果宽度不超过安全宽度，添加字符到当前行
+            currentLine = testLine;
+        }
+        else
+        {
+            // 宽度超过安全宽度，将当前行添加到结果，并将当前字符作为新行的开始
+            result += currentLine + '\n';
+            currentLine = ch;
+        }
+    }
+    
+    // 添加最后一行
+    if (!currentLine.isEmpty())
+    {
+        result += currentLine;
+    }
+    
+    return result;
+}
 

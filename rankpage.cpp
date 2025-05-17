@@ -1,7 +1,6 @@
 #include "rankpage.h"
 #include <QHeaderView>
 #include <QFont>
-#include <QMessageBox>
 #include <algorithm>
 #include "messagebox.h"
 #include <QShowEvent>

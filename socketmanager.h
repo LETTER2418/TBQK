@@ -32,6 +32,7 @@ public:
     QList<QTcpSocket*> getClientSockets() const { return clientSockets; } // 获取客户端连接列表
     QTcpSocket* getClientSocket() const { return clientSocket; } // 获取客户端套接字（客户端模式）
     bool sendJson(QTcpSocket* socket, const QJsonObject& json); // 发送JSON数据
+    void SendConnectionRejected(QTcpSocket* client, const QString& reason);// 向指定客户端发送拒绝连接消息
 
 signals:
     void newMessageReceived(const QString& sender, const QString& message, bool isSelfMessage);
@@ -42,6 +43,8 @@ signals:
     void navigateToPageRequest(const QString& pageName); // 请求页面导航
     void roomLeft(); // 对方退出房间的信号
     void avatarImageReceived(const QString& userId, const QPixmap& avatar); // 接收到头像图像的信号
+    void newClientConnected(); // 新的客户端连接到服务器的信号
+    void duplicateIdDetected(); // 检测到重复ID的信号
 
 private slots:
     void handleNewConnection();
@@ -66,6 +69,7 @@ private:
     void ServerProcessSendClientMsgList(QTcpSocket* client);    
     void ServerProcessSendClientsMsgList();       
     void processReceivedData(const QByteArray& data);
+    bool isSocketValid(QTcpSocket* socket) const; // 检查套接字是否有效
 };
 
 #endif // SOCKETMANAGER_H

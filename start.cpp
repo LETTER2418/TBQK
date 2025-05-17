@@ -1,7 +1,6 @@
 #include "start.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QMessageBox>
 
 Start::Start(QWidget *parent, DataManager *dataManager_, SocketManager *socketManager_):QWidget(parent), dataManager(dataManager_), socketManager(socketManager_)
 {

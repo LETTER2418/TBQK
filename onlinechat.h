@@ -23,7 +23,8 @@ class ChatBubble : public QFrame
 {
     Q_OBJECT
 public:
-    explicit ChatBubble(const QString &text, bool isSelf, QPixmap avatar, QWidget *parent = nullptr);
+    // 构造函数
+    ChatBubble(const QString &text, bool isSelf, QPixmap avatar, QWidget *parent = nullptr);
     
     // 更新头像
     void updateAvatar(const QPixmap& newAvatar);
@@ -36,6 +37,9 @@ public:
     
     // 设置关联的用户ID
     void setUserId(const QString& id) { userId = id; }
+    
+    // 静态方法：根据文本内容和最大宽度插入换行符
+    static QString insertLineBreaks(const QString &text, int maxWidth, const QFont &font);
     
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -52,7 +56,7 @@ class OnlineChat : public QWidget
 {
     Q_OBJECT
 public:
-    explicit OnlineChat(SocketManager* sm = nullptr, DataManager* dm = nullptr, QWidget *parent = nullptr);
+    explicit OnlineChat(SocketManager* manager, DataManager* dm, QWidget *parent = nullptr);
     ~OnlineChat();
     
     // 发送当前用户头像

@@ -792,7 +792,11 @@ void Game::setCurrentLevelId(int id)
 void Game::setSocketManager(SocketManager* manager)
 {
     socketManager = manager;
-    connect(socketManager, &SocketManager::gameStateReceived, this, &Game::onGameStateReceived);
+    
+    if (socketManager) {
+        // 连接游戏状态接收信号
+        connect(socketManager, &SocketManager::gameStateReceived, this, &Game::onGameStateReceived);
+    }
 }
 
 void Game::onGameStateReceived(const MapData& mapData)

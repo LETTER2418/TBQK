@@ -105,6 +105,16 @@ void SocketManager::StartClient(const QString& serverAddress)
         if (connectionTimer) {
             connectionTimer->stop();
         }
+        
+        // 连接成功后立即发送自己的ID，用于服务端检查ID是否重复
+        if (!localUserId.isEmpty()) {
+            QJsonObject idCheckMsg;
+            idCheckMsg["type"] = "id_check";
+            idCheckMsg["userId"] = localUserId;
+            idCheckMsg["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
+            sendJson(clientSocket, idCheckMsg);
+        }
+        
         emit clientConnected();
     });
     connect(clientSocket, &QTcpSocket::disconnected, this, &SocketManager::handleClientDisconnected);
@@ -219,28 +229,12 @@ void SocketManager::handleNewConnection()
     connect(clientSocket, &QTcpSocket::readyRead, this, &SocketManager::handleReadyRead);
     connect(clientSocket, &QTcpSocket::errorOccurred, this, &SocketManager::handleError);
 
-    // 添加到客户端列表
+    // 添加到客户端列表 - 但暂不发送导航消息，等待ID验证后再决定
     clientSockets.append(clientSocket);
     clientsState[clientSocket] = true; // 设置初始状态
     serverSendMsgList[clientSocket] = QQueue<QJsonObject>(); // 初始化消息队列
 
-    // 发送导航到 levelModePage 的消息
-    QJsonObject navigateMsg;
-    navigateMsg["type"] = "navigateTo";
-    navigateMsg["page"] = "levelModePage";
-    ServerAddSendMsgList(clientSocket, navigateMsg);
-    
-    // 发送服务器用户ID - 使用空消息，直接发送用户ID
-    if (!localUserId.isEmpty()) {
-        QJsonObject userIdMsg;
-        userIdMsg["type"] = "chat";
-        userIdMsg["sender"] = localUserId;
-        userIdMsg["message"] = ""; // 发送空消息，只传递ID
-        userIdMsg["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
-        ServerAddSendMsgList(clientSocket, userIdMsg);
-    }
-
-    ServerProcessSendClientMsgList(clientSocket); // 统一处理消息队列
+    // 此时暂不发送导航和欢迎消息，等待客户端发送ID后判断是否重复
 }
 
 void SocketManager::handleClientDisconnected()
@@ -250,14 +244,26 @@ void SocketManager::handleClientDisconnected()
     if (isServer) {
         // 服务器模式：处理客户端断开连接
         if (socket && clientSockets.contains(socket)) {
-            // 从客户端列表中移除
-            clientSockets.removeOne(socket);
-            clientsState.remove(socket);
-            serverSendMsgList.remove(socket);
+            // 根据套接字状态决定是否发出roomLeft信号
+            if (clientsState.value(socket, true)) {
+                // 正常断开连接，发出对方退出房间的信号
+                emit roomLeft();
+            }
+            
+            // 先断开所有信号连接，防止在移除过程中再次触发信号
+            try {
+                socket->disconnect();
+                
+                // 从客户端列表中移除
+                clientSockets.removeOne(socket);
+                clientsState.remove(socket);
+                serverSendMsgList.remove(socket);
 
-            // 断开所有信号连接
-            socket->disconnect();
-            socket->deleteLater();
+                // 使用deleteLater安全销毁套接字
+                socket->deleteLater();
+            } catch (...) {
+                qDebug() << "断开连接处理时发生异常";
+            }
         }
     } else {
         // 客户端模式：处理与服务器断开连接
@@ -297,16 +303,20 @@ void SocketManager::handleError(QAbstractSocket::SocketError socketError)
         connectionTimer->stop();
     }
 
+    // 忽略RemoteHostClosedError，这个会由handleClientDisconnected处理
+    if (socketError == QAbstractSocket::RemoteHostClosedError) {
+        // 不发出错误消息，而是让clientDisconnected信号处理
+        return;
+    }
+
     if (socket) {
+        // 获取错误信息
         errorMsg = socket->errorString();
     } else {
         // 根据错误类型生成错误信息
         switch (socketError) {
             case QAbstractSocket::ConnectionRefusedError:
                 errorMsg = "连接被拒绝";
-                break;
-            case QAbstractSocket::RemoteHostClosedError:
-                errorMsg = "远程主机关闭连接";
                 break;
             case QAbstractSocket::HostNotFoundError:
                 errorMsg = "主机未找到";
@@ -321,26 +331,33 @@ void SocketManager::handleError(QAbstractSocket::SocketError socketError)
 
 void SocketManager::ServerAddSendMsgList(QTcpSocket* client, const QJsonObject& msg)
 {
-    if (clientsState.contains(client) && clientsState[client]) {
+    if (!client) return;
+    
+    if (clientsState.contains(client) && clientsState[client] && client->state() == QAbstractSocket::ConnectedState) {
         serverSendMsgList[client].enqueue(msg);
     }
 }
 
 bool SocketManager::ServerSendMsg(QTcpSocket* client, const QJsonObject& msg)
 {
-    if (!client || client->state() != QAbstractSocket::ConnectedState) {
+    if (!isSocketValid(client)) {
         return false;
     }
 
-    // 直接实现发送逻辑，而不是调用返回 void 的 sendJson
-    QJsonDocument doc(msg);
-    QByteArray data = doc.toJson(QJsonDocument::Compact);
-    data.append('\n');
+    try {
+        // 直接实现发送逻辑，而不是调用返回 void 的 sendJson
+        QJsonDocument doc(msg);
+        QByteArray data = doc.toJson(QJsonDocument::Compact);
+        data.append('\n');
 
-    qint64 bytesWritten = client->write(data);
-    client->flush();
+        qint64 bytesWritten = client->write(data);
+        client->flush();
 
-    return (bytesWritten == data.size());
+        return (bytesWritten == data.size());
+    } catch (...) {
+        qDebug() << "发送消息时发生异常";
+        return false;
+    }
 }
 
 void SocketManager::ServerProcessSendClientMsgList(QTcpSocket* client)
@@ -363,7 +380,7 @@ void SocketManager::ServerProcessSendClientsMsgList()
 
 bool SocketManager::sendJson(QTcpSocket* socket, const QJsonObject& json)
 {
-    if (!socket || socket->state() != QAbstractSocket::ConnectedState) {
+    if (!isSocketValid(socket)) {
         return false;
     }
 
@@ -400,7 +417,74 @@ void SocketManager::processReceivedData(const QByteArray& data)
         QJsonObject json = doc.object();
         QString type = json["type"].toString();
 
-        if (type == "chat") {
+        // 检查是否是ID检查消息
+        if (type == "id_check" && isServer) {
+            QString clientId = json["userId"].toString();
+            QTcpSocket* senderSocket = qobject_cast<QTcpSocket*>(sender());
+            
+            if (senderSocket && clientId == localUserId) {
+                // 发现ID重复，标记这个套接字，使其断开连接时不触发roomLeft信号
+                if (clientSockets.contains(senderSocket)) {
+                    clientsState[senderSocket] = false; // 标记为特殊状态
+                    
+                    // 发现ID重复
+                    try {
+                        // 发送拒绝连接消息
+                        SendConnectionRejected(senderSocket, "用户ID重复，无法加入房间");
+                        // 确保信号只触发一次
+                        static bool emitted = false;
+                        if (!emitted) {
+                            emit duplicateIdDetected();
+                            emitted = true;
+                        }
+                        
+                        // 延迟断开连接，确保消息能被发送
+                        QTimer::singleShot(300, this, [this, senderSocket]() {
+                            if (senderSocket && clientSockets.contains(senderSocket) && senderSocket->state() == QAbstractSocket::ConnectedState) {
+                                senderSocket->disconnectFromHost();
+                            }
+                        });
+                    } catch (...) {
+                        qDebug() << "处理重复ID时发生异常";
+                    }
+                }
+                return;
+            } else if (senderSocket) {
+                // ID检查通过，设置套接字状态并发送欢迎消息和导航指令
+                // 发送导航到 levelModePage 的消息
+                if (clientSockets.contains(senderSocket)) {
+                    QJsonObject navigateMsg;
+                    navigateMsg["type"] = "navigateTo";
+                    navigateMsg["page"] = "levelModePage";
+                    ServerAddSendMsgList(senderSocket, navigateMsg);
+                    
+                    // 发送服务器用户ID - 使用空消息，直接发送用户ID
+                    if (!localUserId.isEmpty()) {
+                        QJsonObject userIdMsg;
+                        userIdMsg["type"] = "chat";
+                        userIdMsg["sender"] = localUserId;
+                        userIdMsg["message"] = ""; // 发送空消息，只传递ID
+                        userIdMsg["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
+                        ServerAddSendMsgList(senderSocket, userIdMsg);
+                    }
+                    
+                    // 发送新客户端连接的信号，通知UI
+                    emit newClientConnected();
+                    ServerProcessSendClientMsgList(senderSocket); // 统一处理消息队列
+                }
+            }
+        }
+        else if (type == "connection_rejected" && !isServer) {
+            // 客户端收到拒绝连接消息
+            QString reason = json["reason"].toString();
+            emit connectionError(reason);
+            
+            // 主动断开连接
+            if (clientSocket) {
+                clientSocket->disconnectFromHost();
+            }
+        }
+        else if (type == "chat") {
             QString sender = json["sender"].toString();
             QString message = json["message"].toString();
             
@@ -435,9 +519,9 @@ void SocketManager::processReceivedData(const QByteArray& data)
             }
         }
         else if (type == "leaveRoom") {
-            // 处理退出房间消息
+            // 处理退出关卡消息
             QString sender = json["sender"].toString();
-            // 只发送房间离开信号，不发送系统消息
+            // 发送房间离开信号
             emit roomLeft();
         }
     }
@@ -457,12 +541,22 @@ void SocketManager::closeConnection()
 
     if (isServer) {
         // 如果是服务器，断开所有客户端连接
-        for (QTcpSocket* socket : clientSockets) {
+        QList<QTcpSocket*> socketsCopy = clientSockets; // 创建副本避免在迭代过程中修改列表
+        for (QTcpSocket* socket : socketsCopy) {
             if (socket) {
-                socket->disconnectFromHost();
-                if (socket->state() != QAbstractSocket::UnconnectedState) {
-                    socket->waitForDisconnected();
+                // 先断开所有信号连接
+                socket->disconnect();
+                
+                // 安全关闭连接
+                if (socket->state() == QAbstractSocket::ConnectedState) {
+                    socket->disconnectFromHost();
+                    if (socket->state() != QAbstractSocket::UnconnectedState) {
+                        socket->waitForDisconnected(1000); // 最多等待1秒
+                    }
                 }
+                
+                // 使用deleteLater而不是直接删除
+                socket->deleteLater();
             }
         }
         clientSockets.clear();
@@ -471,19 +565,27 @@ void SocketManager::closeConnection()
         
         // 停止服务器监听
         if (server) {
+            server->disconnect(); // 断开所有信号连接
             server->close();
-            delete server;
+            server->deleteLater(); // 使用deleteLater代替直接删除
             server = nullptr;
         }
     } else {
         // 如果是客户端，断开与服务器的连接
         if (clientSocket) {
-            clientSocket->disconnectFromHost();
-            if (clientSocket->state() != QAbstractSocket::UnconnectedState)
-             {
-                clientSocket->waitForDisconnected();
+            // 先断开所有信号连接
+            clientSocket->disconnect();
+            
+            // 安全关闭连接
+            if (clientSocket->state() == QAbstractSocket::ConnectedState) {
+                clientSocket->disconnectFromHost();
+                if (clientSocket->state() != QAbstractSocket::UnconnectedState) {
+                    clientSocket->waitForDisconnected(1000); // 最多等待1秒
+                }
             }
-            delete clientSocket;
+            
+            // 使用deleteLater而不是直接删除
+            clientSocket->deleteLater();
             clientSocket = nullptr;
         }
     }
@@ -500,4 +602,43 @@ void SocketManager::setLocalUserId(const QString& userId)
 QString SocketManager::getLocalUserId() const
 {
     return localUserId;
+}
+
+// 检查套接字是否有效
+bool SocketManager::isSocketValid(QTcpSocket* socket) const
+{
+    // 检查套接字指针是否为空
+    if (!socket)
+        return false;
+        
+    // 检查套接字是否有效和打开
+    if (socket->state() == QAbstractSocket::UnconnectedState || 
+        !socket->isValid())
+        return false;
+        
+    return true;
+}
+
+// 添加发送拒绝连接消息的方法
+void SocketManager::SendConnectionRejected(QTcpSocket* client, const QString& reason)
+{
+    if (!client || client->state() != QAbstractSocket::ConnectedState) {
+        return;
+    }
+    
+    try {
+        QJsonObject jsonMessage;
+        jsonMessage["type"] = "connection_rejected";
+        jsonMessage["reason"] = reason;
+        jsonMessage["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
+        
+        QJsonDocument doc(jsonMessage);
+        QByteArray data = doc.toJson(QJsonDocument::Compact);
+        data.append('\n');
+        
+        client->write(data);
+        client->flush();
+    } catch (...) {
+        qDebug() << "发送拒绝连接消息时发生异常";
+    }
 }

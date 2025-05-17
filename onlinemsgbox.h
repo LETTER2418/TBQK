@@ -11,10 +11,10 @@
 #include <QGridLayout>
 #include <QNetworkInterface>
 #include <QHostAddress>
-#include <QMessageBox>
 #include <QPaintEvent>
 #include <QPainter>
 #include <QMovie>
+#include "messagebox.h"
 #include "socketmanager.h"
 #include "lbutton.h"
 
@@ -46,11 +46,14 @@ private slots:
     void handleNavigateRequest(const QString& pageName);
 
 public slots:
-    void startServer();
-    void connectToServer();
+    bool startServer();
+    bool connectToServer();
     void handleConnectionError(const QString& error);
     void handleClientConnected();
     void handleClientDisconnected();
+    void handleNewClientConnected(); // 处理新客户端连接
+    void handleRoomLeft(); // 处理对方退出房间
+    void handleDuplicateId(); // 处理ID重复
 
 private:
     QLabel *ipLabel;
@@ -66,7 +69,8 @@ private:
     QMovie *backgroundGif;
     bool usingGif;
     QPixmap currentFrame;
-    Mode currentMode;         // 当前模式
+    Mode currentMode;          
+    MessageBox *msgBox;
 };
 
 #endif // ONLINEMSGBOX_H
