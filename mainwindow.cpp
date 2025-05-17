@@ -188,6 +188,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
                                 socketManager->SendGameState(mapData);
                                 gamePage->setMap(mapData);
                                 pageStack->setCurrentWidget(gamePage);
+                                gamePage->triggerAllHexEffects();
                             }
                     }
                 else
@@ -195,6 +196,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
                         MapData mapData = dataManager->getMap(i + 1);
                         gamePage->setMap(mapData);
                         pageStack->setCurrentWidget(gamePage);
+                        gamePage->triggerAllHexEffects();
                     }
             });
         }
@@ -227,8 +229,32 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
 
     connect(customMapPage->saveButton, &QPushButton::clicked, this, [this]()
     {
-        customMapPage->solvePuzzle();
-        saveCustomMapMsgBox->show();
+        int f=customMapPage->solvePuzzle();
+        if (f==1) 
+        {
+            saveCustomMapMsgBox->show();
+        }
+        else if(f==2)
+        {
+            //  MessageBox* test=new MessageBox(this,true);
+            //  test->show();
+            //  test->setMessage("测试");
+            //  test->exec();
+
+             MessageBox* msgBox=new MessageBox(this,true);
+             connect(msgBox->closeButton, &QPushButton::clicked, this, [this,msgBox]()
+             {
+                msgBox->accept();
+                saveCustomMapMsgBox->show();
+             });
+             connect(msgBox->cancelButton, &QPushButton::clicked, this, [msgBox]()
+             {
+                msgBox->accept();
+             });
+             msgBox->setMessage("确定保存关卡吗？\n保存关卡后没有可用提示");
+             msgBox->exec();
+             
+        }
     });
 
 
@@ -252,9 +278,30 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     {
         if (gamePage->getOnlineMode())
             {
-                socketManager->closeConnection();
-                gamePage->setOnlineMode(false, nullptr);
-                pageStack->setCurrentWidget(onlineModePage);
+                // 显示退出房间确认对话框
+                MessageBox* msgBox = gamePage->getMessageBox();
+                if (msgBox) {
+                    msgBox->setMessage("确定要退出房间吗？");
+                    int result = msgBox->exec();
+                    
+                    if (result == QDialog::Accepted) {
+                        // 用户确认退出房间
+                        if (socketManager) {
+                            socketManager->SendLeaveRoomMessage();
+                        }
+                        
+                        socketManager->closeConnection();
+                        gamePage->setOnlineMode(false, nullptr);
+                        pageStack->setCurrentWidget(onlineModePage);
+                    }
+                    // 如果用户取消，则不执行后续操作
+                    return;
+                } else {
+                    // 如果没有可用的消息框，直接退出
+                    socketManager->closeConnection();
+                    gamePage->setOnlineMode(false, nullptr);
+                    pageStack->setCurrentWidget(onlineModePage);
+                }
             }
         else
         {
@@ -302,7 +349,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     pageStack->addWidget(onlineModePage);
 
     // 设置默认显示的页面
-    this->pageStack->setCurrentWidget(startPage);
+    this->pageStack->setCurrentWidget(mainPage);
 
     // 主布局
     QVBoxLayout *mainLayout = new QVBoxLayout(this);

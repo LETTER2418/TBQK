@@ -10,6 +10,7 @@ RandomMap::RandomMap(QWidget *parent) : QWidget(parent)
     backButton = new Lbutton(this, "返回");
     backButton->move(0, 0);
     saveButton = new Lbutton(this, "保存");
+    saveButton->enableClickEffect(true);
     id = 0;
 
     QGridLayout *mainLayout = new QGridLayout(this);

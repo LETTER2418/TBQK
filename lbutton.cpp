@@ -8,10 +8,10 @@ Lbutton::Lbutton(QWidget *parent, const QString &text)
     : QPushButton(text, parent),
       gradientOffset(-BUTTON_WIDTH), // 初始化流光偏移量
       particleEffectEnabled(true),   // 默认启用粒子特效
+      clickEffectEnabled(false),      // 默认关闭点击分解重构特效
       buttonState(ButtonState::Normal),
       dissolveProgress(0.0f),
-      reconstructProgress(0.0f),
-      effectDuration(800)
+      reconstructProgress(0.0f)
 {
     // 设置按钮的大小
     setFixedSize(BUTTON_WIDTH, BUTTON_HEIGHT);
@@ -26,6 +26,7 @@ Lbutton::Lbutton(QWidget *parent, const QString &text)
     audioOutput = new QAudioOutput(this);
     player->setAudioOutput(audioOutput);
     player->setSource(QUrl::fromLocalFile(soundFilePath));
+    audioOutput->setVolume(0);
 
     // 连接按钮点击事件，播放音效
     connect(this, &QPushButton::clicked, player, &QMediaPlayer::play);
@@ -66,10 +67,10 @@ Lbutton::Lbutton(QWidget *parent, const QString &text, QString color, int fontSi
     : QPushButton(text, parent),
       gradientOffset(-BUTTON_WIDTH), // 初始化流光偏移量
       particleEffectEnabled(true),   // 默认启用粒子特效
+     clickEffectEnabled(false),      // 默认关闭点击分解重构特效
       buttonState(ButtonState::Normal),
       dissolveProgress(0.0f),
-      reconstructProgress(0.0f),
-      effectDuration(800)
+      reconstructProgress(0.0f)
 {
     // 设置按钮的大小
     setFixedSize(BUTTON_WIDTH, BUTTON_HEIGHT);
@@ -343,20 +344,11 @@ void Lbutton::mousePressEvent(QMouseEvent *event)
     createParticles(event->position(), 30, 2.0f);
 }
 
-// 鼠标释放事件
-void Lbutton::mouseReleaseEvent(QMouseEvent *event)
-{
-    QPushButton::mouseReleaseEvent(event);
-    
-    // 在mouseReleaseEvent中不再触发分解效果，避免与clicked信号冲突
-    // 现在通过clicked信号直接连接到triggerDissolveEffect
-}
-
 // 触发按钮分解效果
 void Lbutton::triggerDissolveEffect()
 {
-    // 如果特效未启用，直接返回
-    if (!particleEffectEnabled) return;
+    // 如果特效未启用或点击分解重构特效关闭，直接返回
+    if (!particleEffectEnabled || !clickEffectEnabled) return;
     
     // 如果已经在特效状态中，先重置为正常状态
     if (buttonState != ButtonState::Normal) {
@@ -402,7 +394,7 @@ void Lbutton::onDissolveFinished()
     
     // 短暂停留在分解状态，然后开始重构
     connect(effectTimer, &QTimer::timeout, this, &Lbutton::startReconstruction);
-    effectTimer->start(300); // 等待300毫秒后开始重构
+    effectTimer->start(0); // 等待0毫秒后开始重构
 }
 
 // 开始重构
@@ -618,4 +610,10 @@ QPointF Lbutton::getRandomPointAround(const QPointF &center, float radius)
         center.x() + cos(angle) * distance,
         center.y() + sin(angle) * distance
     );
+}
+
+// 启用或禁用点击分解重构特效
+void Lbutton::enableClickEffect(bool enable)
+{
+    clickEffectEnabled = enable;
 }

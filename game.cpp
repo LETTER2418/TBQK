@@ -12,6 +12,7 @@ Game::Game(QWidget *parent, DataManager *dataManager_) : QWidget(parent), dataMa
 {
     initializeUI();
     setupConnections();
+    initParticleSystem();
 }
 
 Game::~Game()
@@ -22,16 +23,23 @@ Game::~Game()
 void Game::initializeUI()
 {
     backButton = new Lbutton(this, "返回");
+    backButton->enableClickEffect(true);
     hintButton = new Lbutton(this, "提示");
+    hintButton->enableClickEffect(true);
     withdrawButton = new Lbutton(this, "撤销");
+    withdrawButton->enableClickEffect(true);
     pathToggleButton = new Lbutton(this, "显示路径");
+    pathToggleButton->enableClickEffect(true);
     radiusAdjustButton = new Lbutton(this, isAutoRadius ? "手动调整半径" : "自动调整半径");
+    radiusAdjustButton->enableClickEffect(true);
     resetButton = new Lbutton(this, "重置");
+    resetButton->enableClickEffect(true);
     chatButton = new Lbutton(this, "聊天");
-    
+    chatButton->enableClickEffect(true);
+
     // 初始时聊天按钮为禁用状态，只有在联机模式下才启用
     chatButton->setEnabled(false);
-    
+
     radiusSpinBox = new QSpinBox(this);
 
     radiusSpinBox->setRange(10, 60);
@@ -93,70 +101,47 @@ void Game::setupConnections()
     connect(radiusAdjustButton, &QPushButton::clicked, this, &Game::onRadiusAdjustButtonClicked);
     connect(radiusSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &Game::onRadiusSpinBoxChanged);
     connect(resetButton, &QPushButton::clicked, this, &Game::resetCurrentLevel);
-    
+
     // 添加返回按钮点击事件，隐藏联机聊天窗口
-    connect(backButton, &QPushButton::clicked, this, [this]() {
-        // 如果在联机模式下，显示退出房间提醒
-        if (isOnlineMode && socketManager) {
-            if (messageBox) {
-                messageBox->setMessage("确定要退出房间吗？");
-                int result = messageBox->exec();
-                
-                if (result == QDialog::Accepted) {
-                    // 用户确认退出房间
-                    if (socketManager) {
-                        socketManager->SendLeaveRoomMessage();
-                    }
-                    
-                    // 隐藏并清空聊天窗口
-                    if (onlineChat) {
-                        onlineChat->hide();
-                        onlineChat->clearChatHistory();
-                    }
-                    
-                    // 发送未完成的信号
-                    emit returnToLevelMode(false, penaltySeconds, stepCount, currentLevelId);
-                }
-                return; // 如果取消，则不执行后续的返回操作
+    connect(backButton, &QPushButton::clicked, this, [this]()
+    {
+        // 非联机模式或无需确认，隐藏聊天窗口
+        if (onlineChat && onlineChat->isVisible())
+            {
+                onlineChat->hide();
             }
-        }
-        
-        // 非联机模式或无需确认
-        if (onlineChat && onlineChat->isVisible()) {
-            onlineChat->hide();
-        }
-        
+
         // 发送未完成的信号
         emit returnToLevelMode(false, penaltySeconds, stepCount, currentLevelId);
     });
-    
+
     connect(chatButton, &QPushButton::clicked, this, [this]()
     {
         if (onlineChat && isOnlineMode)
-        {
-            // 如果当前窗口可见，则居中显示
-            if (!onlineChat->isVisible())
             {
-                // 计算父窗口的中心位置
-                QPoint parentCenter = this->mapToGlobal(QPoint(this->width()/2, this->height()/2));
-                // 计算聊天窗口应该显示的位置
-                QPoint chatPos = QPoint(
-                    parentCenter.x() - onlineChat->width()/2,
-                    parentCenter.y() - onlineChat->height()/2
-                );
-                onlineChat->move(chatPos);
+                // 如果当前窗口可见，则居中显示
+                if (!onlineChat->isVisible())
+                    {
+                        // 计算父窗口的中心位置
+                        QPoint parentCenter = this->mapToGlobal(QPoint(this->width() / 2, this->height() / 2));
+                        // 计算聊天窗口应该显示的位置
+                        QPoint chatPos = QPoint(
+                                             parentCenter.x() - onlineChat->width() / 2,
+                                             parentCenter.y() - onlineChat->height() / 2
+                                         );
+                        onlineChat->move(chatPos);
+                    }
+                onlineChat->show();
             }
-            onlineChat->show();
-        }
         else
-        {
-            // 在非联机模式下点击聊天按钮给出提示
-            if (messageBox)
             {
-                messageBox->setMessage("请先进入联机模式才能使用聊天功能");
-                messageBox->exec();
+                // 在非联机模式下点击聊天按钮给出提示
+                if (messageBox)
+                    {
+                        messageBox->setMessage("请先进入联机模式才能使用聊天功能");
+                        messageBox->exec();
+                    }
             }
-        }
     });
 }
 
@@ -280,6 +265,10 @@ void Game::flipHexagon(int index)
     op.hexCoord = hexagonIndexToCoord(index);
     operationHistory.append(op);
 
+    // 触发分解效果
+    triggerHexDissolveEffect(index);
+
+    // 原始操作: 改变颜色
     hexagons[index].color = (hexagons[index].color == color1) ? color2 : color1;
     flippedHexagons.insert(index);
     currentPath.append(index);
@@ -429,6 +418,9 @@ void Game::paintEvent(QPaintEvent *event)
                     painter.drawLine(start, end);
                 }
         }
+
+    // 绘制粒子
+    drawParticles(painter);
 
     // 绘制计时器
     drawGameTimer(painter);
@@ -792,11 +784,12 @@ void Game::setCurrentLevelId(int id)
 void Game::setSocketManager(SocketManager* manager)
 {
     socketManager = manager;
-    
-    if (socketManager) {
-        // 连接游戏状态接收信号
-        connect(socketManager, &SocketManager::gameStateReceived, this, &Game::onGameStateReceived);
-    }
+
+    if (socketManager)
+        {
+            // 连接游戏状态接收信号
+            connect(socketManager, &SocketManager::gameStateReceived, this, &Game::onGameStateReceived);
+        }
 }
 
 void Game::onGameStateReceived(const MapData& mapData)
@@ -845,33 +838,34 @@ void Game::setOnlineMode(bool isServer_, SocketManager* manager)
     if (manager)
         {
             setSocketManager(manager);
-            
+
             // 创建或重用聊天窗口
             if (onlineChat == nullptr)
                 {
                     onlineChat = new OnlineChat(manager, dataManager, this);
                 }
-            
+
             // 设置窗口标题
             onlineChat->setWindowTitle("联机聊天");
-            
+
             // 清空历史聊天记录（重新进入房间）
             onlineChat->clearChatHistory();
-            
+
             // 加载用户头像 - 无论是否已有用户头像，都重新获取一次
-            if (socketManager) {
-                QString localUserId = socketManager->getLocalUserId();
-                
-                // 重置头像设置，强制重新获取
-                onlineChat->setUserAvatar(localUserId);
-                
-                // 设置短延迟后发送头像，确保头像数据能够被接收方处理
-                QTimer::singleShot(300, onlineChat, &OnlineChat::sendCurrentUserAvatar);
-                
-                // 再次延迟发送一次，以确保稳定传输
-                QTimer::singleShot(1000, onlineChat, &OnlineChat::sendCurrentUserAvatar);
-            }
-            
+            if (socketManager)
+                {
+                    QString localUserId = socketManager->getLocalUserId();
+
+                    // 重置头像设置，强制重新获取
+                    onlineChat->setUserAvatar(localUserId);
+
+                    // 设置短延迟后发送头像，确保头像数据能够被接收方处理
+                    QTimer::singleShot(300, onlineChat, &OnlineChat::sendCurrentUserAvatar);
+
+                    // 再次延迟发送一次，以确保稳定传输
+                    QTimer::singleShot(1000, onlineChat, &OnlineChat::sendCurrentUserAvatar);
+                }
+
             // 启用聊天按钮
             if (chatButton)
                 {
@@ -886,7 +880,7 @@ void Game::setOnlineMode(bool isServer_, SocketManager* manager)
                     onlineChat->hide();
                 }
             socketManager = nullptr;
-            
+
             // 禁用聊天按钮
             if (chatButton)
                 {
@@ -935,6 +929,479 @@ void Game::resetCurrentLevel()
 
     // 触发界面刷新
     update();
+}
+
+// === 粒子系统初始化 ===
+void Game::initParticleSystem()
+{
+    // 创建粒子更新定时器
+    particleTimer = new QTimer(this);
+    connect(particleTimer, &QTimer::timeout, this, &Game::updateParticles);
+    particleTimer->start(16); // 约60帧每秒
+
+    // 创建特效状态转换定时器
+    effectTimer = new QTimer(this);
+    effectTimer->setSingleShot(true);
+
+}
+
+// === 粒子系统更新 ===
+void Game::updateParticles()
+{
+    bool needsUpdate = false;
+
+    // 遍历所有活动的六边形
+    for (int hexIndex : hexParticles.keys())
+        {
+            HexState state = hexStates.value(hexIndex, HexState::Normal);
+
+            if (state == HexState::Dissolving)
+                {
+                    updateDissolveEffect(hexIndex);
+                    needsUpdate = true;
+                }
+            else if (state == HexState::Reconstructing)
+                {
+                    updateReconstructEffect(hexIndex);
+                    needsUpdate = true;
+                }
+            else if (state == HexState::Normal)
+                {
+                    // 正常状态下更新粒子 (例如消散效果)
+                    QVector<HexParticle> &particles = hexParticles[hexIndex];
+
+                    for (int i = 0; i < particles.size(); ++i)
+                        {
+                            HexParticle &p = particles[i];
+
+                            // 更新生命周期
+                            p.life -= 0.01f;
+
+                            // 移除已经死亡的粒子
+                            if (p.life <= 0)
+                                {
+                                    particles.remove(i);
+                                    --i;
+                                    continue;
+                                }
+
+                            // 更新位置
+                            p.pos += p.velocity;
+
+                            // 更新透明度（随生命周期减少）
+                            p.alpha = p.life / p.maxLife * 255;
+
+                            // 添加一些随机性使粒子运动更自然
+                            p.velocity += QPointF(
+                                              (QRandomGenerator::global()->generateDouble() * 0.2) - 0.1,
+                                              (QRandomGenerator::global()->generateDouble() * 0.2) - 0.1
+                                          );
+
+                            // 重力效果
+                            p.velocity.setY(p.velocity.y() + 0.01f);
+                        }
+
+                    // 如果该六边形没有粒子了，从活动列表中移除
+                    if (particles.isEmpty())
+                        {
+                            hexParticles.remove(hexIndex);
+                        }
+                    else
+                        {
+                            needsUpdate = true;
+                        }
+                }
+        }
+
+    // 只有在有活动粒子时才更新UI
+    if (needsUpdate)
+        {
+            update();
+        }
+}
+
+// === 触发六边形分解效果 ===
+void Game::triggerHexDissolveEffect(int hexIndex)
+{
+    if (hexIndex < 0 || hexIndex >= hexagons.size())
+        {
+            return;
+        }
+
+    // 清除现有粒子
+    hexParticles[hexIndex].clear();
+
+    // 创建分解粒子
+    createDissolveParticles(hexIndex);
+
+    // 设置状态为分解中
+    hexStates[hexIndex] = HexState::Dissolving;
+    dissolveProgress[hexIndex] = 0.0f;
+
+    // 设置定时器，在分解完成后触发回调
+    QTimer::singleShot(effectDuration, this, [this, hexIndex]()
+    {
+        onDissolveFinished(hexIndex);
+    });
+
+    // 强制更新，确保立即显示粒子效果
+    update();
+}
+
+// === 创建分解粒子 ===
+void Game::createDissolveParticles(int hexIndex)
+{
+    if (hexIndex < 0 || hexIndex >= hexagons.size())
+        {
+            return;
+        }
+
+    // 获取六边形的颜色和中心点
+    QColor hexColor = hexagons[hexIndex].color;
+    QPointF hexCenter = hexagons[hexIndex].center + getOffset(); // 应用偏移
+
+    // 为六边形的轮廓和内部创建粒子
+    const int totalParticles = 150; // 总粒子数
+
+    // 生成并保存六边形轮廓点
+    QVector<QPointF> outlinePoints;
+    generateHexOutline(hexIndex, outlinePoints);
+    hexOutlinePoints[hexIndex] = outlinePoints;
+
+    QVector<HexParticle> &particles = hexParticles[hexIndex];
+    particles.reserve(totalParticles);
+
+    for (int i = 0; i < totalParticles; ++i)
+        {
+            HexParticle p;
+
+            // 从轮廓点或内部随机点开始
+            if (i < outlinePoints.size())
+                {
+                    p.pos = outlinePoints[i];
+                }
+            else
+                {
+                    // 在六边形内部随机生成点
+                    double randomAngle = QRandomGenerator::global()->generateDouble() * 2.0 * M_PI;
+                    double randomRadius = QRandomGenerator::global()->generateDouble() * radius * 0.8;
+                    p.pos = QPointF(
+                                hexCenter.x() + randomRadius * cos(randomAngle),
+                                hexCenter.y() + randomRadius * sin(randomAngle)
+                            );
+                }
+
+            p.startPos = p.pos;
+            p.targetPos = getRandomPointAround(p.pos, radius * 2.0f); // 分解目标位置
+            p.isReconstructing = false;
+
+            // 随机初始速度（方向向外）
+            QPointF direction = p.targetPos - p.pos;
+            float length = sqrt(direction.x() * direction.x() + direction.y() * direction.y());
+            if (length > 0)
+                {
+                    direction = QPointF(direction.x() / length, direction.y() / length);
+                }
+            else
+                {
+                    direction = QPointF(0, 0);
+                }
+
+            float speed = 0.5f + QRandomGenerator::global()->generateDouble() * 1.5f;
+            p.velocity = QPointF(direction.x() * speed, direction.y() * speed);
+
+            // 使用六边形的颜色
+            p.color = hexColor;
+
+            // 其他属性
+            p.size = 1 + QRandomGenerator::global()->bounded(3); // 1-3的整数
+            p.life = 1.0f; // 足够长的生命周期
+            p.maxLife = p.life;
+            p.alpha = 255;
+
+            // 添加到粒子容器
+            particles.append(p);
+        }
+}
+
+// === 更新分解效果 ===
+void Game::updateDissolveEffect(int hexIndex)
+{
+    if (!hexParticles.contains(hexIndex))
+        {
+            return;
+        }
+
+    dissolveProgress[hexIndex] += 1.0f / (effectDuration / 16.0f); // 16ms 一帧
+    dissolveProgress[hexIndex] = qMin(dissolveProgress[hexIndex], 1.0f);
+
+    QVector<HexParticle> &particles = hexParticles[hexIndex];
+    for (int i = 0; i < particles.size(); ++i)
+        {
+            HexParticle &p = particles[i];
+
+            // 计算当前位置（线性插值）
+            p.pos = p.startPos + (p.targetPos - p.startPos) * dissolveProgress[hexIndex];
+
+            // 添加一些随机性
+            p.pos += QPointF(
+                         (QRandomGenerator::global()->generateDouble() * 2.0 - 1.0) * dissolveProgress[hexIndex] * 2.0,
+                         (QRandomGenerator::global()->generateDouble() * 2.0 - 1.0) * dissolveProgress[hexIndex] * 2.0
+                     );
+        }
+}
+
+// === 分解完成处理 ===
+void Game::onDissolveFinished(int hexIndex)
+{
+    if (!hexStates.contains(hexIndex))
+        {
+            return;
+        }
+
+    // 设置状态为已分解
+    hexStates[hexIndex] = HexState::Dissolved;
+
+    // 短暂停留在分解状态，然后开始重构
+    QTimer::singleShot(0, this, [this, hexIndex]()
+    {
+        startReconstruction(hexIndex);
+    });
+}
+
+// === 开始重构 ===
+void Game::startReconstruction(int hexIndex)
+{
+    if (!hexParticles.contains(hexIndex) || !hexStates.contains(hexIndex))
+        {
+            return;
+        }
+
+    // 设置状态为重构中
+    hexStates[hexIndex] = HexState::Reconstructing;
+    reconstructProgress[hexIndex] = 0.0f;
+
+    // 获取六边形的颜色
+    QColor hexColor = hexagons[hexIndex].color;
+
+    // 为粒子设置目标位置（六边形轮廓和内部）
+    QVector<QPointF> &outlinePoints = hexOutlinePoints[hexIndex];
+    QVector<HexParticle> &particles = hexParticles[hexIndex];
+
+    for (int i = 0; i < particles.size(); ++i)
+        {
+            HexParticle &p = particles[i];
+            // 将粒子标记为重构状态
+            p.isReconstructing = true;
+            // 记录起始位置
+            p.startPos = p.pos;
+
+            // 设置目标位置
+            if (i < outlinePoints.size())
+                {
+                    p.targetPos = outlinePoints[i];
+                }
+            else
+                {
+                    // 对于多余的粒子，使用六边形内部的随机点
+                    QPointF hexCenter = hexagons[hexIndex].center + getOffset(); // 应用偏移
+                    double randomAngle = QRandomGenerator::global()->generateDouble() * 2.0 * M_PI;
+                    double randomRadius = QRandomGenerator::global()->generateDouble() * radius * 0.7;
+                    p.targetPos = QPointF(
+                                      hexCenter.x() + randomRadius * cos(randomAngle),
+                                      hexCenter.y() + randomRadius * sin(randomAngle)
+                                  );
+                }
+
+            // 所有粒子使用六边形颜色
+            p.color = hexColor;
+        }
+
+    // 设置定时器，在重构完成后触发回调
+    QTimer::singleShot(effectDuration, this, [this, hexIndex]()
+    {
+        onReconstructFinished(hexIndex);
+    });
+}
+
+// === 更新重构效果 ===
+void Game::updateReconstructEffect(int hexIndex)
+{
+    if (!hexParticles.contains(hexIndex) || !reconstructProgress.contains(hexIndex))
+        {
+            return;
+        }
+
+    reconstructProgress[hexIndex] += 1.0f / (effectDuration / 16.0f); // 16ms 一帧
+    reconstructProgress[hexIndex] = qMin(reconstructProgress[hexIndex], 1.0f);
+
+    // 使用缓动函数让运动更自然
+    float easedProgress = 1.0f - pow(1.0f - reconstructProgress[hexIndex], 3.0f);
+
+    QVector<HexParticle> &particles = hexParticles[hexIndex];
+    for (int i = 0; i < particles.size(); ++i)
+        {
+            HexParticle &p = particles[i];
+
+            // 计算当前位置（使用缓动函数）
+            p.pos = p.startPos + (p.targetPos - p.startPos) * easedProgress;
+
+            // 随着接近目标位置减少随机性
+            float randomFactor = 1.0f - easedProgress;
+            p.pos += QPointF(
+                         (QRandomGenerator::global()->generateDouble() * 2.0 - 1.0) * randomFactor * 2.0,
+                         (QRandomGenerator::global()->generateDouble() * 2.0 - 1.0) * randomFactor * 2.0
+                     );
+        }
+}
+
+// === 重构完成处理 ===
+void Game::onReconstructFinished(int hexIndex)
+{
+    if (!hexStates.contains(hexIndex))
+        {
+            return;
+        }
+
+    // 设置状态为正常
+    hexStates[hexIndex] = HexState::Normal;
+
+    // 清除之前的粒子并创建一些新的完成效果粒子
+    QVector<HexParticle> &particles = hexParticles[hexIndex];
+    particles.clear();
+
+    // 可以在这里添加完成效果，如发光粒子等
+
+    // 标记为需要更新UI
+    update();
+}
+
+// === 生成六边形轮廓点 ===
+void Game::generateHexOutline(int hexIndex, QVector<QPointF>& outlinePoints)
+{
+    outlinePoints.clear();
+
+    if (hexIndex < 0 || hexIndex >= hexagons.size())
+        {
+            return;
+        }
+
+    QPointF hexCenter = hexagons[hexIndex].center + getOffset(); // 应用偏移
+
+    // 创建六边形轮廓点
+    for (int i = 0; i < 6; ++i)
+        {
+            double angle = M_PI / 3 * i;
+            outlinePoints.append(QPointF(
+                                     hexCenter.x() + radius * cos(angle),
+                                     hexCenter.y() + radius * sin(angle)
+                                 ));
+        }
+
+    // 添加更多内部点
+    for (float r = 0.8f; r > 0.1f; r -= 0.2f)
+        {
+            for (int i = 0; i < 6; ++i)
+                {
+                    double angle = M_PI / 3 * i + M_PI / 6; // 错开角度
+                    outlinePoints.append(QPointF(
+                                             hexCenter.x() + radius * r * cos(angle),
+                                             hexCenter.y() + radius * r * sin(angle)
+                                         ));
+                }
+        }
+}
+
+// === 获取周围的随机点 ===
+QPointF Game::getRandomPointAround(const QPointF &center, float radius)
+{
+    // 生成随机角度
+    double angle = QRandomGenerator::global()->generateDouble() * 2.0 * M_PI;
+
+    // 生成随机距离（使用平方根使分布均匀）
+    double distance = radius * sqrt(QRandomGenerator::global()->generateDouble());
+
+    // 计算新位置
+    return QPointF(
+               center.x() + cos(angle) * distance,
+               center.y() + sin(angle) * distance
+           );
+}
+
+// === 绘制粒子 ===
+void Game::drawParticles(QPainter &painter)
+{
+    painter.save();
+
+    // 使用合适的混合模式
+    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+    // 遍历所有六边形的粒子
+    for (int hexIndex : hexParticles.keys())
+        {
+            const QVector<HexParticle> &particles = hexParticles[hexIndex];
+
+            // 绘制每个粒子
+            for (const HexParticle &p : particles)
+                {
+                    QColor color = p.color;
+                    color.setAlpha(p.alpha);
+
+                    painter.setPen(Qt::NoPen);
+                    painter.setBrush(color);
+
+                    // 绘制粒子（圆形）
+                    painter.drawEllipse(p.pos, p.size, p.size);
+                }
+        }
+
+    painter.restore();
+}
+
+// === 触发所有六边形产生粒子效果 ===
+void Game::triggerAllHexEffects()
+{
+    // 如果没有六边形，直接返回
+    if (hexagons.isEmpty()) {
+        return;
+    }
+    
+    // 清除所有现有粒子和状态
+    hexParticles.clear();
+    hexStates.clear();
+    dissolveProgress.clear();
+    reconstructProgress.clear();
+    hexOutlinePoints.clear();
+    
+    // 波浪式触发效果的延迟基准值 (毫秒)
+    const int baseDelay = 50;
+    
+    // 获取六边形的中心点，用于计算距离
+    QPointF centerPoint = center + getOffset();
+    
+    // 计算每个六边形到中心的距离，用于确定触发顺序
+    QVector<QPair<int, float>> hexDistances;
+    for (int i = 0; i < hexagons.size(); ++i) {
+        QPointF hexCenter = hexagons[i].center + getOffset();
+        float distance = QLineF(centerPoint, hexCenter).length();
+        hexDistances.append(qMakePair(i, distance));
+    }
+    
+    // 按距离排序 (由近到远)
+    std::sort(hexDistances.begin(), hexDistances.end(), 
+        [](const QPair<int, float>& a, const QPair<int, float>& b) {
+            return a.second < b.second;
+        });
+    
+    // 波浪式触发特效
+    for (int i = 0; i < hexDistances.size(); ++i) {
+        int hexIndex = hexDistances[i].first;
+        int delay = baseDelay * i;  // 按距离递增延迟
+        
+        QTimer::singleShot(delay, this, [this, hexIndex]() {
+            triggerHexDissolveEffect(hexIndex);
+        });
+    }
 }
 
 

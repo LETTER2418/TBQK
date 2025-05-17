@@ -9,12 +9,44 @@
 #include "onlinechat.h"
 #include "datamanager.h"
 #include <QSpinBox>
+#include <QMap>
+#include <QSet>
+#include <QVector>
+#include <QColor>
+#include <QPoint>
+#include <QPointF>
+#include <QTimer>
+#include <QMediaPlayer>
+#include <QAudioOutput>
+#include <QPushButton>
 
 // 定义操作结构体，用于记录每次操作
 struct Operation {
     int hexagonIndex;  // 操作的六边形索引
     QColor oldColor;   // 操作前的颜色
     QPoint hexCoord;   // 六边形的轴向坐标
+};
+
+// 六边形状态枚举
+enum class HexState {
+    Normal,         // 正常状态
+    Dissolving,     // 分解中
+    Dissolved,      // 已分解
+    Reconstructing  // 重构中
+};
+
+// 粒子结构体
+struct HexParticle {
+    QPointF pos;         // 当前位置
+    QPointF velocity;    // 移动速度
+    QPointF startPos;    // 起始位置(重构用)
+    QPointF targetPos;   // 目标位置(重构用)
+    QColor color;        // 颜色
+    float size;          // 大小
+    float alpha;         // 透明度
+    float life;          // 生命周期
+    float maxLife;       // 最大生命周期
+    bool isReconstructing; // 是否处于重构状态
 };
 
 class Game : public QWidget
@@ -30,6 +62,13 @@ public:
     Lbutton *backButton;
     bool getOnlineMode();
 
+    // 添加访问messageBox和onlineChat的方法
+    MessageBox* getMessageBox() const { return messageBox; }
+    OnlineChat* getOnlineChat() const { return onlineChat; }
+    
+    // 触发所有六边形产生粒子效果
+    void triggerAllHexEffects();
+
 signals:
     // 返回关卡模式的信号，携带完成信息
     void returnToLevelMode(bool completed = false, int timeUsed = 0, int steps = 0, int levelId = 0);
@@ -44,6 +83,13 @@ private slots:
     void onRadiusAdjustButtonClicked(); // 处理半径调整按钮点击事件
     void onRadiusSpinBoxChanged(int value); // 处理半径调整输入框变化事件
     void resetCurrentLevel(); // 重置关卡
+
+    // 六边形粒子特效相关槽函数
+    void updateParticles();
+    void onDissolveFinished(int hexIndex);
+    void startReconstruction(int hexIndex);
+    void onReconstructFinished(int hexIndex);
+    void triggerHexDissolveEffect(int hexIndex);
 
 private:
     // === UI初始化和更新 ===
@@ -125,6 +171,25 @@ private:
     bool isOnlineMode = false; // 是否为联机模式，用于设置聊天窗口是否显示
 
     DataManager *dataManager;  // 添加 DataManager 指针
+
+    // 粒子系统相关
+    QTimer* particleTimer;         // 粒子更新定时器
+    QTimer* effectTimer;           // 特效状态转换定时器
+    QMap<int, QVector<HexParticle>> hexParticles;  // 每个六边形的粒子集合
+    QMap<int, HexState> hexStates;                // 每个六边形的状态
+    QMap<int, float> dissolveProgress;            // 每个六边形的分解进度
+    QMap<int, float> reconstructProgress;         // 每个六边形的重构进度
+    QMap<int, QVector<QPointF>> hexOutlinePoints; // 每个六边形的轮廓点
+    int effectDuration=400;            // 特效持续时间(毫秒)
+
+    // 六边形粒子特效相关方法
+    void initParticleSystem();
+    void createDissolveParticles(int hexIndex);
+    void updateDissolveEffect(int hexIndex);
+    void updateReconstructEffect(int hexIndex);
+    void generateHexOutline(int hexIndex, QVector<QPointF>& outlinePoints);
+    QPointF getRandomPointAround(const QPointF &center, float radius);
+    void drawParticles(QPainter &painter);
 };
 
 #endif // GAME_H

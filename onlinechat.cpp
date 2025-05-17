@@ -13,6 +13,7 @@
 #include <QTimer>
 #include <QShowEvent>
 #include <QTcpSocket>
+#include <QKeyEvent>
 
 // ChatBubble 实现
 ChatBubble::ChatBubble(const QString &text, bool isSelf, QPixmap avatar, QWidget *parent)
@@ -43,7 +44,7 @@ ChatBubble::ChatBubble(const QString &text, bool isSelf, QPixmap avatar, QWidget
 
     // 设置气泡样式
     QString bgColor = isSelf ? "#95EC69" : "#FFFFFF"; // 自己的消息是绿色，他人的是白色
-    messageLabel->setStyleSheet(QString("QLabel { background-color: %1; border-radius: 10px; padding: 10px; }").arg(bgColor));
+    messageLabel->setStyleSheet(QString("QLabel { background-color: %1; border-radius: 10px; padding: 10px; font-size: 16px;}").arg(bgColor));
 
     // 设置最大宽度
     QFontMetrics fm(messageLabel->font());
@@ -59,17 +60,30 @@ ChatBubble::ChatBubble(const QString &text, bool isSelf, QPixmap avatar, QWidget
         messageLabel->setMinimumWidth(textWidth + 30);
     }
 
+    // 添加时间标签
+    timeLabel = new QLabel(this);
+    timeLabel->setAlignment(Qt::AlignCenter);
+    timeLabel->setStyleSheet("QLabel { color: #999999; font-size: 12px; background: transparent; padding: 5px; margin-bottom: 2px; }");
+    timeLabel->setVisible(false); // 默认不可见，等待setTimestamp时设置
+
+    // 创建垂直布局来放置时间标签和消息标签
+    QVBoxLayout *messageWithTimeLayout = new QVBoxLayout();
+    messageWithTimeLayout->setContentsMargins(0, 0, 0, 0);
+    messageWithTimeLayout->setSpacing(3);
+    messageWithTimeLayout->addWidget(timeLabel, 0, Qt::AlignCenter);
+    messageWithTimeLayout->addWidget(messageLabel);
+
     // 根据是否是自己的消息来布局
     if (isSelf)
     {
         layout->addStretch();
-        layout->addWidget(messageLabel);
+        layout->addLayout(messageWithTimeLayout);
         layout->addWidget(avatarLabel);
     }
     else
     {
         layout->addWidget(avatarLabel);
-        layout->addWidget(messageLabel);
+        layout->addLayout(messageWithTimeLayout);
         layout->addStretch();
     }
 
@@ -139,7 +153,7 @@ OnlineChat::OnlineChat(SocketManager* manager, DataManager* dm, QWidget *parent)
 
     // 输入框
     messageInput = new QTextEdit(bottomPanel);
-    messageInput->setPlaceholderText("请输入消息...");
+    messageInput->setPlaceholderText("请输入消息... (按Enter发送，Shift+Enter换行)");
     messageInput->setStyleSheet("border: 1px solid #CCCCCC; background-color: white; border-radius: 5px;");
 
     // 按钮布局
@@ -165,6 +179,9 @@ OnlineChat::OnlineChat(SocketManager* manager, DataManager* dm, QWidget *parent)
     connect(socketManager, &SocketManager::newMessageReceived, this, &OnlineChat::displayMessage);
     connect(socketManager, &SocketManager::avatarImageReceived, this, &OnlineChat::onAvatarImageReceived);
     connect(sendButton, &QPushButton::clicked, this, &OnlineChat::sendMessage);
+    
+    // 安装事件过滤器以捕获messageInput中的按键事件
+    messageInput->installEventFilter(this);
 }
 
 OnlineChat::~OnlineChat()
@@ -288,6 +305,15 @@ void OnlineChat::displayMessage(const QString& userId, const QString& message, b
     // 创建聊天气泡，确保isSelf状态正确
     ChatBubble *bubble = new ChatBubble(message, isSelf, avatar, chatContentWidget);
     bubble->setUserId(userId); // 保存消息关联的用户ID
+    
+    // 设置当前消息的时间戳
+    QDateTime currentTime = QDateTime::currentDateTime();
+    bubble->setTimestamp(currentTime);
+    
+    // 所有消息都显示时间
+    bubble->setTimeVisible(true);
+    
+    // 添加到布局
     chatContentLayout->addWidget(bubble);
     
     // 滚动到底部
@@ -422,7 +448,6 @@ void OnlineChat::clearChatHistory()
             delete child;
         }
 
-    // 不添加系统通知，保持聊天界面完全清空
 }
 
 // 更新头像
@@ -518,3 +543,56 @@ QString ChatBubble::insertLineBreaks(const QString &text, int maxWidth, const QF
     return result;
 }
 
+// 实现设置时间戳方法
+void ChatBubble::setTimestamp(const QDateTime& timestamp)
+{
+    this->timestamp = timestamp;
+    
+    // 获取当前日期
+    QDate today = QDate::currentDate();
+    QDate msgDate = timestamp.date();
+    
+    // 格式化时间显示
+    QString timeText;
+    
+    if (msgDate == today) {
+        // 如果是今天的消息，只显示时间
+        timeText = timestamp.toString("HH:mm");
+    } else if (msgDate.year() == today.year()) {
+        // 如果是今年的消息，显示月-日 时:分
+        timeText = timestamp.toString("MM-dd HH:mm");
+    } else {
+        // 如果是往年的消息，显示完整年-月-日 时:分
+        timeText = timestamp.toString("yyyy-MM-dd HH:mm");
+    }
+    
+    // 设置时间标签文本
+    timeLabel->setText(timeText);
+}
+
+// 实现设置时间标签可见性的方法
+void ChatBubble::setTimeVisible(bool visible)
+{
+    timeLabel->setVisible(visible);
+}
+
+// 添加eventFilter方法实现
+bool OnlineChat::eventFilter(QObject *watched, QEvent *event)
+{
+    // 监控messageInput的键盘事件
+    if (watched == messageInput && event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        
+        // 检查是否按下Enter键且没有按Shift键（Shift+Enter用于换行）
+        if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) {
+            // 如果没有按Shift键，则发送消息
+            if (!(keyEvent->modifiers() & Qt::ShiftModifier)) {
+                sendMessage();
+                return true; // 事件已处理
+            }
+        }
+    }
+    
+    // 对于其他所有事件，调用基类方法
+    return QWidget::eventFilter(watched, event);
+}

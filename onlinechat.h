@@ -41,15 +41,26 @@ public:
     // 静态方法：根据文本内容和最大宽度插入换行符
     static QString insertLineBreaks(const QString &text, int maxWidth, const QFont &font);
     
+    // 添加设置时间戳的方法
+    void setTimestamp(const QDateTime& timestamp);
+    
+    // 获取消息时间戳
+    QDateTime getTimestamp() const { return timestamp; }
+    
+    // 设置时间标签可见性
+    void setTimeVisible(bool visible);
+    
 protected:
     void paintEvent(QPaintEvent *event) override;
     
 private:
     QLabel *messageLabel;
     QLabel *avatarLabel;
+    QLabel *timeLabel;    // 添加时间标签
     bool isSelf;
     QPixmap avatar;
     QString userId; // 存储关联的用户ID
+    QDateTime timestamp; // 消息时间戳
 };
 
 class OnlineChat : public QWidget
@@ -79,6 +90,9 @@ protected:
     
     // 重写showEvent，在窗口显示时发送用户信息
     void showEvent(QShowEvent *event) override;
+
+    // 添加事件过滤器处理Enter键发送
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private slots:
     void sendMessage();

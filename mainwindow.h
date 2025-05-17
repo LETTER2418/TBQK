@@ -65,7 +65,7 @@ private:
     
     //Manager
     DataManager *dataManager;
-    SocketManager* socketManager; // SocketManager 成员指针
+    SocketManager* socketManager;  
 };
 
 #endif // MAINWINDOW_H

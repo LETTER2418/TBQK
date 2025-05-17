@@ -7,9 +7,12 @@ Start::Start(QWidget *parent, DataManager *dataManager_, SocketManager *socketMa
     // 创建按钮和输入框
     backButton = new Lbutton(this, "返回");
     loginButton = new Lbutton(this, "登录");
+    loginButton->enableClickEffect(true);
     registerButton = new Lbutton(this, "注册");
+    registerButton->enableClickEffect(true);
     guestButton = new Lbutton(this, "游客模式");
     showPasswordButton = new Lbutton(this, "显示密码");
+    showPasswordButton->enableClickEffect(true);
     
     accountLineEdit = new QLineEdit(this);
     accountLineEdit->setPlaceholderText("请输入账号");

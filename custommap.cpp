@@ -16,6 +16,7 @@ CustomMap::CustomMap(QWidget *parent) : QWidget(parent)
     backButton = new Lbutton(this, "返回");
     backButton->move(0, 0);
     saveButton = new Lbutton(this, "保存");
+    saveButton->enableClickEffect(true);
 
     QGridLayout *mainLayout = new QGridLayout(this);
 
@@ -41,7 +42,10 @@ CustomMap::CustomMap(QWidget *parent) : QWidget(parent)
     {
         messageBox->accept();
     });
-     
+
+    animation = new Animation(this);
+    animation->move(this->width()/2-animation->width()/2,this->height()/2-animation->height()/2);
+    animation->hide();
 }
 
 CustomMap::~CustomMap()
@@ -159,8 +163,10 @@ void CustomMap::setId(int id_)
 }
 
 // 求解六边形拼图
-void CustomMap::solvePuzzle()
+int CustomMap::solvePuzzle()
 {
+    animation->show();
+
     // 六边形距离计算函数
     auto distanceFromCenter = [](const QPair<int, int>& h)
     {
@@ -431,10 +437,13 @@ void CustomMap::solvePuzzle()
                         }
                 }
 
+            animation->hide();
+
             if (!foundValidSolution)
                 {
                     messageBox->setMessage("未找到解决方案");
                     messageBox->exec();
+                    return 2;
                 }
             else
                 {
@@ -446,13 +455,15 @@ void CustomMap::solvePuzzle()
                         }
                     messageBox->setMessage("求解成功！");
                     messageBox->exec();
+                    return 1;
                 }
-
         }
     else
         {
+             animation->hide();
              messageBox->setMessage("无解");
              messageBox->exec();
+             return 0;
         }
 }
 

@@ -69,7 +69,7 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     musicPlayer->setAudioOutput(musicAudioOutput);
 
     // 设置初始音量
-    musicAudioOutput->setVolume(0.5);
+    musicAudioOutput->setVolume(0);
 
     // 创建音乐播放器控件
     QFont labelFont;
@@ -81,13 +81,15 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     
     volumeSlider = new QSlider(Qt::Horizontal, this);
     volumeSlider->setRange(0, 100);
-    volumeSlider->setValue(50); // 初始音量50%
+    volumeSlider->setValue(0); // 初始音量0%
+    setVolume(0);
     volumeSlider->setFixedWidth(200);
     volumeSlider->setMinimumHeight(30);
     
     buttonVolumeSlider = new QSlider(Qt::Horizontal, this);
     buttonVolumeSlider->setRange(0, 100);
-    buttonVolumeSlider->setValue(50); // 初始音量50%
+    buttonVolumeSlider->setValue(0); // 初始音量0%
+    setButtonVolume(0);
     buttonVolumeSlider->setFixedWidth(200);
     buttonVolumeSlider->setMinimumHeight(30);
     
@@ -126,8 +128,10 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     nextButton->installEventFilter(this);
     
     openFileButton = new Lbutton(this, "打开音乐");
+    openFileButton->enableClickEffect(true);
     removeSongButton = new Lbutton(this, "删除选中歌曲");
-    
+    removeSongButton->enableClickEffect(true);
+
     playModeComboBox = new QComboBox(this);
     playModeComboBox->addItem("单曲循环");
     playModeComboBox->addItem("顺序播放");
@@ -164,6 +168,7 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     });
     
     uploadAvatarButton = new Lbutton(this, "更换头像");
+    uploadAvatarButton->enableClickEffect(true);
     
     // 创建头像布局
     QVBoxLayout *avatarLayout = new QVBoxLayout();
@@ -434,10 +439,21 @@ void Setting::updatePlaylistDisplay()
 
 void Setting::openMusicFile()
 {
+    // 根据用户名选择默认目录
+    QString defaultDir;
+    QString username = qgetenv("USERNAME");
+    
+    if (username == "LETTER") {
+        defaultDir = QString("D:/Programming/QtProject/TBQK/music");
+    } else {
+        // 如果不是LETTER用户，使用C盘用户的音乐文件夹
+        defaultDir = QDir::homePath();
+    }
+    
     QStringList files = QFileDialog::getOpenFileNames(
         this,
         "选择音乐文件",
-        QString("D:/Programming/QtProject/TBQK/music"),
+        defaultDir,
         "音频文件 (*.mp3 *.wav *.flac *.ogg *.m4a)"
     );
     

@@ -61,6 +61,9 @@ public:
     // 粒子特效开关
     void enableParticleEffect(bool enable);
     
+    // 控制点击分解重构特效的开关
+    void enableClickEffect(bool enable);
+    
     // 触发按钮分解效果
     void triggerDissolveEffect();
 
@@ -73,8 +76,6 @@ protected:
     void leaveEvent(QEvent *event) override;
     // 鼠标按下事件
     void mousePressEvent(QMouseEvent *event) override;
-    // 鼠标释放事件
-    void mouseReleaseEvent(QMouseEvent *event) override;
 
 private slots:
     // 更新渐变效果
@@ -104,10 +105,11 @@ private:
     QVector<Particle> particles;           // 粒子容器
     QVector<QPointF> buttonOutlinePoints;  // 按钮轮廓点
     bool particleEffectEnabled;            // 粒子特效开关
+    bool clickEffectEnabled;               // 点击分解重构特效开关
     ButtonState buttonState;               // 按钮当前状态
     float dissolveProgress;                // 分解进度
     float reconstructProgress;             // 重构进度
-    int effectDuration;                    // 效果持续时间(毫秒)
+    int effectDuration=400;                    // 分解/重构效果持续时间(毫秒)
     
     // 粒子系统方法
     void initParticleSystem();

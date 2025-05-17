@@ -1,6 +1,6 @@
 #include <QApplication>
 #include "mainwindow.h"
-#include "onlinechat.h"
+#include "animation.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);

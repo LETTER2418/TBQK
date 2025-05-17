@@ -4,6 +4,7 @@
 #include "lbutton.h"
 #include "messagebox.h"
 #include "mapdata.h"
+#include "animation.h"
 #include <QWidget>
 
 class CustomMap : public QWidget
@@ -18,7 +19,7 @@ public:
     void generateHexagons(int r= 3, QColor c1 = Qt::black, QColor c2 = Qt::white, QColor c3 = Qt::green);
     MapData getMapData();
     void setId(int id_);
-    void solvePuzzle();
+    int solvePuzzle();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -39,6 +40,7 @@ private:
     QVector<QPoint>path;
     int id;
     int rings;
+    Animation* animation;
 };
 
 #endif // CUSTOMMAP_H
