@@ -177,10 +177,10 @@ void Game::resetGameState(bool fromResetButton)
     operationHistory.clear();
     flippedHexagons.clear();
     currentHintIndex = -1;
-
-    stepCount = 0;
-    isShowingHint = false;
     highlightedHexIndex = -1;
+    isShowingHint = false;
+    stepCount = 0;
+     
 
     if (!fromResetButton)
         {

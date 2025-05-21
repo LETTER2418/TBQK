@@ -17,6 +17,7 @@ public:
     Start(QWidget*, DataManager*, SocketManager*);
     void onLoginClicked();
     void onRegisterClicked();
+    void onGuestClicked();
     ~Start();
 
     MessageBox *YESmessageBox;

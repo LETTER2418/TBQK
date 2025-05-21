@@ -46,6 +46,12 @@
         "streambuf": "cpp",
         "typeinfo": "cpp",
         "qapplication": "cpp",
-        "qwidget": "cpp"
+        "qwidget": "cpp",
+        "qpainter": "cpp",
+        "qguiapplication": "cpp",
+        "qgridlayout": "cpp",
+        "qmouseevent": "cpp",
+        "qvboxlayout": "cpp",
+        "qshowevent": "cpp"
     }
 }

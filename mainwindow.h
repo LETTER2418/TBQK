@@ -3,6 +3,9 @@
 
 #include <QStackedWidget>
 #include <QVBoxLayout>
+#include <QTimer>
+#include <QElapsedTimer>
+#include "animation.h"
 #include "widget.h"
 #include "lbutton.h"
 #include "start.h"
@@ -22,8 +25,10 @@
 #include "setting.h"
 #include "onlinemode.h"
 #include "socketmanager.h"
+#include "timelimitmsgbox.h"
 
-class MainWindow :public Widget{
+class MainWindow : public Widget
+{
     Q_OBJECT
 
 public:
@@ -31,13 +36,13 @@ public:
     ~MainWindow();
 
 private slots:
-    void onClientReceivedGameState(const MapData& mapData);
+    void onClientReceivedGameState(const MapData &mapData);
 
 private:
     QStackedWidget *pageStack;
 
-    //button
-    Lbutton* backbutton;
+    // button
+    Lbutton *backbutton;
     Lbutton *startButton;
     Lbutton *aboutButton;
     Lbutton *settingButton;
@@ -46,26 +51,27 @@ private:
     // MsgBox
     MapMsgBox *randomMapMsgBox;
     MapMsgBox *customMapMsgBox;
-    SaveMapMsgBox   *saveRandomMapMsgBox;
-    SaveMapMsgBox   *saveCustomMapMsgBox;
+    SaveMapMsgBox *saveRandomMapMsgBox;
+    SaveMapMsgBox *saveCustomMapMsgBox;
+    TimeLimitMsgBox *timeLimitMsgBox;
 
     // Pages
-    QWidget     *mainPage;
-    Start       *startPage;
-    About       *aboutPage;
-    Menu        *menuPage;
+    QWidget *mainPage;
+    Start *startPage;
+    About *aboutPage;
+    Menu *menuPage;
     LevelEditor *levelEditorPage;
-    RandomMap   *randomMapPage;
+    RandomMap *randomMapPage;
     LevelMode *levelModePage;
     CustomMap *customMapPage;
     Game *gamePage;
     RankPage *rankPage;
     Setting *settingPage;
     OnlineMode *onlineModePage;
-    
-    //Manager
+
+    // Manager
     DataManager *dataManager;
-    SocketManager* socketManager;  
+    SocketManager *socketManager;
 };
 
 #endif // MAINWINDOW_H

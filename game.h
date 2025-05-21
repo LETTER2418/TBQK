@@ -148,7 +148,6 @@ private:
     QSet<int> flippedHexagons;    // 记录已经翻转过的六边形索引
     bool showPath = false;        // 是否显示路径，默认不显示
     int currentHintIndex = -1;    // 当前提示的索引位置
-    QTimer* highlightTimer;       // 高亮效果定时器
     int highlightedHexIndex = -1; // 当前高亮的六边形索引
     bool isShowingHint = false;   // 是否正在显示提示
     bool isAutoRadius = false;    // 是否为自动调整半径模式，默认为手动

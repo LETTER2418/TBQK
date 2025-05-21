@@ -35,6 +35,7 @@ SOURCES += \
     setting.cpp \
     socketmanager.cpp \
     start.cpp \
+    timelimitmsgbox.cpp \
     userdata.cpp \
     widget.cpp
 
@@ -63,6 +64,7 @@ HEADERS += \
     setting.h \
     socketmanager.h \
     start.h \
+    timelimitmsgbox.h \
     userdata.h \
     widget.h
 

@@ -1,6 +1,7 @@
 #include "animation.h"
 #include <QResizeEvent>
 #include <QPainterPath>
+#include <QShowEvent>
 
 Animation::Animation(QWidget *parent)
     : QWidget(parent)
@@ -10,15 +11,24 @@ Animation::Animation(QWidget *parent)
     , rotationSpeed(2.0)
 {
     // 设置窗口属性
-    setWindowTitle("太极图旋转动画");
+    this->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    setWindowTitle("求解中(●′ω`●) ");
     resize(300, 400);
+    
+    // 设置窗口居中显示
+    if (parent) {
+        // 计算窗口应该显示的位置，使其在父窗口中居中
+        int x = parent->geometry().center().x() - width() / 2;
+        int y = parent->geometry().center().y() - height() / 2;
+        move(x, y);
+    }
     
     // 初始化定时器
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &Animation::updateRotation);
     timer->start(30); // 约33帧/秒
 
-     // 设置背景 
+    // 设置背景 
     // rgb(255,255,255)
     backgroundColor = QColor(255,255,255);
 
@@ -116,4 +126,17 @@ void Animation::drawTaiji(QPainter &painter)
     
     // 恢复画笔
     painter.setPen(pen);
+}
+
+void Animation::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+    
+    // 在每次显示窗口时确保窗口居中
+    if (parentWidget()) {
+        // 计算窗口应该显示的位置，使其在父窗口中居中
+        int x = parentWidget()->geometry().center().x() - width() / 2;
+        int y = parentWidget()->geometry().center().y() - height() / 2;
+        move(x, y);
+    }
 }

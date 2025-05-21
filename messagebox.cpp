@@ -26,8 +26,8 @@ MessageBox::MessageBox(QWidget *parent, bool showCancelButton)
             int buttonSpacing = 50; // 按钮之间的间距
 
             // 计算左右按钮的位置，使其对称
-            closeButton->move(centerX - closeButton->width() - buttonSpacing / 2, buttonY);
-            cancelButton->move(centerX + buttonSpacing / 2, buttonY);
+            cancelButton->move(centerX - closeButton->width() - buttonSpacing / 2, buttonY);
+            closeButton->move(centerX + buttonSpacing / 2, buttonY);
         }
     else
         {

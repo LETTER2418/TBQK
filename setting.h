@@ -15,6 +15,7 @@
 #include <QEvent>
 #include <QFileDialog>
 #include <QTransform>
+#include <QShowEvent>
 #include "lbutton.h"
 #include "messagebox.h"
 #include "datamanager.h"
@@ -29,8 +30,8 @@ public:
     explicit Setting(QWidget *parent = nullptr, DataManager *dataManager_ = nullptr);
     ~Setting();
 
-    Lbutton *backButton;    // 返回按钮
-    //Lbutton *clearDataButton; // 清除数据按钮
+    Lbutton *backButton; // 返回按钮
+    // Lbutton *clearDataButton; // 清除数据按钮
 
     // 音乐播放器相关方法
     void playMusic();
@@ -41,13 +42,13 @@ public:
     void previousSong();
     void loadPlaylist();
     void updatePlaylistDisplay();
-    void savePlaylistToFile();   // 保存歌单到本地
-    void addSongToPlaylist(const QString &filePath);  // 添加歌曲到歌单
-    void removeSongFromPlaylist();  // 从歌单中删除歌曲
-    
+    void savePlaylistToFile();                       // 保存歌单到本地
+    void addSongToPlaylist(const QString &filePath); // 添加歌曲到歌单
+    void removeSongFromPlaylist();                   // 从歌单中删除歌曲
+
     // 头像相关方法
-    void loadAvatar();  // 加载头像
-    
+    void loadAvatar(); // 加载头像
+
     // 事件过滤器
     bool eventFilter(QObject *watched, QEvent *event) override;
 
@@ -55,10 +56,13 @@ public:
     double getAvatarRotationAngle() const { return avatarRotationAngle; }
     void setAvatarRotationAngle(double angle);
 
+protected:
+    void showEvent(QShowEvent *event) override;
+
 private:
     DataManager *dataManager;
-    MessageBox *confirmMessageBox;  // 确认对话框
-    MessageBox *successMessageBox;  // 成功提示对话框
+    MessageBox *confirmMessageBox; // 确认对话框
+    MessageBox *successMessageBox; // 成功提示对话框
 
     // 音乐播放器相关控件和变量
     QMediaPlayer *musicPlayer;      // 音乐播放器
@@ -74,25 +78,26 @@ private:
     QLabel *currentSongLabel;       // 当前歌曲标签
     QComboBox *playModeComboBox;    // 播放模式选择框
     QListWidget *playlistWidget;    // 歌单显示列表
-    
+
     // 头像相关控件和变量
-    QLabel *avatarLabel;            // 头像显示标签
-    Lbutton *uploadAvatarButton;    // 上传头像按钮
-    QString avatarPath;             // 头像文件路径
-    
-    QStringList playlist;           // 播放列表
-    int currentIndex;               // 当前播放索引
-    enum PlayMode {
-        SingleLoop,                 // 单曲循环
-        SequentialPlay,             // 顺序播放
-        RandomPlay                  // 随机播放
+    QLabel *avatarLabel;         // 头像显示标签
+    Lbutton *uploadAvatarButton; // 上传头像按钮
+    QString avatarPath;          // 头像文件路径
+
+    QStringList playlist; // 播放列表
+    int currentIndex;     // 当前播放索引
+    enum PlayMode
+    {
+        SingleLoop,     // 单曲循环
+        SequentialPlay, // 顺序播放
+        RandomPlay      // 随机播放
     };
-    PlayMode currentPlayMode;       // 当前播放模式
-    const QString playlistFilePath = "playlist.json";  // 歌单保存路径
+    PlayMode currentPlayMode;                         // 当前播放模式
+    const QString playlistFilePath = "playlist.json"; // 歌单保存路径
 
     // 头像旋转动画相关
     QPropertyAnimation *avatarRotateAnimation;
-    double avatarRotationAngle;  // 当前旋转角度
+    double avatarRotationAngle;   // 当前旋转角度
     QPixmap originalAvatarPixmap; // 原始头像图像
 
 private slots:
@@ -100,7 +105,7 @@ private slots:
     void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
     void openMusicFile();
     void onPlaylistItemDoubleClicked(QListWidgetItem *item);
-    void uploadAvatar();  // 上传头像槽函数
+    void uploadAvatar();         // 上传头像槽函数
     void updateAvatarRotation(); // 更新头像旋转
 };
 
