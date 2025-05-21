@@ -31,4 +31,4 @@ private:
     qreal rotationSpeed;  // 旋转速度 (度/帧)
 };
 
-#endif // ANIMATION_H 
+#endif // ANIMATION_H

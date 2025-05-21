@@ -7,7 +7,6 @@
 #include <QSet>
 #include <QPair>
 #include <QMap>
-#include <iostream>
 #include <algorithm>
 #include <QGridLayout>
 
@@ -432,10 +431,10 @@ int CustomMap::solvePuzzle()
                 {
                     // 保存最佳路径到成员变量
                     path = bestSolutionPath;
-                    for (const QPoint &p : path)
-                        {
-                            // std::cout << "(" << p.x() << "," << p.y() << ") ";
-                        }
+                    // for (const QPoint &p : path)
+                    //     {
+                    //          std::cout << "(" << p.x() << "," << p.y() << ") ";
+                    //     }
                     return 1;
                 }
         }

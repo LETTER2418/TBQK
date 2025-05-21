@@ -23,32 +23,32 @@
 // 定义操作结构体，用于记录每次操作
 struct Operation
 {
-    int hexagonIndex;  // 操作的六边形索引
-    QColor oldColor;   // 操作前的颜色
-    QPoint hexCoord;   // 六边形的轴向坐标
+    int hexagonIndex; // 操作的六边形索引
+    QColor oldColor;  // 操作前的颜色
+    QPoint hexCoord;  // 六边形的轴向坐标
 };
 
 // 六边形状态枚举
 enum class HexState
 {
-    Normal,         // 正常状态
-    Dissolving,     // 分解中
-    Dissolved,      // 已分解
-    Reconstructing  // 重构中
+    Normal,        // 正常状态
+    Dissolving,    // 分解中
+    Dissolved,     // 已分解
+    Reconstructing // 重构中
 };
 
 // 粒子结构体
 struct HexParticle
 {
-    QPointF pos;         // 当前位置
-    QPointF velocity;    // 移动速度
-    QPointF startPos;    // 起始位置(重构用)
-    QPointF targetPos;   // 目标位置(重构用)
-    QColor color;        // 颜色
-    float size;          // 大小
-    float alpha;         // 透明度
-    float life;          // 生命周期
-    float maxLife;       // 最大生命周期
+    QPointF pos;           // 当前位置
+    QPointF velocity;      // 移动速度
+    QPointF startPos;      // 起始位置(重构用)
+    QPointF targetPos;     // 目标位置(重构用)
+    QColor color;          // 颜色
+    float size;            // 大小
+    float alpha;           // 透明度
+    float life;            // 生命周期
+    float maxLife;         // 最大生命周期
     bool isReconstructing; // 是否处于重构状态
 };
 
@@ -60,17 +60,11 @@ public:
     Game(QWidget *parent = nullptr, DataManager *dataManager = nullptr);
     ~Game();
     void setMap(MapData mapData);
-    void setSocketManager(SocketManager* manager);  // 设置SocketManager
-    void setOnlineMode(bool isServerMode, SocketManager* manager); // 用于联机模式的设置（角色和SocketManager）
+    void setSocketManager(SocketManager *manager);                 // 设置SocketManager
+    void setOnlineMode(bool isServerMode, SocketManager *manager); // 用于联机模式的设置（角色和SocketManager）
     Lbutton *backButton;
     bool getOnlineMode();
-
-    // 添加访问messageBox和onlineChat的方法
-    MessageBox* getMessageBox() const
-    {
-        return messageBox;
-    }
-    OnlineChat* getOnlineChat() const
+    OnlineChat *getOnlineChat() const
     {
         return onlineChat;
     }
@@ -88,10 +82,10 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
 
 private slots:
-    void onGameStateReceived(const MapData& mapData);  // 处理接收到的游戏状态
-    void onRadiusAdjustButtonClicked(); // 处理半径调整按钮点击事件
-    void onRadiusSpinBoxChanged(int value); // 处理半径调整输入框变化事件
-    void resetCurrentLevel(); // 重置关卡
+    void onGameStateReceived(const MapData &mapData); // 处理接收到的游戏状态
+    void onRadiusAdjustButtonClicked();               // 处理半径调整按钮点击事件
+    void onRadiusSpinBoxChanged(int value);           // 处理半径调整输入框变化事件
+    void resetCurrentLevel();                         // 重置关卡
 
     // 六边形粒子特效相关槽函数
     void updateParticles();
@@ -115,21 +109,21 @@ private:
     // === 六边形操作 ===
     bool canFlipHexagon(int index);
     void flipHexagon(int index);
-    int findClosestHexagon(const QPointF& clickPos);
+    int findClosestHexagon(const QPointF &clickPos);
     void withdrawLastOperation();
-    void resetHexagons(const QVector<HexCell>& currentHexagons, int radius1, int radius2);
+    void resetHexagons(const QVector<HexCell> &currentHexagons, int radius1, int radius2);
 
     // === 路径管理 ===
     bool isConnectedToPath(int index);
-    bool areNeighbors(const QPoint& coord1, const QPoint& coord2);
+    bool areNeighbors(const QPoint &coord1, const QPoint &coord2);
     void togglePathVisibility();
     QPoint hexagonIndexToCoord(int index);
-    int coordToHexagonIndex(const QPoint& coord);
-    int getHexagonRing(const QPoint& coord);
+    int coordToHexagonIndex(const QPoint &coord);
+    int getHexagonRing(const QPoint &coord);
 
     // === 提示系统 ===
     void showNextHint();
-    void highlightHexagon(const QPoint& coord);
+    void highlightHexagon(const QPoint &coord);
 
     // === 计时系统 ===
     void updateTimeDisplay();
@@ -150,52 +144,52 @@ private:
     Lbutton *chatButton;         // 聊天按钮
     QSpinBox *radiusSpinBox;     // 半径调整输入框
     MessageBox *messageBox;
-    QVector<QPoint> path;         // 提示路径
-    QVector<int> currentPath;     // 用户当前的操作路径，存储六边形索引
+    QVector<QPoint> path;     // 提示路径
+    QVector<int> currentPath; // 用户当前的操作路径，存储六边形索引
     QVector<HexCell> hexagons;
     QVector<Operation> operationHistory; // 操作历史记录
-    QSet<int> flippedHexagons;    // 记录已经翻转过的六边形索引
-    bool showPath = false;        // 是否显示路径，默认不显示
-    int currentHintIndex = -1;    // 当前提示的索引位置
-    int highlightedHexIndex = -1; // 当前高亮的六边形索引
-    bool isShowingHint = false;   // 是否正在显示提示
-    bool isAutoRadius = false;    // 是否为自动调整半径模式，默认为手动
+    QSet<int> flippedHexagons;           // 记录已经翻转过的六边形索引
+    bool showPath = false;               // 是否显示路径，默认不显示
+    int currentHintIndex = -1;           // 当前提示的索引位置
+    int highlightedHexIndex = -1;        // 当前高亮的六边形索引
+    bool isShowingHint = false;          // 是否正在显示提示
+    bool isAutoRadius = false;           // 是否为自动调整半径模式，默认为手动
     int radius = 50;
     QPointF center = QPointF(850, 440);
     QColor color1, color2, color3;
-    QTimer* gameTimer;            // 游戏计时器
-    int penaltySeconds = 0;       // 总时间（包含实际时间和罚时）
-    QString timeText;             // 时间显示文本
-    int rings = 3;               // 游戏的环数
-    int stepCount = 0;           // 记录步数
+    QTimer *gameTimer;      // 游戏计时器
+    int penaltySeconds = 0; // 总时间（包含实际时间和罚时）
+    QString timeText;       // 时间显示文本
+    int rings = 3;          // 游戏的环数
+    int stepCount = 0;      // 记录步数
 
     // 添加关卡ID成员变量
     int currentLevelId = 0;
 
     // 网络同步相关
-    SocketManager* socketManager = nullptr;  // SocketManager指针
-    bool isServer = false;  // 是否是服务器, 由setOnlineMode设置
-    OnlineChat* onlineChat = nullptr; // 联机聊天窗口
-    bool isOnlineMode = false; // 是否为联机模式，用于设置聊天窗口是否显示
+    SocketManager *socketManager = nullptr; // SocketManager指针
+    bool isServer = false;                  // 是否是服务器, 由setOnlineMode设置
+    OnlineChat *onlineChat = nullptr;       // 联机聊天窗口
+    bool isOnlineMode = false;              // 是否为联机模式，用于设置聊天窗口是否显示
 
-    DataManager *dataManager;  // 添加 DataManager 指针
+    DataManager *dataManager; // 添加 DataManager 指针
 
     // 粒子系统相关
-    QTimer* particleTimer;         // 粒子更新定时器
-    QTimer* effectTimer;           // 特效状态转换定时器
-    QMap<int, QVector<HexParticle>> hexParticles;  // 每个六边形的粒子集合
+    QTimer *particleTimer;                        // 粒子更新定时器
+    QTimer *effectTimer;                          // 特效状态转换定时器
+    QMap<int, QVector<HexParticle>> hexParticles; // 每个六边形的粒子集合
     QMap<int, HexState> hexStates;                // 每个六边形的状态
     QMap<int, float> dissolveProgress;            // 每个六边形的分解进度
     QMap<int, float> reconstructProgress;         // 每个六边形的重构进度
     QMap<int, QVector<QPointF>> hexOutlinePoints; // 每个六边形的轮廓点
-    int effectDuration = 400;          // 特效持续时间(毫秒)
+    int effectDuration = 400;                     // 特效持续时间(毫秒)
 
     // 六边形粒子特效相关方法
     void initParticleSystem();
     void createDissolveParticles(int hexIndex);
     void updateDissolveEffect(int hexIndex);
     void updateReconstructEffect(int hexIndex);
-    void generateHexOutline(int hexIndex, QVector<QPointF>& outlinePoints);
+    void generateHexOutline(int hexIndex, QVector<QPointF> &outlinePoints);
     QPointF getRandomPointAround(const QPointF &center, float radius);
     void drawParticles(QPainter &painter);
 };

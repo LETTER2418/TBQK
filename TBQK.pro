@@ -11,7 +11,7 @@ CONFIG += c++17
 
 SOURCES += \
     about.cpp \
-    Animation.cpp \
+    animation.cpp \
     custommap.cpp \
     datamanager.cpp \
     game.cpp \
@@ -41,7 +41,7 @@ SOURCES += \
 
 HEADERS += \
     about.h \
-    Animation.h \
+    animation.h \
     custommap.h \
     datamanager.h \
     game.h \

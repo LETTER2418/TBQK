@@ -46,11 +46,10 @@ void RandomMap::generateHexagons(int rings, QColor c1, QColor c2, QColor c3)
     color3 = c3;
 
     const QVector<QPoint> directions =
-    {
-        {1, 0}, {1, -1}, {0, -1}, {-1, 0}, {-1, 1}, {0, 1}
-    };
+        {
+            {1, 0}, {1, -1}, {0, -1}, {-1, 0}, {-1, 1}, {0, 1}};
 
-    auto hexToPixel = [ = ](int q, int r) -> QPointF
+    auto hexToPixel = [=](int q, int r) -> QPointF
     {
         double x = radius * 3.0 / 2 * q;
         double y = radius * std::sqrt(3) * (r + q / 2.0);
@@ -63,10 +62,10 @@ void RandomMap::generateHexagons(int rings, QColor c1, QColor c2, QColor c3)
     int startR = rand() % (2 * rings + 1) - rings;
     // 确保起点在合法范围内
     while (abs(startQ + startR) > rings)
-        {
-            startQ = rand() % (2 * rings + 1) - rings;
-            startR = rand() % (2 * rings + 1) - rings;
-        }
+    {
+        startQ = rand() % (2 * rings + 1) - rings;
+        startR = rand() % (2 * rings + 1) - rings;
+    }
     QPoint current(startQ, startR);
     path.append(current);
     visited.insert(current);
@@ -74,72 +73,77 @@ void RandomMap::generateHexagons(int rings, QColor c1, QColor c2, QColor c3)
     int maxLength = 3 * rings * (rings + 1);
 
     while (path.size() < maxLength)
+    {
+        QVector<QPoint> candidates;
+        for (const QPoint &dir : directions)
         {
-            QVector<QPoint> candidates;
-            for (const QPoint &dir : directions)
-                {
-                    QPoint next = current + dir;
-                    auto [q, r] = next;
-                    if (abs(q + r) <= rings && abs(q) <= rings && abs(r) <= rings && !visited.contains(next))
-                        {
-                            candidates.append(next);
-                        }
-                }
-
-            if (candidates.isEmpty())
-                {
-                    break; // 无路可走
-                }
-
-            // 随机的挑选一个可访问的六边形
-            QPoint next = candidates[rand() % candidates.size()];
-            current = next;
-            path.append(current);
-            visited.insert(current);
+            QPoint next = current + dir;
+            auto [q, r] = next;
+            if (abs(q + r) <= rings && abs(q) <= rings && abs(r) <= rings && !visited.contains(next))
+            {
+                candidates.append(next);
+            }
         }
+
+        if (candidates.isEmpty())
+        {
+            break; // 无路可走
+        }
+
+        // 随机的挑选一个可访问的六边形
+        QPoint next = candidates[rand() % candidates.size()];
+        current = next;
+        path.append(current);
+        visited.insert(current);
+    }
 
     QSet<QPoint> pathSet = visited;
 
     // 为每个环生成翻转状态
-    int f = rand() % 2;
+    //int f = rand() % 2;
     QVector<bool> ringFlipStatus(rings + 1);
     for (int ring = 0; ring <= rings; ++ring)
+    {
+        // ringFlipStatus[ring] = ++f % 2 == 0; // 决定是否翻转
+        ringFlipStatus[ring] = rand() % 2 == 0; // 决定是否翻转
+        if (ring > 0)
         {
-            ringFlipStatus[ring] = ++f % 2 == 0; // 决定是否翻转
+            ringFlipStatus[ring] = rand() % 3 ? 1 - ringFlipStatus[ring - 1] : ringFlipStatus[ring - 1];
         }
+    }
 
     for (int q = -rings; q <= rings; ++q)
+    {
+        for (int r = -rings; r <= rings; ++r)
         {
-            for (int r = -rings; r <= rings; ++r)
-                {
-                    if (std::abs(q + r) > rings)
-                        {
-                            continue;
-                        }
-                    QPoint pos(q, r);
-                    QPointF pixel = hexToPixel(q, r);
+            if (std::abs(q + r) > rings)
+            {
+                continue;
+            }
+            QPoint pos(q, r);
+            QPointF pixel = hexToPixel(q, r);
 
-                    // 计算当前六边形所在的环
-                    int ring = (std::abs(q) + std::abs(r) + std::abs(q + r)) / 2;
+            // 计算当前六边形所在的环
+            int ring = (std::abs(q) + std::abs(r) + std::abs(q + r)) / 2;
 
-                    // 获取环的翻转状态
-                    bool flip = ringFlipStatus[ring];
+            // 获取环的翻转状态
+            bool flip = ringFlipStatus[ring];
 
-                    // 根据翻转状态决定颜色
-                    bool isPath = pathSet.contains(pos);
-                    QColor color;
-                    if (flip)
-                        {
-                            color = isPath ? c2 : c1;
-                        }
-                    else
-                        {
-                            color = isPath ? c1 : c2;
-                        }
+            // 根据翻转状态决定颜色
+            bool isPath = pathSet.contains(pos);
+            QColor color;
+            if (flip)
+            {
+                color = isPath ? c2 : c1;
+            }
+            else
+            {
+                color = isPath ? c1 : c2;
+            }
 
-                    hexagons.push_back({pixel, color});
-                }
+            hexagons.push_back({pixel, color});
         }
+    }
 }
 
 // 绘制所有六边形
@@ -152,10 +156,10 @@ void RandomMap::paintEvent(QPaintEvent *event)
     painter.setPen(Qt::gray);
 
     for (const HexCell &hex : hexagons)
-        {
-            painter.setBrush(hex.color);
-            drawHexagon(painter, hex.center, radius);
-        }
+    {
+        painter.setBrush(hex.color);
+        drawHexagon(painter, hex.center, radius);
+    }
 }
 
 void RandomMap::drawHexagon(QPainter &painter, const QPointF &center, int radius)
@@ -173,13 +177,13 @@ void RandomMap::drawHexagon(QPainter &painter, const QPointF &center, int radius
 
     QPolygonF hexagon;
     for (int i = 0; i < 6; ++i)
-        {
-            double angle = M_PI / 3 * i;
-            // 使用 finalDrawCenter 进行绘制
-            double x = finalDrawCenter.x() + radius * cos(angle);
-            double y = finalDrawCenter.y() + radius * sin(angle);
-            hexagon << QPointF(x, y);
-        }
+    {
+        double angle = M_PI / 3 * i;
+        // 使用 finalDrawCenter 进行绘制
+        double x = finalDrawCenter.x() + radius * cos(angle);
+        double y = finalDrawCenter.y() + radius * sin(angle);
+        hexagon << QPointF(x, y);
+    }
     painter.drawPolygon(hexagon);
 }
 

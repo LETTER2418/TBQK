@@ -13,21 +13,19 @@ RankPage::RankPage(QWidget *parent, DataManager *dataManager_)
 
     // 默认显示第一关的排行榜 (初始排序)
     if (levelSelector->count() > 0)
-        {
-            int levelId = 1;
-            QVector<Ranking> rankings = dataManager->getRanking(levelId); // 获取数据
-            // 初始排序 (按时间和步数)
-            std::sort(rankings.begin(), rankings.end(), [&](const Ranking & a, const Ranking & b)
-            {
+    {
+        int levelId = 1;
+        QVector<Ranking> rankings = dataManager->getRanking(levelId); // 获取数据
+        // 初始排序 (按时间和步数)
+        std::sort(rankings.begin(), rankings.end(), [&](const Ranking &a, const Ranking &b)
+                  {
                 if (a.penaltySeconds != b.penaltySeconds)
                     {
                         return a.penaltySeconds < b.penaltySeconds;
                     }
-                return a.steps < b.steps;
-            });
-            refreshRankingList(rankings); // 传递排序后的数据
-        }
-
+                return a.steps < b.steps; });
+        refreshRankingList(rankings); // 传递排序后的数据
+    }
 }
 
 RankPage::~RankPage()
@@ -56,13 +54,13 @@ void RankPage::setupUI()
     // 创建关卡选择下拉框
     levelSelector = new QComboBox(this);
     for (int i = 1; i <= 12; i++)
-        {
-            levelSelector->addItem(QString("关卡 %1").arg(i), i);
-        }
+    {
+        levelSelector->addItem(QString("关卡 %1").arg(i), i);
+    }
 
-    // 设置levelSelector的字体大小为14
+    // 设置levelSelector的字体大小
     QFont comboFont = levelSelector->font();
-    comboFont.setPointSize(12);
+    comboFont.setPointSize(14);
     levelSelector->setFont(comboFont);
 
     // 创建清除按钮
@@ -78,8 +76,9 @@ void RankPage::setupUI()
     rankingTable->setAlternatingRowColors(true);
     rankingTable->setStyleSheet("QTableWidget { alternate-background-color: #f0f0f0; }");
     rankingTable->horizontalHeader()->setSectionsClickable(true); // 使表头可点击
-    rankingTable->setSortingEnabled(false); // 禁用内置排序，我们手动处理
+    rankingTable->setSortingEnabled(false);                       // 禁用内置排序，我们手动处理
     rankingTable->verticalHeader()->setVisible(false);
+    rankingTable->setStyleSheet("font-size: 14pt;"); // 设置字体大小为 14
 
     // 创建布局
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
@@ -110,14 +109,14 @@ void RankPage::connectSignals()
     // 连接下拉框选择变化的信号
     connect(levelSelector, QOverload<int>::of(&QComboBox::currentIndexChanged),
             [this](int index)
-    {
-        // 获取当前选择的关卡ID
-        int levelId = levelSelector->itemData(index).toInt();
+            {
+                // 获取当前选择的关卡ID
+                int levelId = levelSelector->itemData(index).toInt();
 
-        QVector<Ranking> rankings = dataManager->getRanking(levelId); // 获取数据
-        // 按当前选择的列和顺序排序
-        std::sort(rankings.begin(), rankings.end(), [&](const Ranking & a, const Ranking & b)
-        {
+                QVector<Ranking> rankings = dataManager->getRanking(levelId); // 获取数据
+                // 按当前选择的列和顺序排序
+                std::sort(rankings.begin(), rankings.end(), [&](const Ranking &a, const Ranking &b)
+                          {
             bool less;
             if (currentSortColumn == 2)   // 按用时排
                 {
@@ -145,10 +144,9 @@ void RankPage::connectSignals()
                 {
                     less = a.penaltySeconds < b.penaltySeconds;
                 }
-            return currentSortOrder == Qt::AscendingOrder ? less : !less;
-        });
-        refreshRankingList(rankings); // 更新显示
-    });
+            return currentSortOrder == Qt::AscendingOrder ? less : !less; });
+                refreshRankingList(rankings); // 更新显示
+            });
 
     // 连接表头点击信号
     connect(rankingTable->horizontalHeader(), &QHeaderView::sectionClicked, this, &RankPage::sortTable);
@@ -162,27 +160,27 @@ void RankPage::sortTable(int logicalIndex)
 {
     // 只处理"用时"（索引2）和"步数"（索引3）列的点击
     if (logicalIndex == 2 || logicalIndex == 3)
+    {
+        if (currentSortColumn == logicalIndex)
         {
-            if (currentSortColumn == logicalIndex)
-                {
-                    // 如果点击的是当前排序列，则切换排序顺序
-                    currentSortOrder = (currentSortOrder == Qt::AscendingOrder) ? Qt::DescendingOrder : Qt::AscendingOrder;
-                }
-            else
-                {
-                    // 如果点击的是新列，则设置新列为排序列，并重置为升序
-                    currentSortColumn = logicalIndex;
-                    currentSortOrder = Qt::AscendingOrder;
-                }
+            // 如果点击的是当前排序列，则切换排序顺序
+            currentSortOrder = (currentSortOrder == Qt::AscendingOrder) ? Qt::DescendingOrder : Qt::AscendingOrder;
+        }
+        else
+        {
+            // 如果点击的是新列，则设置新列为排序列，并重置为升序
+            currentSortColumn = logicalIndex;
+            currentSortOrder = Qt::AscendingOrder;
+        }
 
-            // 触发重新排序和刷新
-            int levelId = levelSelector->currentData().toInt();
+        // 触发重新排序和刷新
+        int levelId = levelSelector->currentData().toInt();
 
-            QVector<Ranking> rankings = dataManager->getRanking(levelId);
+        QVector<Ranking> rankings = dataManager->getRanking(levelId);
 
-            // 根据新的列和顺序排序
-            std::sort(rankings.begin(), rankings.end(), [&](const Ranking & a, const Ranking & b)
-            {
+        // 根据新的列和顺序排序
+        std::sort(rankings.begin(), rankings.end(), [&](const Ranking &a, const Ranking &b)
+                  {
                 bool less;
                 if (currentSortColumn == 2)   // 按用时排
                     {
@@ -206,44 +204,42 @@ void RankPage::sortTable(int logicalIndex)
                                 less = a.penaltySeconds < b.penaltySeconds; // 步数相同按时间
                             }
                     }
-                return currentSortOrder == Qt::AscendingOrder ? less : !less;
-            });
+                return currentSortOrder == Qt::AscendingOrder ? less : !less; });
 
-            refreshRankingList(rankings);
-        }
+        refreshRankingList(rankings);
+    }
 }
 
 // 修改：接收排序好的数据进行显示
-void RankPage::refreshRankingList(const QVector<Ranking>& rankings)
+void RankPage::refreshRankingList(const QVector<Ranking> &rankings)
 {
     // 更新表格
     rankingTable->setRowCount(rankings.size());
 
     for (int i = 0; i < rankings.size(); ++i)
-        {
-            const Ranking &entry = rankings[i];
+    {
+        const Ranking &entry = rankings[i];
 
-            // 排名 (根据当前显示顺序)
-            QTableWidgetItem *rankItem = new QTableWidgetItem(QString::number(i + 1));
-            rankItem->setTextAlignment(Qt::AlignCenter);
-            rankingTable->setItem(i, 0, rankItem);
+        // 排名 (根据当前显示顺序)
+        QTableWidgetItem *rankItem = new QTableWidgetItem(QString::number(i + 1));
+        rankItem->setTextAlignment(Qt::AlignCenter);
+        rankingTable->setItem(i, 0, rankItem);
 
-            // 用户名
-            QTableWidgetItem *userItem = new QTableWidgetItem(entry.userId);
-            userItem->setTextAlignment(Qt::AlignCenter);
-            rankingTable->setItem(i, 1, userItem);
+        // 用户名
+        QTableWidgetItem *userItem = new QTableWidgetItem(entry.userId);
+        userItem->setTextAlignment(Qt::AlignCenter);
+        rankingTable->setItem(i, 1, userItem);
 
-            // 用时
-            QTableWidgetItem *timeItem = new QTableWidgetItem(formatTime(entry.penaltySeconds));
-            timeItem->setTextAlignment(Qt::AlignCenter);
-            rankingTable->setItem(i, 2, timeItem);
+        // 用时
+        QTableWidgetItem *timeItem = new QTableWidgetItem(formatTime(entry.penaltySeconds));
+        timeItem->setTextAlignment(Qt::AlignCenter);
+        rankingTable->setItem(i, 2, timeItem);
 
-            // 步数
-            QTableWidgetItem *stepsItem = new QTableWidgetItem(QString::number(entry.steps));
-            stepsItem->setTextAlignment(Qt::AlignCenter);
-            rankingTable->setItem(i, 3, stepsItem);
-        }
-
+        // 步数
+        QTableWidgetItem *stepsItem = new QTableWidgetItem(QString::number(entry.steps));
+        stepsItem->setTextAlignment(Qt::AlignCenter);
+        rankingTable->setItem(i, 3, stepsItem);
+    }
 }
 
 QString RankPage::formatTime(int seconds) const
@@ -264,7 +260,7 @@ void RankPage::clearCurrentLevelData()
 
     // 连接确认和取消按钮
     connect(confirmBox->closeButton, &Lbutton::clicked, this, [this, confirmBox, levelId]()
-    {
+            {
         // 用户确认，清除数据
         dataManager->clearRanking(levelId);
 
@@ -278,13 +274,12 @@ void RankPage::clearCurrentLevelData()
         connect(successBox->closeButton, &Lbutton::clicked, successBox, &MessageBox::accept);
         successBox->exec();
 
-        confirmBox->accept();
-    });
+        confirmBox->accept(); });
 
-    if(confirmBox->cancelButton)
-        {
-            connect(confirmBox->cancelButton, &Lbutton::clicked, confirmBox, &MessageBox::reject);
-        }
+    if (confirmBox->cancelButton)
+    {
+        connect(confirmBox->cancelButton, &Lbutton::clicked, confirmBox, &MessageBox::reject);
+    }
 
     // 执行确认对话框
     confirmBox->exec();
@@ -300,15 +295,15 @@ void RankPage::showEvent(QShowEvent *event)
 
     // 刷新当前关卡的排行榜
     if (levelSelector->count() > 0)
-        {
-            int currentIndex = levelSelector->currentIndex();
-            int levelId = levelSelector->itemData(currentIndex).toInt();
+    {
+        int currentIndex = levelSelector->currentIndex();
+        int levelId = levelSelector->itemData(currentIndex).toInt();
 
-            QVector<Ranking> rankings = dataManager->getRanking(levelId);
+        QVector<Ranking> rankings = dataManager->getRanking(levelId);
 
-            // 按当前排序方式排序
-            std::sort(rankings.begin(), rankings.end(), [&](const Ranking & a, const Ranking & b)
-            {
+        // 按当前排序方式排序
+        std::sort(rankings.begin(), rankings.end(), [&](const Ranking &a, const Ranking &b)
+                  {
                 bool less;
                 if (currentSortColumn == 2)   // 按用时排
                     {
@@ -343,9 +338,8 @@ void RankPage::showEvent(QShowEvent *event)
                                 less = a.steps < b.steps;
                             }
                     }
-                return currentSortOrder == Qt::AscendingOrder ? less : !less;
-            });
+                return currentSortOrder == Qt::AscendingOrder ? less : !less; });
 
-            refreshRankingList(rankings);
-        }
+        refreshRankingList(rankings);
+    }
 }
