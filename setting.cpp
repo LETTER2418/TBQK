@@ -48,20 +48,23 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
 
     // 连接确认对话框的确认按钮
     connect(confirmMessageBox->closeButton, &Lbutton::clicked, this, [this]()
-            {
+    {
         dataManager->clearAllData();
         dataManager->saveToFile();
         confirmMessageBox->accept();
-        successMessageBox->exec(); });
+        successMessageBox->exec();
+    });
 
     connect(successMessageBox->closeButton, &Lbutton::clicked, this, [this]()
-            { successMessageBox->accept(); });
+    {
+        successMessageBox->accept();
+    });
 
     // 连接确认对话框的取消按钮
     connect(confirmMessageBox->cancelButton, &Lbutton::clicked, this, [this]()
-            {
-                confirmMessageBox->reject(); // 关闭对话框但不执行任何清除操作
-            });
+    {
+        confirmMessageBox->reject(); // 关闭对话框但不执行任何清除操作
+    });
 
     // 创建音乐播放器
     musicPlayer = new QMediaPlayer(this);
@@ -161,11 +164,12 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     avatarRotateAnimation = new QPropertyAnimation(this, "avatarRotationAngle");
     avatarRotateAnimation->setDuration(500);                       // 动画持续时间，单位毫秒
     avatarRotateAnimation->setEasingCurve(QEasingCurve::OutCubic); // 动画缓动曲线
-    connect(avatarRotateAnimation, &QPropertyAnimation::valueChanged, this, [this](const QVariant &value)
-            {
+    connect(avatarRotateAnimation, &QPropertyAnimation::valueChanged, this, [this](const QVariant & value)
+    {
         // 更新旋转角度并重新绘制头像
         avatarRotationAngle = value.toDouble();
-        updateAvatarRotation(); });
+        updateAvatarRotation();
+    });
 
     uploadAvatarButton = new Lbutton(this, "更换头像");
     uploadAvatarButton->enableClickEffect(true);
@@ -268,16 +272,18 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
 
     // 连接音乐播放器信号和槽
     connect(playButton, &QToolButton::clicked, this, [this]()
-            {
+    {
         playMusic();
         playButton->hide();
-        pauseButton->show(); });
+        pauseButton->show();
+    });
 
     connect(pauseButton, &QToolButton::clicked, this, [this]()
-            {
+    {
         pauseMusic();
         pauseButton->hide();
-        playButton->show(); });
+        playButton->show();
+    });
 
     connect(nextButton, &QToolButton::clicked, this, &Setting::nextSong);
     connect(prevButton, &QToolButton::clicked, this, &Setting::previousSong);
@@ -300,14 +306,18 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
 
     // 监听播放状态变化
     connect(musicPlayer, &QMediaPlayer::playbackStateChanged, this, [this](QMediaPlayer::PlaybackState state)
+    {
+        if (state == QMediaPlayer::PlayingState)
             {
-        if (state == QMediaPlayer::PlayingState) {
-            playButton->hide();
-            pauseButton->show();
-        } else {
-            pauseButton->hide();
-            playButton->show();
-        } });
+                playButton->hide();
+                pauseButton->show();
+            }
+        else
+            {
+                pauseButton->hide();
+                playButton->show();
+            }
+    });
 }
 
 Setting::~Setting()
@@ -324,30 +334,30 @@ Setting::~Setting()
 void Setting::playMusic()
 {
     if (playlist.isEmpty())
-    {
-        openMusicFile();
-    }
-    else if (musicPlayer->playbackState() != QMediaPlayer::PlayingState)
-    {
-        // 如果当前没有正在播放的歌曲（source为空），则选择第一首歌曲
-        if (musicPlayer->source().isEmpty() && !playlist.isEmpty())
         {
-            currentIndex = 0;
-            musicPlayer->setSource(QUrl::fromLocalFile(playlist.at(currentIndex)));
-            QFileInfo fileInfo(playlist.at(currentIndex));
-            currentSongLabel->setText("正在播放: " + fileInfo.baseName());
-            playlistWidget->setCurrentRow(currentIndex);
+            openMusicFile();
         }
-        musicPlayer->play();
-    }
+    else if (musicPlayer->playbackState() != QMediaPlayer::PlayingState)
+        {
+            // 如果当前没有正在播放的歌曲（source为空），则选择第一首歌曲
+            if (musicPlayer->source().isEmpty() && !playlist.isEmpty())
+                {
+                    currentIndex = 0;
+                    musicPlayer->setSource(QUrl::fromLocalFile(playlist.at(currentIndex)));
+                    QFileInfo fileInfo(playlist.at(currentIndex));
+                    currentSongLabel->setText("正在播放: " + fileInfo.baseName());
+                    playlistWidget->setCurrentRow(currentIndex);
+                }
+            musicPlayer->play();
+        }
 }
 
 void Setting::pauseMusic()
 {
     if (musicPlayer->playbackState() == QMediaPlayer::PlayingState)
-    {
-        musicPlayer->pause();
-    }
+        {
+            musicPlayer->pause();
+        }
 }
 
 void Setting::setVolume(int volume)
@@ -360,24 +370,26 @@ void Setting::setButtonVolume(int volume)
     // 遍历所有的Lbutton并设置它们的音频输出音量
     QList<Lbutton *> buttons = this->findChildren<Lbutton *>();
     for (Lbutton *button : buttons)
-    {
-        button->setButtonVolume(volume / 100.0);
-    }
+        {
+            button->setButtonVolume(volume / 100.0);
+        }
 }
 
 void Setting::nextSong()
 {
     if (playlist.isEmpty())
-        return;
+        {
+            return;
+        }
 
     if (currentPlayMode == RandomPlay)
-    {
-        currentIndex = QRandomGenerator::global()->bounded(playlist.size());
-    }
+        {
+            currentIndex = QRandomGenerator::global()->bounded(playlist.size());
+        }
     else
-    {
-        currentIndex = (currentIndex + 1) % playlist.size();
-    }
+        {
+            currentIndex = (currentIndex + 1) % playlist.size();
+        }
 
     musicPlayer->setSource(QUrl::fromLocalFile(playlist.at(currentIndex)));
     QFileInfo fileInfo(playlist.at(currentIndex));
@@ -391,16 +403,18 @@ void Setting::nextSong()
 void Setting::previousSong()
 {
     if (playlist.isEmpty())
-        return;
+        {
+            return;
+        }
 
     if (currentPlayMode == RandomPlay)
-    {
-        currentIndex = QRandomGenerator::global()->bounded(playlist.size());
-    }
+        {
+            currentIndex = QRandomGenerator::global()->bounded(playlist.size());
+        }
     else
-    {
-        currentIndex = (currentIndex - 1 + playlist.size()) % playlist.size();
-    }
+        {
+            currentIndex = (currentIndex - 1 + playlist.size()) % playlist.size();
+        }
 
     musicPlayer->setSource(QUrl::fromLocalFile(playlist.at(currentIndex)));
     QFileInfo fileInfo(playlist.at(currentIndex));
@@ -415,29 +429,29 @@ void Setting::loadPlaylist()
 {
     QFile file(playlistFilePath);
     if (file.open(QIODevice::ReadOnly))
-    {
-        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-        file.close();
-
-        if (doc.isArray())
         {
-            QJsonArray array = doc.array();
-            playlist.clear();
+            QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+            file.close();
 
-            for (int i = 0; i < array.size(); i++)
-            {
-                QString filePath = array[i].toString();
-                // 检查文件是否存在
-                QFileInfo fileInfo(filePath);
-                if (fileInfo.exists())
+            if (doc.isArray())
                 {
-                    playlist.append(filePath);
-                }
-            }
+                    QJsonArray array = doc.array();
+                    playlist.clear();
 
-            updatePlaylistDisplay();
+                    for (int i = 0; i < array.size(); i++)
+                        {
+                            QString filePath = array[i].toString();
+                            // 检查文件是否存在
+                            QFileInfo fileInfo(filePath);
+                            if (fileInfo.exists())
+                                {
+                                    playlist.append(filePath);
+                                }
+                        }
+
+                    updatePlaylistDisplay();
+                }
         }
-    }
 }
 
 void Setting::updatePlaylistDisplay()
@@ -445,15 +459,15 @@ void Setting::updatePlaylistDisplay()
     playlistWidget->clear();
 
     for (const QString &filePath : playlist)
-    {
-        QFileInfo fileInfo(filePath);
-        playlistWidget->addItem(fileInfo.baseName());
-    }
+        {
+            QFileInfo fileInfo(filePath);
+            playlistWidget->addItem(fileInfo.baseName());
+        }
 
     if (currentIndex >= 0 && currentIndex < playlist.size())
-    {
-        playlistWidget->setCurrentRow(currentIndex);
-    }
+        {
+            playlistWidget->setCurrentRow(currentIndex);
+        }
 }
 
 void Setting::openMusicFile()
@@ -463,285 +477,287 @@ void Setting::openMusicFile()
     QString username = qgetenv("USERNAME");
 
     if (username == "LETTER")
-    {
-        defaultDir = QString("D:/Programming/QtProject/TBQK/music");
-    }
+        {
+            defaultDir = QString("D:/Programming/QtProject/TBQK/music");
+        }
     else
-    {
-        // 如果不是LETTER用户，使用C盘用户的音乐文件夹
-        defaultDir = QDir::homePath();
-    }
+        {
+            // 如果不是LETTER用户，使用C盘用户的音乐文件夹
+            defaultDir = QDir::homePath();
+        }
 
     QStringList files = QFileDialog::getOpenFileNames(
-        this,
-        "选择音乐文件",
-        defaultDir,
-        "音频文件 (*.mp3 *.wav *.flac *.ogg *.m4a)");
+                            this,
+                            "选择音乐文件",
+                            defaultDir,
+                            "音频文件 (*.mp3 *.wav *.flac *.ogg *.m4a)");
 
     if (!files.isEmpty())
-    {
-        for (const QString &file : files)
         {
-            // 添加到歌单并保存
-            addSongToPlaylist(file);
+            for (const QString &file : files)
+                {
+                    // 添加到歌单并保存
+                    addSongToPlaylist(file);
+                }
+
+            // 如果之前没有播放音乐，则开始播放第一首添加的歌曲
+            if (musicPlayer->playbackState() != QMediaPlayer::PlayingState)
+                {
+                    currentIndex = playlist.indexOf(files.first());
+                    if (currentIndex == -1)
+                        {
+                            currentIndex = 0;
+                        }
+
+                    musicPlayer->setSource(QUrl::fromLocalFile(playlist.at(currentIndex)));
+                    QFileInfo fileInfo(playlist.at(currentIndex));
+                    currentSongLabel->setText("正在播放: " + fileInfo.baseName());
+                    musicPlayer->play();
+
+                    // 更新歌单显示
+                    playlistWidget->setCurrentRow(currentIndex);
+                }
         }
-
-        // 如果之前没有播放音乐，则开始播放第一首添加的歌曲
-        if (musicPlayer->playbackState() != QMediaPlayer::PlayingState)
-        {
-            currentIndex = playlist.indexOf(files.first());
-            if (currentIndex == -1)
-                currentIndex = 0;
-
-            musicPlayer->setSource(QUrl::fromLocalFile(playlist.at(currentIndex)));
-            QFileInfo fileInfo(playlist.at(currentIndex));
-            currentSongLabel->setText("正在播放: " + fileInfo.baseName());
-            musicPlayer->play();
-
-            // 更新歌单显示
-            playlistWidget->setCurrentRow(currentIndex);
-        }
-    }
 }
 
 void Setting::onPlayModeChanged(int index)
 {
     switch (index)
-    {
-    case 0:
-        currentPlayMode = SingleLoop;
-        break;
-    case 1:
-        currentPlayMode = SequentialPlay;
-        break;
-    case 2:
-        currentPlayMode = RandomPlay;
-        break;
-    }
+        {
+            case 0:
+                currentPlayMode = SingleLoop;
+                break;
+            case 1:
+                currentPlayMode = SequentialPlay;
+                break;
+            case 2:
+                currentPlayMode = RandomPlay;
+                break;
+        }
 }
 
 void Setting::onMediaStatusChanged(QMediaPlayer::MediaStatus status)
 {
     if (status == QMediaPlayer::EndOfMedia)
-    {
-        switch (currentPlayMode)
         {
-        case SingleLoop:
-            // 重新播放当前歌曲
-            musicPlayer->setPosition(0);
-            musicPlayer->play();
-            break;
-        case SequentialPlay:
-            // 播放下一首
-            nextSong();
-            break;
-        case RandomPlay:
-            // 随机播放
-            currentIndex = QRandomGenerator::global()->bounded(playlist.size());
-            if (!playlist.isEmpty())
-            {
-                musicPlayer->setSource(QUrl::fromLocalFile(playlist.at(currentIndex)));
-                QFileInfo fileInfo(playlist.at(currentIndex));
-                currentSongLabel->setText("正在播放: " + fileInfo.baseName());
-                musicPlayer->play();
+            switch (currentPlayMode)
+                {
+                    case SingleLoop:
+                        // 重新播放当前歌曲
+                        musicPlayer->setPosition(0);
+                        musicPlayer->play();
+                        break;
+                    case SequentialPlay:
+                        // 播放下一首
+                        nextSong();
+                        break;
+                    case RandomPlay:
+                        // 随机播放
+                        currentIndex = QRandomGenerator::global()->bounded(playlist.size());
+                        if (!playlist.isEmpty())
+                            {
+                                musicPlayer->setSource(QUrl::fromLocalFile(playlist.at(currentIndex)));
+                                QFileInfo fileInfo(playlist.at(currentIndex));
+                                currentSongLabel->setText("正在播放: " + fileInfo.baseName());
+                                musicPlayer->play();
 
-                // 更新歌单中的选中项
-                playlistWidget->setCurrentRow(currentIndex);
-            }
-            break;
+                                // 更新歌单中的选中项
+                                playlistWidget->setCurrentRow(currentIndex);
+                            }
+                        break;
+                }
         }
-    }
 }
 
 void Setting::onPlaylistItemDoubleClicked(QListWidgetItem *item)
 {
     int row = playlistWidget->row(item);
     if (row >= 0 && row < playlist.size())
-    {
-        currentIndex = row;
-        musicPlayer->setSource(QUrl::fromLocalFile(playlist.at(currentIndex)));
-        QFileInfo fileInfo(playlist.at(currentIndex));
-        currentSongLabel->setText("正在播放: " + fileInfo.baseName());
-        musicPlayer->play();
-    }
+        {
+            currentIndex = row;
+            musicPlayer->setSource(QUrl::fromLocalFile(playlist.at(currentIndex)));
+            QFileInfo fileInfo(playlist.at(currentIndex));
+            currentSongLabel->setText("正在播放: " + fileInfo.baseName());
+            musicPlayer->play();
+        }
 }
 
 void Setting::savePlaylistToFile()
 {
     QJsonArray array;
     for (const QString &filePath : playlist)
-    {
-        array.append(filePath);
-    }
+        {
+            array.append(filePath);
+        }
 
     QJsonDocument doc(array);
     QFile file(playlistFilePath);
 
     if (file.open(QIODevice::WriteOnly))
-    {
-        file.write(doc.toJson());
-        file.close();
-    }
+        {
+            file.write(doc.toJson());
+            file.close();
+        }
 }
 
 void Setting::addSongToPlaylist(const QString &filePath)
 {
     // 检查文件是否已经在歌单中
     if (!playlist.contains(filePath))
-    {
-        playlist.append(filePath);
-        QFileInfo fileInfo(filePath);
-        playlistWidget->addItem(fileInfo.baseName());
+        {
+            playlist.append(filePath);
+            QFileInfo fileInfo(filePath);
+            playlistWidget->addItem(fileInfo.baseName());
 
-        // 保存更新后的歌单
-        savePlaylistToFile();
-    }
+            // 保存更新后的歌单
+            savePlaylistToFile();
+        }
 }
 
 void Setting::removeSongFromPlaylist()
 {
     int row = playlistWidget->currentRow();
     if (row >= 0 && row < playlist.size())
-    {
-        // 如果正在播放当前要删除的歌曲，先切换到下一首
-        if (row == currentIndex && musicPlayer->playbackState() == QMediaPlayer::PlayingState)
         {
-            nextSong();
+            // 如果正在播放当前要删除的歌曲，先切换到下一首
+            if (row == currentIndex && musicPlayer->playbackState() == QMediaPlayer::PlayingState)
+                {
+                    nextSong();
+                }
+
+            // 如果当前播放歌曲在要删除歌曲之后，需要调整currentIndex
+            if (currentIndex > row)
+                {
+                    currentIndex--;
+                }
+
+            // 从列表中移除
+            playlist.removeAt(row);
+            delete playlistWidget->takeItem(row);
+
+            // 保存更新后的歌单
+            savePlaylistToFile();
+
+            // 如果删除后歌单为空，更新UI
+            if (playlist.isEmpty())
+                {
+                    musicPlayer->stop();
+                    currentSongLabel->setText("无正在播放的音乐");
+                    currentIndex = 0;
+                }
         }
-
-        // 如果当前播放歌曲在要删除歌曲之后，需要调整currentIndex
-        if (currentIndex > row)
-        {
-            currentIndex--;
-        }
-
-        // 从列表中移除
-        playlist.removeAt(row);
-        delete playlistWidget->takeItem(row);
-
-        // 保存更新后的歌单
-        savePlaylistToFile();
-
-        // 如果删除后歌单为空，更新UI
-        if (playlist.isEmpty())
-        {
-            musicPlayer->stop();
-            currentSongLabel->setText("无正在播放的音乐");
-            currentIndex = 0;
-        }
-    }
 }
 
 void Setting::uploadAvatar()
 {
     QString filePath = QFileDialog::getOpenFileName(
-        this,
-        "选择头像图片",
-        QString("D:\\Image\\Pictures\\好看"),
-        "图片文件 (*.png *.jpg *.jpeg *.bmp *.gif)");
+                           this,
+                           "选择头像图片",
+                           QString("D:\\Image\\Pictures\\好看"),
+                           "图片文件 (*.png *.jpg *.jpeg *.bmp *.gif)");
 
     if (!filePath.isEmpty())
-    {
-        // 加载并显示头像
-        QPixmap pixmap(filePath);
-        if (!pixmap.isNull())
         {
-            // 保存临时头像路径（仍然保存原始路径用于显示）
-            avatarPath = filePath;
-
-            // 确保头像尺寸与容器尺寸一致
-            int size = qMin(avatarLabel->width(), avatarLabel->height());
-
-            // 先将图像缩放为正方形，保持宽高比
-            QPixmap squarePixmap = pixmap.scaled(size, size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-
-            // 创建圆形遮罩
-            QPixmap roundedPixmap(size, size);
-            roundedPixmap.fill(Qt::transparent);
-
-            QPainter painter(&roundedPixmap);
-            painter.setRenderHint(QPainter::Antialiasing);
-
-            // 创建圆形裁剪路径
-            QPainterPath path;
-            path.addEllipse(0, 0, size, size);
-            painter.setClipPath(path);
-
-            // 计算居中绘制的位置
-            int x = (size - squarePixmap.width()) / 2;
-            int y = (size - squarePixmap.height()) / 2;
-
-            // 绘制头像
-            painter.drawPixmap(x, y, squarePixmap);
-            painter.end();
-
-            // 保存原始圆形头像以便旋转
-            originalAvatarPixmap = roundedPixmap;
-
-            // 显示头像
-            avatarLabel->setPixmap(roundedPixmap);
-
-            // 将未处理的原始头像存储到DataManager中以便保存文件
-            if (dataManager)
-            {
-                // 临时保存原始头像
-                dataManager->setAvatarPath(filePath);
-
-                // 仅在用户已登录时保存头像文件
-                if (!dataManager->getCurrentUserId().isEmpty())
+            // 加载并显示头像
+            QPixmap pixmap(filePath);
+            if (!pixmap.isNull())
                 {
-                    // 保存头像文件
-                    dataManager->saveAvatarFile(dataManager->getCurrentUserId(), pixmap);
+                    // 保存临时头像路径（仍然保存原始路径用于显示）
+                    avatarPath = filePath;
+
+                    // 确保头像尺寸与容器尺寸一致
+                    int size = qMin(avatarLabel->width(), avatarLabel->height());
+
+                    // 先将图像缩放为正方形，保持宽高比
+                    QPixmap squarePixmap = pixmap.scaled(size, size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+                    // 创建圆形遮罩
+                    QPixmap roundedPixmap(size, size);
+                    roundedPixmap.fill(Qt::transparent);
+
+                    QPainter painter(&roundedPixmap);
+                    painter.setRenderHint(QPainter::Antialiasing);
+
+                    // 创建圆形裁剪路径
+                    QPainterPath path;
+                    path.addEllipse(0, 0, size, size);
+                    painter.setClipPath(path);
+
+                    // 计算居中绘制的位置
+                    int x = (size - squarePixmap.width()) / 2;
+                    int y = (size - squarePixmap.height()) / 2;
+
+                    // 绘制头像
+                    painter.drawPixmap(x, y, squarePixmap);
+                    painter.end();
+
+                    // 保存原始圆形头像以便旋转
+                    originalAvatarPixmap = roundedPixmap;
+
+                    // 显示头像
+                    avatarLabel->setPixmap(roundedPixmap);
+
+                    // 将未处理的原始头像存储到DataManager中以便保存文件
+                    if (dataManager)
+                        {
+                            // 临时保存原始头像
+                            dataManager->setAvatarPath(filePath);
+
+                            // 仅在用户已登录时保存头像文件
+                            if (!dataManager->getCurrentUserId().isEmpty())
+                                {
+                                    // 保存头像文件
+                                    dataManager->saveAvatarFile(dataManager->getCurrentUserId(), pixmap);
+                                }
+                        }
                 }
-            }
         }
-    }
 }
 
 void Setting::loadAvatar()
 {
     // 从DataManager中读取头像
     if (dataManager && !dataManager->getCurrentUserId().isEmpty())
-    {
-        // 直接加载头像文件
-        QPixmap pixmap = dataManager->loadAvatarFile(dataManager->getCurrentUserId());
-
-        if (!pixmap.isNull())
         {
-            // 确保头像尺寸与容器尺寸一致
-            int size = qMin(avatarLabel->width(), avatarLabel->height());
+            // 直接加载头像文件
+            QPixmap pixmap = dataManager->loadAvatarFile(dataManager->getCurrentUserId());
 
-            // 先将图像缩放为正方形，保持宽高比
-            QPixmap squarePixmap = pixmap.scaled(size, size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            if (!pixmap.isNull())
+                {
+                    // 确保头像尺寸与容器尺寸一致
+                    int size = qMin(avatarLabel->width(), avatarLabel->height());
 
-            // 创建圆形遮罩
-            QPixmap roundedPixmap(size, size);
-            roundedPixmap.fill(Qt::transparent);
+                    // 先将图像缩放为正方形，保持宽高比
+                    QPixmap squarePixmap = pixmap.scaled(size, size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
-            QPainter painter(&roundedPixmap);
-            painter.setRenderHint(QPainter::Antialiasing);
+                    // 创建圆形遮罩
+                    QPixmap roundedPixmap(size, size);
+                    roundedPixmap.fill(Qt::transparent);
 
-            // 创建圆形裁剪路径
-            QPainterPath path;
-            path.addEllipse(0, 0, size, size);
-            painter.setClipPath(path);
+                    QPainter painter(&roundedPixmap);
+                    painter.setRenderHint(QPainter::Antialiasing);
 
-            // 计算居中绘制的位置
-            int x = (size - squarePixmap.width()) / 2;
-            int y = (size - squarePixmap.height()) / 2;
+                    // 创建圆形裁剪路径
+                    QPainterPath path;
+                    path.addEllipse(0, 0, size, size);
+                    painter.setClipPath(path);
 
-            // 绘制头像
-            painter.drawPixmap(x, y, squarePixmap);
-            painter.end();
+                    // 计算居中绘制的位置
+                    int x = (size - squarePixmap.width()) / 2;
+                    int y = (size - squarePixmap.height()) / 2;
 
-            // 保存原始圆形头像以便旋转
-            originalAvatarPixmap = roundedPixmap;
+                    // 绘制头像
+                    painter.drawPixmap(x, y, squarePixmap);
+                    painter.end();
 
-            // 显示头像
-            avatarLabel->setPixmap(roundedPixmap);
-            return;
+                    // 保存原始圆形头像以便旋转
+                    originalAvatarPixmap = roundedPixmap;
+
+                    // 显示头像
+                    avatarLabel->setPixmap(roundedPixmap);
+                    return;
+                }
         }
-    }
 
     // 默认显示空头像或默认头像
     avatarLabel->setText("无头像");
@@ -754,46 +770,46 @@ bool Setting::eventFilter(QObject *watched, QEvent *event)
 {
     // 检查是否是头像标签
     if (watched == avatarLabel)
-    {
-        if (event->type() == QEvent::Enter)
         {
-            // 鼠标进入时旋转头像
-            avatarRotateAnimation->stop();
-            avatarRotateAnimation->setStartValue(avatarRotationAngle);
-            avatarRotateAnimation->setEndValue(180.0);
-            avatarRotateAnimation->start();
-            return true;
+            if (event->type() == QEvent::Enter)
+                {
+                    // 鼠标进入时旋转头像
+                    avatarRotateAnimation->stop();
+                    avatarRotateAnimation->setStartValue(avatarRotationAngle);
+                    avatarRotateAnimation->setEndValue(180.0);
+                    avatarRotateAnimation->start();
+                    return true;
+                }
+            else if (event->type() == QEvent::Leave)
+                {
+                    // 鼠标离开时恢复头像
+                    avatarRotateAnimation->stop();
+                    avatarRotateAnimation->setStartValue(avatarRotationAngle);
+                    avatarRotateAnimation->setEndValue(0.0);
+                    avatarRotateAnimation->start();
+                    return true;
+                }
         }
-        else if (event->type() == QEvent::Leave)
-        {
-            // 鼠标离开时恢复头像
-            avatarRotateAnimation->stop();
-            avatarRotateAnimation->setStartValue(avatarRotationAngle);
-            avatarRotateAnimation->setEndValue(0.0);
-            avatarRotateAnimation->start();
-            return true;
-        }
-    }
 
     // 检查是否是我们关注的按钮
     QToolButton *button = qobject_cast<QToolButton *>(watched);
     if (button && (button == playButton || button == pauseButton ||
                    button == prevButton || button == nextButton))
-    {
+        {
 
-        if (event->type() == QEvent::Enter)
-        {
-            // 鼠标进入时放大图标
-            button->setIconSize(QSize(48, 48));
-            return true;
+            if (event->type() == QEvent::Enter)
+                {
+                    // 鼠标进入时放大图标
+                    button->setIconSize(QSize(48, 48));
+                    return true;
+                }
+            else if (event->type() == QEvent::Leave)
+                {
+                    // 鼠标离开时恢复图标大小
+                    button->setIconSize(QSize(40, 40));
+                    return true;
+                }
         }
-        else if (event->type() == QEvent::Leave)
-        {
-            // 鼠标离开时恢复图标大小
-            button->setIconSize(QSize(40, 40));
-            return true;
-        }
-    }
 
     return QWidget::eventFilter(watched, event);
 }
@@ -810,7 +826,9 @@ void Setting::updateAvatarRotation()
 {
     // 如果没有头像或原始头像未保存，则不执行旋转
     if (avatarLabel->pixmap(Qt::ReturnByValue).isNull() || originalAvatarPixmap.isNull())
-        return;
+        {
+            return;
+        }
 
     // 获取头像尺寸
     int size = qMin(avatarLabel->width(), avatarLabel->height());

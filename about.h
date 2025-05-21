@@ -5,7 +5,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QScrollArea>
-#include "lbutton.h" 
+#include "lbutton.h"
 
 class About : public QWidget
 {

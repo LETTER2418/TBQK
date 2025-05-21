@@ -6,7 +6,8 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 
-class HexCell {
+class HexCell
+{
 public:
     QPointF center;
     QColor color;

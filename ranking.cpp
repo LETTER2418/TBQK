@@ -14,9 +14,12 @@ void Ranking::fromJson(const QJsonObject& obj)
 {
     userId = obj["userId"].toString();
     penaltySeconds = obj["penaltySeconds"].toInt();
-    if (obj.contains("steps")) {
-        steps = obj["steps"].toInt();
-    } else {
-        steps = -1;
-    }
-} 
+    if (obj.contains("steps"))
+        {
+            steps = obj["steps"].toInt();
+        }
+    else
+        {
+            steps = -1;
+        }
+}

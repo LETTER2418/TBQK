@@ -7,13 +7,13 @@
 
 OnlineMode::OnlineMode(QWidget *parent, SocketManager* manager)
     : QWidget(parent),
-    socketManager(manager)
+      socketManager(manager)
 {
     // 创建使用Lbutton的按钮
     createRoomButton = new Lbutton(this, "创建房间");
     joinRoomButton = new Lbutton(this, "加入房间");
     cancelButton = new Lbutton(this, "取消");
-    cancelButton->move(0,0);
+    cancelButton->move(0, 0);
 
     // 创建水平布局
     QHBoxLayout *mainLayout = new QHBoxLayout(this);

@@ -22,7 +22,8 @@ const int BUTTON_HEIGHT = 50;
 const int FONT_SIZE = 14;
 
 // 粒子结构体
-struct Particle {
+struct Particle
+{
     QPointF pos;         // 当前位置
     QPointF velocity;    // 移动速度
     QPointF startPos;    // 起始位置(重构用)
@@ -36,7 +37,8 @@ struct Particle {
 };
 
 // 按钮状态枚举
-enum class ButtonState {
+enum class ButtonState
+{
     Normal,       // 正常状态
     Dissolving,   // 分解中
     Dissolved,    // 已分解
@@ -49,21 +51,21 @@ class Lbutton : public QPushButton
 
 public:
     // 构造函数，接收按钮文字
-    explicit Lbutton(QWidget *parent = nullptr, const QString &text="Lbutton");
-    explicit Lbutton(QWidget *parent, const QString &text, QString color, int fontSize=12);
-    
+    explicit Lbutton(QWidget *parent = nullptr, const QString &text = "Lbutton");
+    explicit Lbutton(QWidget *parent, const QString &text, QString color, int fontSize = 12);
+
     // 设置按钮音量
     void setButtonVolume(float volume);
-    
+
     // 设为public成员，以便外部访问
     QAudioOutput *audioOutput; // 音频输出
 
     // 粒子特效开关
     void enableParticleEffect(bool enable);
-    
+
     // 控制点击分解重构特效的开关
     void enableClickEffect(bool enable);
-    
+
     // 触发按钮分解效果
     void triggerDissolveEffect();
 
@@ -109,13 +111,13 @@ private:
     ButtonState buttonState;               // 按钮当前状态
     float dissolveProgress;                // 分解进度
     float reconstructProgress;             // 重构进度
-    int effectDuration=400;                    // 分解/重构效果持续时间(毫秒)
-    
+    int effectDuration = 400;                  // 分解/重构效果持续时间(毫秒)
+
     // 粒子系统方法
     void initParticleSystem();
     void createParticles(const QPointF &pos, int count, float initialSpeed = 1.0f);
     void drawParticles(QPainter &painter);
-    
+
     // 分解重构相关方法
     void generateButtonOutline();
     void createDissolveParticles();

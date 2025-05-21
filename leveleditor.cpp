@@ -1,7 +1,7 @@
 #include "leveleditor.h"
 #include <QBoxLayout>
 
-LevelEditor::LevelEditor(QWidget *parent):QWidget(parent)
+LevelEditor::LevelEditor(QWidget *parent): QWidget(parent)
 {
     backButton = new Lbutton(this, "返回");
     backButton -> move(0, 0);

@@ -1,7 +1,7 @@
 #include "savemapmsgbox.h"
-#include <QLabel> 
-#include <QPixmap> 
-#include <QFont> 
+#include <QLabel>
+#include <QPixmap>
+#include <QFont>
 #include <QGuiApplication>
 #include <QScreen>
 #include <QShowEvent>
@@ -11,7 +11,7 @@ SaveMapMsgBox::SaveMapMsgBox(QWidget *parent)
 {
     this->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     this->resize(300, 400);
-    this->setStyleSheet("QLabel{min-width: 10px; min-height: 10px;} QComboBox { min-height: 30px; font-size: 12pt; } "); 
+    this->setStyleSheet("QLabel{min-width: 10px; min-height: 10px;} QComboBox { min-height: 30px; font-size: 12pt; } ");
 
     // 设置背景标签
     bgLabel = new QLabel(this);
@@ -33,9 +33,10 @@ SaveMapMsgBox::SaveMapMsgBox(QWidget *parent)
     comboBox->setGeometry(50, 100, 200, 40); // Example position and size
 
     // 添加12个关卡到下拉框
-    for (int i = 1; i <= 12; i++) {
-        comboBox->addItem(QString("关卡 %1").arg(i), i);
-    }
+    for (int i = 1; i <= 12; i++)
+        {
+            comboBox->addItem(QString("关卡 %1").arg(i), i);
+        }
 
     // Create Close Button as Lbutton
     int buttonFontSize = 14; // Example font size for Lbutton
@@ -47,7 +48,7 @@ SaveMapMsgBox::SaveMapMsgBox(QWidget *parent)
     int buttonHeight = BUTTON_HEIGHT; // Use Lbutton's height constant
     int verticalSpacing = 50;
     int totalHeight = promptHeight + comboHeight + buttonHeight + 2 * verticalSpacing;
-    int startY = (this->height() - totalHeight) / 2; 
+    int startY = (this->height() - totalHeight) / 2;
 
     int promptWidth = 200;
     int comboWidth = 200;
@@ -66,7 +67,8 @@ SaveMapMsgBox::SaveMapMsgBox(QWidget *parent)
     comboBox->setGeometry(comboX, comboY, comboWidth, comboHeight);
     closeButton->setGeometry(buttonX, buttonY, buttonWidth, buttonHeight);
 
-    connect(closeButton, &QPushButton::clicked, this, [this](){
+    connect(closeButton, &QPushButton::clicked, this, [this]()
+    {
         // 获取当前选择的关卡ID
         int levelId = comboBox->currentData().toInt();
         emit sendMsg(levelId);
@@ -81,16 +83,19 @@ SaveMapMsgBox::~SaveMapMsgBox()
 
 void SaveMapMsgBox::showEvent(QShowEvent *event)
 {
-    if (parentWidget()) {
-        QRect parentRect = parentWidget()->geometry();
-        this->move(parentRect.x() + (parentRect.width() - this->width()) / 2,
-                   parentRect.y() + (parentRect.height() - this->height()) / 2);
-    } else {
-        QScreen *screen = QGuiApplication::primaryScreen();
-        QRect screenGeometry = screen->geometry();
-        this->move((screenGeometry.width() - this->width()) / 2,
-                   (screenGeometry.height() - this->height()) / 2);
-    }
+    if (parentWidget())
+        {
+            QRect parentRect = parentWidget()->geometry();
+            this->move(parentRect.x() + (parentRect.width() - this->width()) / 2,
+                       parentRect.y() + (parentRect.height() - this->height()) / 2);
+        }
+    else
+        {
+            QScreen *screen = QGuiApplication::primaryScreen();
+            QRect screenGeometry = screen->geometry();
+            this->move((screenGeometry.width() - this->width()) / 2,
+                       (screenGeometry.height() - this->height()) / 2);
+        }
     QWidget::showEvent(event);
 }
 

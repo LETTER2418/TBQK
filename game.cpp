@@ -180,7 +180,7 @@ void Game::resetGameState(bool fromResetButton)
     highlightedHexIndex = -1;
     isShowingHint = false;
     stepCount = 0;
-     
+
 
     if (!fromResetButton)
         {
@@ -1362,46 +1362,51 @@ void Game::drawParticles(QPainter &painter)
 void Game::triggerAllHexEffects()
 {
     // 如果没有六边形，直接返回
-    if (hexagons.isEmpty()) {
-        return;
-    }
-    
+    if (hexagons.isEmpty())
+        {
+            return;
+        }
+
     // 清除所有现有粒子和状态
     hexParticles.clear();
     hexStates.clear();
     dissolveProgress.clear();
     reconstructProgress.clear();
     hexOutlinePoints.clear();
-    
+
     // 波浪式触发效果的延迟基准值 (毫秒)
     const int baseDelay = 50;
-    
+
     // 获取六边形的中心点，用于计算距离
     QPointF centerPoint = center + getOffset();
-    
+
     // 计算每个六边形到中心的距离，用于确定触发顺序
     QVector<QPair<int, float>> hexDistances;
-    for (int i = 0; i < hexagons.size(); ++i) {
-        QPointF hexCenter = hexagons[i].center + getOffset();
-        float distance = QLineF(centerPoint, hexCenter).length();
-        hexDistances.append(qMakePair(i, distance));
-    }
-    
+    for (int i = 0; i < hexagons.size(); ++i)
+        {
+            QPointF hexCenter = hexagons[i].center + getOffset();
+            float distance = QLineF(centerPoint, hexCenter).length();
+            hexDistances.append(qMakePair(i, distance));
+        }
+
     // 按距离排序 (由近到远)
-    std::sort(hexDistances.begin(), hexDistances.end(), 
-        [](const QPair<int, float>& a, const QPair<int, float>& b) {
-            return a.second < b.second;
-        });
-    
+    std::sort(hexDistances.begin(), hexDistances.end(),
+              [](const QPair<int, float>& a, const QPair<int, float>& b)
+    {
+        return a.second < b.second;
+    });
+
     // 波浪式触发特效
-    for (int i = 0; i < hexDistances.size(); ++i) {
-        int hexIndex = hexDistances[i].first;
-        int delay = baseDelay * i;  // 按距离递增延迟
-        
-        QTimer::singleShot(delay, this, [this, hexIndex]() {
-            triggerHexDissolveEffect(hexIndex);
-        });
-    }
+    for (int i = 0; i < hexDistances.size(); ++i)
+        {
+            int hexIndex = hexDistances[i].first;
+            int delay = baseDelay * i;  // 按距离递增延迟
+
+            QTimer::singleShot(delay, this, [this, hexIndex]()
+            {
+                triggerHexDissolveEffect(hexIndex);
+            });
+        }
 }
 
 

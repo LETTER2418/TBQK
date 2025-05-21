@@ -21,14 +21,16 @@
 #include <QPushButton>
 
 // 定义操作结构体，用于记录每次操作
-struct Operation {
+struct Operation
+{
     int hexagonIndex;  // 操作的六边形索引
     QColor oldColor;   // 操作前的颜色
     QPoint hexCoord;   // 六边形的轴向坐标
 };
 
 // 六边形状态枚举
-enum class HexState {
+enum class HexState
+{
     Normal,         // 正常状态
     Dissolving,     // 分解中
     Dissolved,      // 已分解
@@ -36,7 +38,8 @@ enum class HexState {
 };
 
 // 粒子结构体
-struct HexParticle {
+struct HexParticle
+{
     QPointF pos;         // 当前位置
     QPointF velocity;    // 移动速度
     QPointF startPos;    // 起始位置(重构用)
@@ -63,9 +66,15 @@ public:
     bool getOnlineMode();
 
     // 添加访问messageBox和onlineChat的方法
-    MessageBox* getMessageBox() const { return messageBox; }
-    OnlineChat* getOnlineChat() const { return onlineChat; }
-    
+    MessageBox* getMessageBox() const
+    {
+        return messageBox;
+    }
+    OnlineChat* getOnlineChat() const
+    {
+        return onlineChat;
+    }
+
     // 触发所有六边形产生粒子效果
     void triggerAllHexEffects();
 
@@ -97,19 +106,19 @@ private:
     void setupConnections();
     void drawHexagon(QPainter &painter, const QPointF &center, int radius);
     void drawGameTimer(QPainter &painter);
-    
+
     // === 游戏状态管理 ===
     void resetGameState(bool fromResetButton = false);
     bool checkGameComplete();
     void handleGameCompletion();
-    
+
     // === 六边形操作 ===
     bool canFlipHexagon(int index);
     void flipHexagon(int index);
     int findClosestHexagon(const QPointF& clickPos);
     void withdrawLastOperation();
     void resetHexagons(const QVector<HexCell>& currentHexagons, int radius1, int radius2);
-    
+
     // === 路径管理 ===
     bool isConnectedToPath(int index);
     bool areNeighbors(const QPoint& coord1, const QPoint& coord2);
@@ -117,11 +126,11 @@ private:
     QPoint hexagonIndexToCoord(int index);
     int coordToHexagonIndex(const QPoint& coord);
     int getHexagonRing(const QPoint& coord);
-    
+
     // === 提示系统 ===
     void showNextHint();
     void highlightHexagon(const QPoint& coord);
-    
+
     // === 计时系统 ===
     void updateTimeDisplay();
     void startTimer();
@@ -132,7 +141,7 @@ private:
 
     // === 偏移量 ===
     QPointF getOffset();
-    
+
     Lbutton *hintButton;
     Lbutton *withdrawButton;
     Lbutton *pathToggleButton;
@@ -159,7 +168,7 @@ private:
     QString timeText;             // 时间显示文本
     int rings = 3;               // 游戏的环数
     int stepCount = 0;           // 记录步数
-    
+
     // 添加关卡ID成员变量
     int currentLevelId = 0;
 
@@ -179,7 +188,7 @@ private:
     QMap<int, float> dissolveProgress;            // 每个六边形的分解进度
     QMap<int, float> reconstructProgress;         // 每个六边形的重构进度
     QMap<int, QVector<QPointF>> hexOutlinePoints; // 每个六边形的轮廓点
-    int effectDuration=400;            // 特效持续时间(毫秒)
+    int effectDuration = 400;          // 特效持续时间(毫秒)
 
     // 六边形粒子特效相关方法
     void initParticleSystem();

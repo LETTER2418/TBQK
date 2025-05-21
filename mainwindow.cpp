@@ -79,80 +79,108 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
 
     // 连接信号与槽
     connect(startPage->backButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(mainPage); });
+    {
+        pageStack->setCurrentWidget(mainPage);
+    });
 
     connect(aboutPage->backButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(mainPage); });
+    {
+        pageStack->setCurrentWidget(mainPage);
+    });
 
     connect(settingPage->backButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(mainPage); });
+    {
+        pageStack->setCurrentWidget(mainPage);
+    });
 
     connect(startButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(startPage); });
+    {
+        pageStack->setCurrentWidget(startPage);
+    });
 
     connect(aboutButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(aboutPage); });
+    {
+        pageStack->setCurrentWidget(aboutPage);
+    });
 
     connect(settingButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(settingPage); });
+    {
+        pageStack->setCurrentWidget(settingPage);
+    });
 
     connect(startPage->YESmessageBox->closeButton, &QPushButton::clicked, this, [this]()
-            {
+    {
         startPage->YESmessageBox->accept();
-        pageStack->setCurrentWidget(menuPage); });
+        pageStack->setCurrentWidget(menuPage);
+    });
 
     connect(menuPage->logoutButton, &QPushButton::clicked, this, [this]()
-            {
+    {
         startPage->currentUserId.clear();  // 清除当前用户ID
-        pageStack->setCurrentWidget(startPage); });
+        pageStack->setCurrentWidget(startPage);
+    });
 
     connect(menuPage->levelEditorButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(levelEditorPage); });
+    {
+        pageStack->setCurrentWidget(levelEditorPage);
+    });
 
     connect(menuPage->levelModeButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(levelModePage); });
+    {
+        pageStack->setCurrentWidget(levelModePage);
+    });
 
     connect(menuPage->rankButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(rankPage); });
+    {
+        pageStack->setCurrentWidget(rankPage);
+    });
 
     connect(menuPage->onlineButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(onlineModePage); });
+    {
+        pageStack->setCurrentWidget(onlineModePage);
+    });
 
     connect(onlineModePage->cancelButton, &QPushButton::clicked, this, [this]()
-            {
+    {
         socketManager->closeConnection();  // 关闭连接
         if (gamePage->getOnlineMode())
             {
                 gamePage->setOnlineMode(false, nullptr);  // 重置游戏页面的联机模式
             }
-        pageStack->setCurrentWidget(menuPage); });
+        pageStack->setCurrentWidget(menuPage);
+    });
 
     connect(onlineModePage->msgBox, &OnlineMsgBox::enterLevelMode, this, [this]()
-            {
+    {
         pageStack->setCurrentWidget(levelModePage);
-        gamePage->setOnlineMode(true, socketManager); });
+        gamePage->setOnlineMode(true, socketManager);
+    });
 
     connect(levelEditorPage->backButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(menuPage); });
+    {
+        pageStack->setCurrentWidget(menuPage);
+    });
 
     connect(randomMapMsgBox, &MapMsgBox::sendMsg, this, [this](int rings, QColor color1, QColor color2, QColor color3)
-            {
+    {
         randomMapPage->generateHexagons(rings, color1, color2, color3);
         randomMapMsgBox->hide();
-        pageStack->setCurrentWidget(randomMapPage); });
+        pageStack->setCurrentWidget(randomMapPage);
+    });
 
     connect(customMapMsgBox, &MapMsgBox::sendMsg, this, [this](int rings, QColor color1, QColor color2, QColor color3)
-            {
+    {
         customMapPage->generateHexagons(rings, color1, color2, color3);
         customMapMsgBox->hide();
-        pageStack->setCurrentWidget(customMapPage); });
+        pageStack->setCurrentWidget(customMapPage);
+    });
 
     connect(socketManager, &SocketManager::gameStateReceived, this, &MainWindow::onClientReceivedGameState);
 
     for (int i = 0; i < 12; i++)
-    {
-        connect(levelModePage->buttons[i], &QPushButton::clicked, this, [this, i]()
-                {
+        {
+            connect(levelModePage->buttons[i], &QPushButton::clicked, this, [this, i]()
+            {
                 if (gamePage->getOnlineMode())
                     {
                         if (socketManager->isServerMode())   // 如果是服务器端
@@ -171,28 +199,41 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
                         gamePage->setMap(mapData);
                         pageStack->setCurrentWidget(gamePage);
                         gamePage->triggerAllHexEffects();
-                    } });
-    }
+                    }
+            });
+        }
 
     connect(levelEditorPage->randomButton, &QPushButton::clicked, this, [this]()
-            { randomMapMsgBox->show(); });
+    {
+        randomMapMsgBox->show();
+    });
 
     connect(levelEditorPage->customButton, &QPushButton::clicked, this, [this]()
-            { customMapMsgBox->show(); });
+    {
+        customMapMsgBox->show();
+    });
 
     connect(randomMapPage->backButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(levelEditorPage); });
+    {
+        pageStack->setCurrentWidget(levelEditorPage);
+    });
 
     connect(customMapPage->backButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(levelEditorPage); });
+    {
+        pageStack->setCurrentWidget(levelEditorPage);
+    });
 
     connect(randomMapPage->saveButton, &QPushButton::clicked, this, [this]()
-            { saveRandomMapMsgBox->show(); });
+    {
+        saveRandomMapMsgBox->show();
+    });
 
     connect(customMapPage->saveButton, &QPushButton::clicked, this, [this]()
-            { timeLimitMsgBox->show(); });
+    {
+        timeLimitMsgBox->show();
+    });
     connect(timeLimitMsgBox->closeButton, &QPushButton::clicked, this, [this]()
-            {
+    {
         timeLimitMsgBox->hide();
         int timeLimit = timeLimitMsgBox->getSpinBoxValue();
 
@@ -258,7 +299,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
                 }
             else if (f == 2)
                 {
-                    qDebug()<<"本次求解未找到解决方案";
+                    qDebug() << "本次求解未找到解决方案";
                 }
             else if (f == 0)
                 {
@@ -278,22 +319,25 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
         });
 
         // 启动定时器，每500毫秒尝试一次求解
-        solveTimer->start(500); });
+        solveTimer->start(500);
+    });
 
     connect(saveRandomMapMsgBox, &SaveMapMsgBox::sendMsg, this, [this](int msg)
-            {
+    {
         randomMapPage->setId(msg);
         dataManager->addMap(randomMapPage->getMapData());
-        dataManager->saveToFile(); });
+        dataManager->saveToFile();
+    });
 
     connect(saveCustomMapMsgBox, &SaveMapMsgBox::sendMsg, this, [this](int msg)
-            {
+    {
         customMapPage->setId(msg);
         dataManager->addMap(customMapPage->getMapData());
-        dataManager->saveToFile(); });
+        dataManager->saveToFile();
+    });
 
     connect(levelModePage->backButton, &QPushButton::clicked, this, [this]()
-            {
+    {
         if (gamePage->getOnlineMode())
             {
                 // 显示退出房间确认对话框
@@ -329,17 +373,22 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
         else
             {
                 pageStack->setCurrentWidget(menuPage);
-            } });
+            }
+    });
 
     connect(gamePage->backButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(levelModePage); });
+    {
+        pageStack->setCurrentWidget(levelModePage);
+    });
 
     connect(rankPage->backButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(menuPage); });
+    {
+        pageStack->setCurrentWidget(menuPage);
+    });
 
     // 连接游戏完成时返回关卡模式的信号
     connect(gamePage, &Game::returnToLevelMode, this, [this](bool completed, int penaltySeconds, int steps, int levelId)
-            {
+    {
         // 只有当游戏完成并且有有效用户ID时才更新排行榜
         if (completed)
             {
@@ -349,7 +398,8 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
                         dataManager->updateRanking(levelId, startPage->currentUserId, penaltySeconds, steps);
                     }
                 pageStack->setCurrentWidget(levelModePage);
-            } });
+            }
+    });
 
     // 将页面添加到 QStackedWidget
     pageStack->addWidget(mainPage);
@@ -376,11 +426,11 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
 void MainWindow::onClientReceivedGameState(const MapData &mapData)
 {
     if (socketManager && !socketManager->isServerMode()) // 确保是客户端
-    {
-        gamePage->setOnlineMode(true, socketManager); // 配置gamePage为客户端模式
-        gamePage->setMap(mapData);                    // 设置地图
-        pageStack->setCurrentWidget(gamePage);        // 切换到游戏页面
-    }
+        {
+            gamePage->setOnlineMode(true, socketManager); // 配置gamePage为客户端模式
+            gamePage->setMap(mapData);                    // 设置地图
+            pageStack->setCurrentWidget(gamePage);        // 切换到游戏页面
+        }
 }
 
 MainWindow::~MainWindow()

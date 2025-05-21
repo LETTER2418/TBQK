@@ -29,8 +29,14 @@ public:
     bool isServerMode() const; // 用于检查当前是否为服务器模式
     void setLocalUserId(const QString& userId);
     QString getLocalUserId() const;
-    QList<QTcpSocket*> getClientSockets() const { return clientSockets; } // 获取客户端连接列表
-    QTcpSocket* getClientSocket() const { return clientSocket; } // 获取客户端套接字（客户端模式）
+    QList<QTcpSocket*> getClientSockets() const
+    {
+        return clientSockets;    // 获取客户端连接列表
+    }
+    QTcpSocket* getClientSocket() const
+    {
+        return clientSocket;    // 获取客户端套接字（客户端模式）
+    }
     bool sendJson(QTcpSocket* socket, const QJsonObject& json); // 发送JSON数据
     void SendConnectionRejected(QTcpSocket* client, const QString& reason);// 向指定客户端发送拒绝连接消息
 
@@ -66,8 +72,8 @@ private:
 
     void ServerAddSendMsgList(QTcpSocket* client, const QJsonObject& msg);
     bool ServerSendMsg(QTcpSocket* client, const QJsonObject& msg);
-    void ServerProcessSendClientMsgList(QTcpSocket* client);    
-    void ServerProcessSendClientsMsgList();       
+    void ServerProcessSendClientMsgList(QTcpSocket* client);
+    void ServerProcessSendClientsMsgList();
     void processReceivedData(const QByteArray& data);
     bool isSocketValid(QTcpSocket* socket) const; // 检查套接字是否有效
 };

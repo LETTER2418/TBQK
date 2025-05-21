@@ -85,15 +85,15 @@ OnlineMsgBox::OnlineMsgBox(QWidget *parent, SocketManager* manager)
             {
                 // 创建房间模式：启动服务器
                 if(startServer())
-                {
-                    hide();
-                    emit enterLevelMode();
-                }
+                    {
+                        hide();
+                        emit enterLevelMode();
+                    }
             }
         else
             {
                 // 加入房间模式：连接到服务器
-                connectToServer(); 
+                connectToServer();
             }
     });
 
@@ -365,7 +365,7 @@ void OnlineMsgBox::handleDuplicateId()
     // 服务端检测到客户端ID重复，始终显示警告消息
     msgBox->setMessage("检测到重复ID的客户端尝试加入，已拒绝连接");
     msgBox->exec();
-    
+
     // 确保消息框不会阻塞其他操作
     QCoreApplication::processEvents();
 }

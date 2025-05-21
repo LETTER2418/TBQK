@@ -53,7 +53,10 @@ public:
     bool eventFilter(QObject *watched, QEvent *event) override;
 
     // 旋转角度的getter和setter
-    double getAvatarRotationAngle() const { return avatarRotationAngle; }
+    double getAvatarRotationAngle() const
+    {
+        return avatarRotationAngle;
+    }
     void setAvatarRotationAngle(double angle);
 
 protected:

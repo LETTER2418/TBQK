@@ -34,7 +34,7 @@ protected:
 private:
     QLabel *messageLabel;
     QPixmap backgroundImage;
-    const QString backgroundImagePath=":\\image\\msg.png"; // 存储背景图片路径
+    const QString backgroundImagePath = ":\\image\\msg.png"; // 存储背景图片路径
     QEventLoop *eventLoop; // 事件循环用于模拟模态对话框
     int dialogCode; // 对话框结果代码
 };

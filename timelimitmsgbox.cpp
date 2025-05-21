@@ -65,17 +65,17 @@ int TimeLimitMsgBox::getSpinBoxValue()
 void TimeLimitMsgBox::showEvent(QShowEvent *event)
 {
     if (parentWidget())
-    {
-        QRect parentRect = parentWidget()->geometry();
-        this->move(parentRect.x() + (parentRect.width() - this->width()) / 2,
-                   parentRect.y() + (parentRect.height() - this->height()) / 2);
-    }
+        {
+            QRect parentRect = parentWidget()->geometry();
+            this->move(parentRect.x() + (parentRect.width() - this->width()) / 2,
+                       parentRect.y() + (parentRect.height() - this->height()) / 2);
+        }
     else
-    {
-        QScreen *screen = QGuiApplication::primaryScreen();
-        QRect screenGeometry = screen->geometry();
-        this->move((screenGeometry.width() - this->width()) / 2,
-                   (screenGeometry.height() - this->height()) / 2);
-    }
+        {
+            QScreen *screen = QGuiApplication::primaryScreen();
+            QRect screenGeometry = screen->geometry();
+            this->move((screenGeometry.width() - this->width()) / 2,
+                       (screenGeometry.height() - this->height()) / 2);
+        }
     QWidget::showEvent(event);
 }

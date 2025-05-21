@@ -22,7 +22,7 @@ LevelMode::LevelMode(QWidget *parent)
     levelButtonsLayout->setVerticalSpacing(100);   // 单独设置垂直间距
     levelButtonsLayout->setHorizontalSpacing(10);  // 单独设置水平间距 (您可以按需调整此值)
 
-        // 创建并添加按钮
+    // 创建并添加按钮
     for (int i = 0; i < 12; ++i)
         {
             buttons[i] = new Lbutton(this, QString("第%1关").arg(i + 1));
@@ -32,21 +32,24 @@ LevelMode::LevelMode(QWidget *parent)
         }
 
     // 设置关卡按钮布局的行和列的拉伸因子
-    for (int i = 0; i < 3; ++i) { // 3行
-        levelButtonsLayout->setRowStretch(i, 1);
-    }
-    for (int i = 0; i < 4; ++i) { // 4列
-        levelButtonsLayout->setColumnStretch(i, 1);
-    }
+    for (int i = 0; i < 3; ++i)   // 3行
+        {
+            levelButtonsLayout->setRowStretch(i, 1);
+        }
+    for (int i = 0; i < 4; ++i)   // 4列
+        {
+            levelButtonsLayout->setColumnStretch(i, 1);
+        }
 
     mainLayout->addLayout(levelButtonsLayout, 1, 0, 1, 4); // 关卡按钮布局在第二行，跨4列
     mainLayout->setRowStretch(0, 0); // 为mainLayout的第0行（空行）设置不拉伸
     mainLayout->setRowStretch(1, 1); // 为mainLayout的第1行（关卡按钮区域）设置拉伸
 
     // 为主布局的列设置拉伸因子
-    for (int i = 0; i < 4; ++i) {
-        mainLayout->setColumnStretch(i, 1);
-    }
+    for (int i = 0; i < 4; ++i)
+        {
+            mainLayout->setColumnStretch(i, 1);
+        }
 
     setLayout(mainLayout); // 应用主布局
 }

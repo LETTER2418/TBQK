@@ -10,7 +10,6 @@
 #include <QDir>
 #include <QDateTime>
 
-
 DataManager::DataManager(QObject *parent) : QObject(parent)
 {
     loadFromFile();
@@ -23,7 +22,7 @@ bool DataManager::addUser(const QString &id, const QString &password)
         {
             return false;
         }
-    users[id] = { password };
+    users[id] = {password};
     return true;
 }
 
@@ -60,13 +59,13 @@ QStringList DataManager::getAllUserIds() const
 }
 
 // ========== 排行榜操作 ==========
-void DataManager::updateRanking(int levelId, const QString& userId, int penaltySeconds, int steps)
+void DataManager::updateRanking(int levelId, const QString &userId, int penaltySeconds, int steps)
 {
 
     // 先确保从文件加载最新的排行榜数据
     loadFromFile();
 
-    QVector<Ranking>& levelRanking = rankings[levelId];
+    QVector<Ranking> &levelRanking = rankings[levelId];
 
     // 查找用户是否已经在排行榜中
     auto it = std::find_if(levelRanking.begin(), levelRanking.end(),
@@ -89,7 +88,7 @@ void DataManager::updateRanking(int levelId, const QString& userId, int penaltyS
         }
     else
         {
-            //添加新的排行榜条目
+            // 添加新的排行榜条目
             Ranking newEntry;
             newEntry.userId = userId;
             newEntry.penaltySeconds = penaltySeconds;
@@ -160,7 +159,7 @@ bool DataManager::saveToFile() const
 
     // 写入地图数据
     QJsonArray mapArray;
-    for (const auto& map : maps)
+    for (const auto &map : maps)
         {
             mapArray.append(map.toJson());
         }
@@ -171,7 +170,7 @@ bool DataManager::saveToFile() const
     for (auto it = rankings.begin(); it != rankings.end(); ++it)
         {
             QJsonArray levelRankings;
-            for (const auto& entry : it.value())
+            for (const auto &entry : it.value())
                 {
                     levelRankings.append(entry.toJson());
                 }
@@ -187,7 +186,7 @@ bool DataManager::saveToFile() const
 
 bool DataManager::loadFromFile()
 {
-    //防止多次loadFromFile叠加rankings
+    // 防止多次loadFromFile叠加rankings
     clearAllData();
 
     QFile file(filePath);
@@ -225,7 +224,7 @@ bool DataManager::loadFromFile()
 
     // 加载地图数据
     QJsonArray mapArray = root["maps"].toArray();
-    for (const auto& mapVal : mapArray)
+    for (const auto &mapVal : mapArray)
         {
             MapData mapData;
             mapData.fromJson(mapVal.toObject());
@@ -233,19 +232,19 @@ bool DataManager::loadFromFile()
         }
 
     QJsonObject rankingsObj = root["rankings"].toObject();
-    for (const QString& levelIdStr : rankingsObj.keys())   // 使用 levelIdStr 避免重定义
+    for (const QString &levelIdStr : rankingsObj.keys()) // 使用 levelIdStr 避免重定义
         {
             int levelId = levelIdStr.toInt();
             QJsonArray levelRankingsJson = rankingsObj[levelIdStr].toArray(); // 使用 levelIdStr
-            QVector<Ranking>& levelRankingVector = rankings[levelId]; // 获取引用 (如果不存在则创建)
+            QVector<Ranking> &levelRankingVector = rankings[levelId];         // 获取引用 (如果不存在则创建)
 
-            for (const auto& entryVal : levelRankingsJson)   // 使用 levelRankingsJson
+            for (const auto &entryVal : levelRankingsJson) // 使用 levelRankingsJson
                 {
                     Ranking entry;
                     entry.fromJson(entryVal.toObject());
                     levelRankingVector.append(entry);
                 }
-            
+
             // 确保加载后也排序和限制大小
             std::sort(levelRankingVector.begin(), levelRankingVector.end(),
                       [](const Ranking & a, const Ranking & b)
@@ -278,14 +277,15 @@ void DataManager::clearAllData()
 QJsonObject DataManager::getUserSettings(const QString &userId) const
 {
     // 检查用户是否存在
-    if (!users.contains(userId)) {
-        return QJsonObject(); // 返回空对象
-    }
-    
+    if (!users.contains(userId))
+        {
+            return QJsonObject(); // 返回空对象
+        }
+
     // 获取用户数据中的settings字段
     UserData userData = users[userId];
     QJsonObject settings = userData.settings;
-    
+
     return settings;
 }
 
@@ -293,13 +293,14 @@ QJsonObject DataManager::getUserSettings(const QString &userId) const
 bool DataManager::updateUserSettings(const QString &userId, const QJsonObject &settings)
 {
     // 检查用户是否存在
-    if (!users.contains(userId)) {
-        return false;
-    }
-    
+    if (!users.contains(userId))
+        {
+            return false;
+        }
+
     // 更新用户设置
     users[userId].settings = settings;
-    
+
     // 保存到文件
     return saveToFile();
 }
@@ -309,28 +310,31 @@ bool DataManager::saveAvatarFile(const QString &userId, const QPixmap &avatar)
 {
     // 确保头像目录存在
     QDir avatarDir(getAvatarDir());
-    if (!avatarDir.exists()) {
-        if (!avatarDir.mkpath(".")) {
-            qWarning() << "无法创建头像目录：" << getAvatarDir();
-            return false;
+    if (!avatarDir.exists())
+        {
+            if (!avatarDir.mkpath("."))
+                {
+                    qWarning() << "无法创建头像目录：" << getAvatarDir();
+                    return false;
+                }
         }
-    }
-    
+
     // 使用毫秒级时间戳作为文件名，确保唯一性
     QString timestamp = QString::number(QDateTime::currentDateTime().toMSecsSinceEpoch());
     QString avatarFileName = timestamp + ".png";
     QString avatarFilePath = avatarDir.filePath(avatarFileName);
-    
+
     // 保存头像
-    if (!avatar.save(avatarFilePath, "PNG")) {
-        qWarning() << "无法保存头像：" << avatarFilePath;
-        return false;
-    }
-    
+    if (!avatar.save(avatarFilePath, "PNG"))
+        {
+            qWarning() << "无法保存头像：" << avatarFilePath;
+            return false;
+        }
+
     // 更新用户设置中的头像路径（保存相对路径）
     QJsonObject settings = getUserSettings(userId);
-    settings["avatarFile"] = avatarFileName;  // 只保存文件名
-    
+    settings["avatarFile"] = avatarFileName; // 只保存文件名
+
     return updateUserSettings(userId, settings);
 }
 
@@ -340,22 +344,24 @@ QPixmap DataManager::loadAvatarFile(const QString &userId) const
     // 获取用户设置
     QJsonObject settings = getUserSettings(userId);
     QPixmap avatar;
-    
+
     // 检查设置中是否有头像文件
-    if (settings.contains("avatarFile")) {
-        // 构建头像文件路径
-        QString avatarFileName = settings["avatarFile"].toString();
-        QString avatarFilePath = QDir(getAvatarDir()).filePath(avatarFileName);
-        
-        // 检查文件是否存在
-        QFileInfo fileInfo(avatarFilePath);
-        if (fileInfo.exists()) {
-            // 加载头像
-            avatar.load(avatarFilePath);
-            return avatar;
+    if (settings.contains("avatarFile"))
+        {
+            // 构建头像文件路径
+            QString avatarFileName = settings["avatarFile"].toString();
+            QString avatarFilePath = QDir(getAvatarDir()).filePath(avatarFileName);
+
+            // 检查文件是否存在
+            QFileInfo fileInfo(avatarFilePath);
+            if (fileInfo.exists())
+                {
+                    // 加载头像
+                    avatar.load(avatarFilePath);
+                    return avatar;
+                }
         }
-    }
-    
+
     // 如果加载失败，返回空的QPixmap
     return avatar;
 }

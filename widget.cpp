@@ -32,10 +32,11 @@ void Widget::setBackgroundImage()
 {
     backgroundImage = QPixmap(backgroundImagePath);
 
-    if (backgroundImage.isNull()) {
-        qDebug() << "背景图片加载失败";
-        return;
-    }
+    if (backgroundImage.isNull())
+        {
+            qDebug() << "背景图片加载失败";
+            return;
+        }
 
     update(); // 触发重绘
 }
@@ -43,10 +44,11 @@ void Widget::setBackgroundImage()
 void Widget::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
-    if (!backgroundImage.isNull()) {
-        // 绘制背景图片
-        painter.drawPixmap(0, 0, width(), height(), backgroundImage);
-    }
+    if (!backgroundImage.isNull())
+        {
+            // 绘制背景图片
+            painter.drawPixmap(0, 0, width(), height(), backgroundImage);
+        }
 
     QWidget::paintEvent(event);
 }

@@ -24,8 +24,8 @@ RandomMap::RandomMap(QWidget *parent) : QWidget(parent)
     mainLayout->setColumnStretch(2, 0); // 第2列 (saveButton所在列) 不伸展
 
     // 设置行伸展
-    mainLayout->setRowStretch(0, 1);  
-    mainLayout->setRowStretch(1, 1);  
+    mainLayout->setRowStretch(0, 1);
+    mainLayout->setRowStretch(1, 1);
     mainLayout->setRowStretch(2, 1);
 
     setLayout(mainLayout);
@@ -62,10 +62,11 @@ void RandomMap::generateHexagons(int rings, QColor c1, QColor c2, QColor c3)
     int startQ = rand() % (2 * rings + 1) - rings;
     int startR = rand() % (2 * rings + 1) - rings;
     // 确保起点在合法范围内
-    while (abs(startQ + startR) > rings) {
-        startQ = rand() % (2 * rings + 1) - rings;
-        startR = rand() % (2 * rings + 1) - rings;
-    }
+    while (abs(startQ + startR) > rings)
+        {
+            startQ = rand() % (2 * rings + 1) - rings;
+            startR = rand() % (2 * rings + 1) - rings;
+        }
     QPoint current(startQ, startR);
     path.append(current);
     visited.insert(current);
@@ -99,7 +100,7 @@ void RandomMap::generateHexagons(int rings, QColor c1, QColor c2, QColor c3)
 
     QSet<QPoint> pathSet = visited;
 
-     // 为每个环生成翻转状态
+    // 为每个环生成翻转状态
     int f = rand() % 2;
     QVector<bool> ringFlipStatus(rings + 1);
     for (int ring = 0; ring <= rings; ++ring)

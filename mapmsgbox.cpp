@@ -16,13 +16,13 @@ MapMsgBox::MapMsgBox(QWidget *parent)
 
     QFileInfo checkFile(backgroundImagePath);
     if (checkFile.exists() && checkFile.isFile())
-    {
-        backgroundImage.load(backgroundImagePath);
-    }
+        {
+            backgroundImage.load(backgroundImagePath);
+        }
     else
-    {
-        qWarning() << "Image file not found: " << backgroundImagePath;
-    }
+        {
+            qWarning() << "Image file not found: " << backgroundImagePath;
+        }
 
     setupUI();
 
@@ -40,15 +40,18 @@ MapMsgBox::MapMsgBox(QWidget *parent)
     connect(color2Button, &QPushButton::clicked, this, &MapMsgBox::openColorDialog2);
     connect(color3Button, &QPushButton::clicked, this, &MapMsgBox::openColorDialog3);
     connect(closeButton, &QPushButton::clicked, this, [this]()
-            {
+    {
         emit sendMsg(rings, color1, color2, color3);
-        this->hide(); });
+        this->hide();
+    });
 
     // 设置comboBox和连接其信号
     rings = comboBox->currentData().toInt() - 1;
     connect(comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, [this](int index)
-            { rings = comboBox->itemData(index).toInt() - 1; });
+    {
+        rings = comboBox->itemData(index).toInt() - 1;
+    });
 }
 
 MapMsgBox::~MapMsgBox()
@@ -108,9 +111,9 @@ void MapMsgBox::setupUI()
 
     // 添加选项1-5
     for (int i = 1; i <= 5; i++)
-    {
-        comboBox->addItem(QString::number(i), i);
-    }
+        {
+            comboBox->addItem(QString::number(i), i);
+        }
 
     // 设置初始值
     comboBox->setCurrentIndex(4);
@@ -121,47 +124,47 @@ void MapMsgBox::openColorDialog1()
 {
     QColor color = QColorDialog::getColor(QColor(255, 255, 255));
     if (color.isValid())
-    {
-        color1Label->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
-        color1 = color;
-    }
+        {
+            color1Label->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
+            color1 = color;
+        }
 }
 
 void MapMsgBox::openColorDialog2()
 {
     QColor color = QColorDialog::getColor(QColor(255, 255, 255));
     if (color.isValid())
-    {
-        color2Label->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
-        color2 = color;
-    }
+        {
+            color2Label->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
+            color2 = color;
+        }
 }
 
 void MapMsgBox::openColorDialog3()
 {
     QColor color = QColorDialog::getColor(QColor(255, 255, 255));
     if (color.isValid())
-    {
-        color3Label->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
-        color3 = color;
-    }
+        {
+            color3Label->setStyleSheet("QLabel { background-color: " + color.name() + "; }");
+            color3 = color;
+        }
 }
 
 void MapMsgBox::showEvent(QShowEvent *event)
 {
     if (parentWidget())
-    {
-        QRect parentRect = parentWidget()->geometry();
-        this->move(parentRect.x() + (parentRect.width() - this->width()) / 2,
-                   parentRect.y() + (parentRect.height() - this->height()) / 2);
-    }
+        {
+            QRect parentRect = parentWidget()->geometry();
+            this->move(parentRect.x() + (parentRect.width() - this->width()) / 2,
+                       parentRect.y() + (parentRect.height() - this->height()) / 2);
+        }
     else
-    {
-        QScreen *screen = QGuiApplication::primaryScreen();
-        QRect screenGeometry = screen->geometry();
-        this->move((screenGeometry.width() - this->width()) / 2,
-                   (screenGeometry.height() - this->height()) / 2);
-    }
+        {
+            QScreen *screen = QGuiApplication::primaryScreen();
+            QRect screenGeometry = screen->geometry();
+            this->move((screenGeometry.width() - this->width()) / 2,
+                       (screenGeometry.height() - this->height()) / 2);
+        }
     QWidget::showEvent(event);
 }
 
@@ -169,10 +172,10 @@ void MapMsgBox::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
     if (!backgroundImage.isNull())
-    {
-        // 绘制背景图片
-        painter.drawPixmap(0, 0, width(), height(), backgroundImage);
-    }
+        {
+            // 绘制背景图片
+            painter.drawPixmap(0, 0, width(), height(), backgroundImage);
+        }
 
     QWidget::paintEvent(event);
 }

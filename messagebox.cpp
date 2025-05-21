@@ -144,17 +144,19 @@ int MessageBox::exec()
     activateWindow();
 
     // 创建一个新的事件循环，确保不重复创建和调用
-    if (eventLoop) {
-        if (eventLoop->isRunning()) {
-            // 如果事件循环已经在运行，直接返回上一次结果
-            qDebug() << "Event loop is already running, returning previous result";
-            return dialogCode;
+    if (eventLoop)
+        {
+            if (eventLoop->isRunning())
+                {
+                    // 如果事件循环已经在运行，直接返回上一次结果
+                    qDebug() << "Event loop is already running, returning previous result";
+                    return dialogCode;
+                }
+            delete eventLoop;
         }
-        delete eventLoop;
-    }
-    
+
     eventLoop = new QEventLoop();
-    
+
     // 运行事件循环，直到调用accept()或reject()
     return eventLoop->exec();
 }

@@ -38,7 +38,7 @@ private:
 
     QPixmap backgroundImage;
     const QString backgroundImagePath = ":\\image\\msg.png"; // 存储背景图片路径
-    
+
     // 控件
     Lbutton *closeButton;
     Lbutton *color1Button;

@@ -7,8 +7,9 @@
 #include <QPainter>
 #include <QPaintEvent>
 
-namespace Ui {
-class Widget;
+namespace Ui
+{
+    class Widget;
 }
 
 class Widget : public QWidget
@@ -27,7 +28,7 @@ protected:
 private:
     Ui::Widget *ui;
     QPixmap backgroundImage;
-    const QString backgroundImagePath=":\\image\\bg.jpg";
+    const QString backgroundImagePath = ":\\image\\bg.jpg";
 
 };
 #endif // WIDGET_H

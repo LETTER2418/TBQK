@@ -10,7 +10,7 @@
 class OnlineMode : public QWidget
 {
     Q_OBJECT
-    
+
 public:
     explicit OnlineMode(QWidget *parent = nullptr, SocketManager* manager = nullptr);
 

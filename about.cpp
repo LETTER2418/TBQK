@@ -2,9 +2,9 @@
 
 About::About(QWidget *parent): QWidget(parent)
 {
-    
+
     backButton = new Lbutton(this, "返回");
-    backButton->move(0, 0); 
+    backButton->move(0, 0);
 
     mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(100, 100, 100, 100);
@@ -15,14 +15,14 @@ About::About(QWidget *parent): QWidget(parent)
     scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     scrollArea->setFrameShape(QFrame::NoFrame);
     scrollArea->setStyleSheet("QScrollArea { background-color: transparent; }"
-                            "QScrollArea > QWidget > QWidget { background: transparent; }"
-                            "QScrollArea > QWidget > QScrollBar { background: transparent; }");
+                              "QScrollArea > QWidget > QWidget { background: transparent; }"
+                              "QScrollArea > QWidget > QScrollBar { background: transparent; }");
     scrollArea->viewport()->setStyleSheet("background-color: transparent;");
 
-    contentWidget = new QWidget(this); 
+    contentWidget = new QWidget(this);
     contentWidget->setStyleSheet("QWidget { background-color: transparent; }");
     contentLayout = new QVBoxLayout(contentWidget);
-    contentLayout->setContentsMargins(10,10,10,10);
+    contentLayout->setContentsMargins(10, 10, 10, 10);
     contentLayout->setSpacing(10);
 
     // --- 游戏标题和简介 ---
@@ -49,10 +49,10 @@ About::About(QWidget *parent): QWidget(parent)
         "<li><b>开始游戏：</b>通过主菜单选择\"关卡模式\"或\"联机模式\"开始。</li>"
         "<li><b>游戏目标：</b>点击六边形使其翻转颜色。目标是让棋盘上每一个同心圆环内的所有六边形都变成相同的颜色。</li>"
         "<li><b>基本操作：</b>"
-            "<ul>"
-            "<li>点击一个六边形来改变它自身及其直接相邻的六边形的颜色。(<em>请根据您的实际翻转逻辑核实和修改此条</em>)</li>"
-            "<li>您的点击必须形成一条连续的路径。</li>"
-            "</ul>"
+        "<ul>"
+        "<li>点击一个六边形来改变它自身及其直接相邻的六边形的颜色。(<em>请根据您的实际翻转逻辑核实和修改此条</em>)</li>"
+        "<li>您的点击必须形成一条连续的路径。</li>"
+        "</ul>"
         "</li>"
         "</ul>", contentWidget);
     rulesContentLabel->setWordWrap(true);
@@ -85,11 +85,11 @@ About::About(QWidget *parent): QWidget(parent)
     rankingContentLabel = new QLabel("<p>您的通关用时和所用步数将被记录。用时越短、步数越少，排名越高！</p>", contentWidget);
     rankingContentLabel->setWordWrap(true);
     contentLayout->addWidget(rankingContentLabel);
-    
+
     contentLayout->addStretch();
 
     contentWidget->setLayout(contentLayout);
-    scrollArea->setWidget(contentWidget); 
+    scrollArea->setWidget(contentWidget);
 
     // --- 设置字体大小 ---
     contentWidget->setStyleSheet(
@@ -97,12 +97,12 @@ About::About(QWidget *parent): QWidget(parent)
         "    font-size: 20px; "
         "    line-height: 1.5; " /* 行高调整 */
         "    color: white; " /* 设置文字颜色为白色 */
-        "}" 
+        "}"
         "QLabel h1 { font-size: 22px; font-weight: bold; }" /* H1 标题样式 */
         "QLabel h2 { font-size: 18px; font-weight: bold; }" /* H2 标题样式 */
     );
 
-    mainLayout->addWidget(scrollArea); 
+    mainLayout->addWidget(scrollArea);
     setLayout(mainLayout);
 }
 

@@ -34,7 +34,7 @@ public:
     QVector<Ranking> getRanking(int levelId) const;
     void clearRanking(int levelId);
     void clearAllRankings();
-    
+
     // 清除所有数据（用户、地图和排行榜）
     void clearAllData();
 
@@ -43,21 +43,36 @@ public:
     bool loadFromFile();
 
     // 获取当前用户ID
-    QString getCurrentUserId() const { return currentUserId; }
-    void setCurrentUserId(const QString &userId) { currentUserId = userId; }
-    
+    QString getCurrentUserId() const
+    {
+        return currentUserId;
+    }
+    void setCurrentUserId(const QString &userId)
+    {
+        currentUserId = userId;
+    }
+
     // 用户设置相关操作
     QJsonObject getUserSettings(const QString &userId) const;
     bool updateUserSettings(const QString &userId, const QJsonObject &settings);
-    
+
     // 头像路径相关操作
-    QString getAvatarPath() const { return tempAvatarPath; }
-    void setAvatarPath(const QString &path) { tempAvatarPath = path; }
-    
+    QString getAvatarPath() const
+    {
+        return tempAvatarPath;
+    }
+    void setAvatarPath(const QString &path)
+    {
+        tempAvatarPath = path;
+    }
+
     // 头像文件相关操作
     bool saveAvatarFile(const QString &userId, const QPixmap &avatar);
     QPixmap loadAvatarFile(const QString &userId) const;
-    QString getAvatarDir() const { return "avatars"; } // 头像存储目录
+    QString getAvatarDir() const
+    {
+        return "avatars";    // 头像存储目录
+    }
 
 private:
     QMap<QString, UserData> users; // 用户ID -> 用户数据

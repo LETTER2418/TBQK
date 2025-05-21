@@ -34,10 +34,10 @@ private:
     QComboBox *levelSelector;
     QLabel *titleLabel;
     Lbutton *clearButton;
-    
+
     int currentSortColumn = 2;
     Qt::SortOrder currentSortOrder = Qt::AscendingOrder;
-    
+
     void setupUI();
     void connectSignals();
     QString formatTime(int seconds) const;

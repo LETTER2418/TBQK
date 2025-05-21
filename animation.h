@@ -5,7 +5,8 @@
 #include <QTimer>
 #include <QPainter>
 
-class Animation : public QWidget {
+class Animation : public QWidget
+{
     Q_OBJECT
 
 public:
@@ -22,7 +23,7 @@ private slots:
 
 private:
     void drawTaiji(QPainter &painter);
-    
+
     QTimer *timer;        // 用于动画更新的定时器
     qreal rotationAngle;  // 当前旋转角度
     QColor backgroundColor; // 背景颜色

@@ -57,12 +57,13 @@ void MapData::fromJson(const QJsonObject& obj)
 
     path.clear();
     QJsonArray pathArray = obj["path"].toArray();
-    for (const auto& pointVal : pathArray) {
-        QJsonObject pointObj = pointVal.toObject();
-        int x = pointObj["x"].toInt();
-        int y = pointObj["y"].toInt();
-        path.append(QPoint(x, y));
-    }
+    for (const auto& pointVal : pathArray)
+        {
+            QJsonObject pointObj = pointVal.toObject();
+            int x = pointObj["x"].toInt();
+            int y = pointObj["y"].toInt();
+            path.append(QPoint(x, y));
+        }
 
     hexagons.clear();
     QJsonArray hexArray = obj["hexagons"].toArray();

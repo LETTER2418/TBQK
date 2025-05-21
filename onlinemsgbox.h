@@ -22,12 +22,13 @@ class OnlineMsgBox : public QWidget
 {
     Q_OBJECT
 public:
-    enum Mode {
+    enum Mode
+    {
         CreateMode,  // 创建房间模式
         JoinMode     // 加入房间模式
     };
 
-    explicit OnlineMsgBox(QWidget *parent,SocketManager* manager);
+    explicit OnlineMsgBox(QWidget *parent, SocketManager* manager);
     ~OnlineMsgBox();
     QString getLocalIP();
     void setBackgroundImage(const QString& path);
@@ -69,7 +70,7 @@ private:
     QMovie *backgroundGif;
     bool usingGif;
     QPixmap currentFrame;
-    Mode currentMode;          
+    Mode currentMode;
     MessageBox *msgBox;
 };
 

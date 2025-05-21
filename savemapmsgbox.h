@@ -25,9 +25,9 @@ protected:
 
 private:
     QComboBox *comboBox;
-    Lbutton *closeButton;  
-    QLabel *promptLabel;  
-    QLabel *bgLabel; 
+    Lbutton *closeButton;
+    QLabel *promptLabel;
+    QLabel *bgLabel;
 };
 
 #endif // SAVEMAPMSGBOX_H
