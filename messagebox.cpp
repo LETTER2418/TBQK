@@ -8,7 +8,9 @@
 MessageBox::MessageBox(QWidget *parent, bool showCancelButton)
     : QWidget(parent), messageLabel(new QLabel(this)), eventLoop(nullptr), dialogCode(0)
 {
-    this->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    // 设置窗口标志，包括模态标志
+    this->setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    this->setWindowModality(Qt::ApplicationModal); // 设置为应用程序级模态
     this->resize(300, 400);
     this->setFixedSize(300, 400);
 

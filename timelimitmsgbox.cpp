@@ -3,6 +3,7 @@
 TimeLimitMsgBox::TimeLimitMsgBox(QWidget *parent) : QWidget(parent)
 {
     this->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    this->setWindowModality(Qt::ApplicationModal);
     this->resize(300, 400);
     this->setStyleSheet("QLabel{min-width: 10px; min-height: 10px;} QComboBox { min-height: 30px; font-size: 12pt; } ");
 
@@ -23,8 +24,8 @@ TimeLimitMsgBox::TimeLimitMsgBox(QWidget *parent) : QWidget(parent)
 
     // Manually create ComboBox
     spinBox = new QSpinBox(this);
-    spinBox->setRange(5, 300);
-    spinBox->setValue(60);
+    spinBox->setRange(1, 300);
+    spinBox->setValue(5);
     spinBox->setGeometry(50, 100, 200, 40); // Example position and size
 
     // Create Close Button as Lbutton
@@ -65,17 +66,17 @@ int TimeLimitMsgBox::getSpinBoxValue()
 void TimeLimitMsgBox::showEvent(QShowEvent *event)
 {
     if (parentWidget())
-        {
-            QRect parentRect = parentWidget()->geometry();
-            this->move(parentRect.x() + (parentRect.width() - this->width()) / 2,
-                       parentRect.y() + (parentRect.height() - this->height()) / 2);
-        }
+    {
+        QRect parentRect = parentWidget()->geometry();
+        this->move(parentRect.x() + (parentRect.width() - this->width()) / 2,
+                   parentRect.y() + (parentRect.height() - this->height()) / 2);
+    }
     else
-        {
-            QScreen *screen = QGuiApplication::primaryScreen();
-            QRect screenGeometry = screen->geometry();
-            this->move((screenGeometry.width() - this->width()) / 2,
-                       (screenGeometry.height() - this->height()) / 2);
-        }
+    {
+        QScreen *screen = QGuiApplication::primaryScreen();
+        QRect screenGeometry = screen->geometry();
+        this->move((screenGeometry.width() - this->width()) / 2,
+                   (screenGeometry.height() - this->height()) / 2);
+    }
     QWidget::showEvent(event);
 }

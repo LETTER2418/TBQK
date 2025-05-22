@@ -9,6 +9,7 @@ OnlineMsgBox::OnlineMsgBox(QWidget *parent, SocketManager *manager)
 {
 
     this->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
+    this->setWindowModality(Qt::ApplicationModal);
     setFixedSize(300, 400);
 
     // 加载背景图片/视频
