@@ -99,16 +99,19 @@ void CustomMap::paintEvent(QPaintEvent *event)
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setPen(Qt::gray);
+
+    QPointF offset = getOffset();
     for (const HexCell &hex : hexagons)
     {
         painter.setBrush(hex.color);
-        drawHexagon(painter, hex.center, radius);
+        drawHexagon(painter, hex.center + offset, radius);
     }
 }
 
 void CustomMap::mousePressEvent(QMouseEvent *event)
 {
-    QPointF click = event->pos();
+    QPointF offset = getOffset();
+    QPointF click = event->pos() - offset;
     double mn = 1E9;
     for (HexCell &hex : hexagons)
     {
@@ -127,24 +130,12 @@ void CustomMap::mousePressEvent(QMouseEvent *event)
 
 void CustomMap::drawHexagon(QPainter &painter, const QPointF &center, int radius)
 {
-    // 获取当前窗口的中心点
-    QPointF currentWidgetCenter = QPointF(this->width() / 2.0, this->height() / 2.0);
-    // 获取游戏布局的原始中心点 (从 MapData 加载到 this->center 成员变量)
-    QPointF originalLayoutCenter = this->center;
-
-    // 计算偏移量：当前窗口中心 - 原始布局中心
-    QPointF offset = currentWidgetCenter - originalLayoutCenter;
-
-    // 将偏移量应用到传入的六边形逻辑中心点上，得到最终的绘制中心点
-    QPointF finalDrawCenter = center + offset;
-
     QPolygonF hexagon;
     for (int i = 0; i < 6; ++i)
     {
         double angle = M_PI / 3 * i;
-        // 使用 finalDrawCenter 进行绘制
-        double x = finalDrawCenter.x() + radius * cos(angle);
-        double y = finalDrawCenter.y() + radius * sin(angle);
+        double x = center.x() + radius * cos(angle);
+        double y = center.y() + radius * sin(angle);
         hexagon << QPointF(x, y);
     }
     painter.drawPolygon(hexagon);
@@ -637,4 +628,15 @@ void CustomMap::resizeEvent(QResizeEvent *event)
     }
     resetHexagons(hexagons, oldRadius, radius);
     update();
+}
+
+QPointF CustomMap::getOffset()
+{
+    // 获取当前窗口的中心点
+    QPointF currentWidgetCenter = QPointF(this->width() / 2.0, this->height() / 2.0);
+    // 获取游戏布局的原始中心点
+    QPointF originalLayoutCenter = this->center;
+
+    // 计算偏移量：当前窗口中心 - 原始布局中心
+    return currentWidgetCenter - originalLayoutCenter;
 }

@@ -44,6 +44,9 @@ private:
     void onRadiusSpinBoxChanged(int value);
     void resetHexagons(const QVector<HexCell> &currentHexagons, int oldRadius, int newRadius);
 
+    // 获取偏移量
+    QPointF getOffset();
+
     double calculatePathScore(const QVector<int> &path, const QVector<QVector<int>> &graph);
     bool simulatedAnnealing(const QVector<QVector<int>> &graph, QVector<int> &bestPath);
 };
