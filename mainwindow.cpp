@@ -132,6 +132,13 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
         pageStack->setCurrentWidget(levelModePage);
         gamePage->setOnlineMode(true, socketManager); });
 
+    connect(onlineModePage->msgBox, &OnlineMsgBox::clientConnected, this, [this]()
+            { 
+                qDebug() << "客户端成功连接到服务器";
+                gamePage->setOnlineMode(true, socketManager); });
+
+    connect(onlineModePage->msgBox, &OnlineMsgBox::clientDisconnected, socketManager, &SocketManager::handleClientDisconnected);
+
     connect(levelEditorPage->backButton, &QPushButton::clicked, this, [this]()
             { pageStack->setCurrentWidget(menuPage); });
 
@@ -330,7 +337,8 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
                 if (result == QDialog::Accepted)
                     {
                         // 用户确认退出房间
-                        socketManager->closeConnection();  // closeConnection 内部会发送退出消息
+                        qDebug() << "用户确认退出房间";
+                        socketManager->closeConnection();  // 函数内部会发送退出消息
                         gamePage->setOnlineMode(false, nullptr);
                         pageStack->setCurrentWidget(onlineModePage);
                     }
@@ -388,9 +396,9 @@ void MainWindow::onClientReceivedGameState(const MapData &mapData)
 {
     if (socketManager && !socketManager->isServerMode()) // 确保是客户端
     {
-        gamePage->setOnlineMode(true, socketManager); // 配置gamePage为客户端模式
-        gamePage->setMap(mapData);                    // 设置地图
-        pageStack->setCurrentWidget(gamePage);        // 切换到游戏页面
+        // gamePage->setOnlineMode(true, socketManager); // 配置gamePage为客户端模式
+        gamePage->setMap(mapData);             // 设置地图
+        pageStack->setCurrentWidget(gamePage); // 切换到游戏页面
     }
 }
 

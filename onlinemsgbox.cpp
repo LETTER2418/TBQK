@@ -43,9 +43,7 @@ OnlineMsgBox::OnlineMsgBox(QWidget *parent, SocketManager *manager)
 
     // 布局
     QGridLayout *topLayout = new QGridLayout();
-    topLayout->setContentsMargins(10, 5, 10, 5); // 设置上边距较小，使标签更靠近顶部
-    topLayout->setHorizontalSpacing(1);          // 设置水平间距为5像素
-
+    topLayout->setContentsMargins(10, 5, 10, 5);
     topLayout->addWidget(localIPLabel, 0, 0, 1, 2);
     topLayout->setRowMinimumHeight(1, 15); // 添加15像素的垂直间距
     topLayout->addWidget(portLabel, 4, 0);
@@ -289,7 +287,7 @@ void OnlineMsgBox::handleConnectionError(const QString &error)
 void OnlineMsgBox::handleClientConnected()
 {
     isConnected = true;
-
+    emit clientConnected();
     msgBox->setMessage("成功连接到服务器！");
     msgBox->exec();
 }
@@ -312,10 +310,9 @@ void OnlineMsgBox::setMode(Mode mode)
     }
 }
 
-void OnlineMsgBox::changeIPLabelInputVisibility(bool visible)
+void OnlineMsgBox::changeipInputEnabled(bool enabled)
 {
-    ipLabel->setVisible(visible);
-    ipInput->setVisible(visible);
+    ipInput->setEnabled(enabled);
 }
 
 void OnlineMsgBox::handleNavigateRequest(const QString &pageName)
@@ -358,6 +355,7 @@ void OnlineMsgBox::handleNewClientConnected()
 void OnlineMsgBox::handleRoomLeft()
 {
     // 显示对方退出房间的提示
+    emit clientDisconnected();
     msgBox->setMessage("对方已退出房间！");
     msgBox->exec();
 }

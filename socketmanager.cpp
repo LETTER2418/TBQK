@@ -273,6 +273,7 @@ void SocketManager::handleClientDisconnected()
 
     if (isServer)
     {
+        qDebug() << "Server handleClientDisconnected";
         // 服务器模式：处理客户端断开连接
         if (socket && clientSockets.contains(socket))
         {
@@ -287,7 +288,7 @@ void SocketManager::handleClientDisconnected()
             try
             {
                 socket->disconnect();
-
+                qDebug() << "断开和客户端连接";
                 // 从客户端列表中移除
                 clientSockets.removeOne(socket);
                 clientsState.remove(socket);
@@ -348,6 +349,11 @@ void SocketManager::handleError(QAbstractSocket::SocketError socketError)
     {
         connectionTimer->stop();
     }
+
+    // 记录详细的错误信息
+    qDebug() << "Socket error occurred:" << socketError
+             << "Socket state:" << (socket ? socket->state() : QAbstractSocket::UnconnectedState)
+             << "Is server:" << isServer;
 
     // 忽略RemoteHostClosedError，这个会由handleClientDisconnected处理
     if (socketError == QAbstractSocket::RemoteHostClosedError)
@@ -626,10 +632,14 @@ void SocketManager::closeConnection()
     // 在关闭连接前发送退出房间消息
     if (isServer || (clientSocket && clientSocket->state() == QAbstractSocket::ConnectedState))
     {
+        qDebug() << "发送SendLeaveRoomMessage";
         SendLeaveRoomMessage();
     }
 
-    if (isServer)
+    // 延迟5秒
+    QTimer::singleShot(5000, this, [this]()
+                       {
+         if (isServer)
     {
         // 如果是服务器，断开所有客户端连接
         QList<QTcpSocket *> socketsCopy = clientSockets; // 创建副本避免在迭代过程中修改列表
@@ -691,8 +701,8 @@ void SocketManager::closeConnection()
         }
     }
 
-    // 重置状态
-    isServer = false;
+        // 重置状态
+        isServer = false; });
 }
 
 void SocketManager::setLocalUserId(const QString &userId)

@@ -33,13 +33,13 @@ OnlineMode::OnlineMode(QWidget *parent, SocketManager *manager)
 void OnlineMode::onCreateRoom()
 {
     msgBox->setMode(OnlineMsgBox::CreateMode); // 设置为创建房间模式
-    msgBox->changeIPLabelInputVisibility(false);
+    msgBox->changeipInputEnabled(false);
     msgBox->show();
 }
 
 void OnlineMode::onJoinRoom()
 {
     msgBox->setMode(OnlineMsgBox::JoinMode); // 设置为加入房间模式
-    msgBox->changeIPLabelInputVisibility(true);
+    msgBox->changeipInputEnabled(true);
     msgBox->show();
 }

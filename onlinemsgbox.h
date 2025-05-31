@@ -34,10 +34,12 @@ public:
     void setBackgroundImage(const QString &path);
     void setBackgroundGif(const QString &path);
     void setMode(Mode mode); // 设置对话框模式
-    void changeIPLabelInputVisibility(bool visible);
+    void changeipInputEnabled(bool enabled);
 
 signals:
-    void enterLevelMode(); // 进入关卡模式的信号，同时设置在线模式
+    void enterLevelMode();     // 进入关卡模式的信号，同时设置在线模式
+    void clientConnected();    // 客户端成功连接到服务器
+    void clientDisconnected(); // 客户端断开连接
 
 protected:
     void paintEvent(QPaintEvent *event) override;
