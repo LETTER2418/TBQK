@@ -642,8 +642,27 @@ void Setting::uploadAvatar()
             // 确保头像尺寸与容器尺寸一致
             int size = qMin(avatarLabel->width(), avatarLabel->height());
 
-            // 先将图像缩放为正方形，保持宽高比
-            QPixmap squarePixmap = pixmap.scaled(size, size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            // 创建一个正方形的目标矩形
+            QRect targetRect(0, 0, size, size);
+
+            // 计算源图像的缩放比例，确保完全覆盖目标区域
+            double widthRatio = (double)size / pixmap.width();
+            double heightRatio = (double)size / pixmap.height();
+            double scaleFactor = qMax(widthRatio, heightRatio);
+
+            // 缩放图像，确保覆盖整个目标区域
+            QPixmap scaledPixmap = pixmap.scaled(
+                pixmap.width() * scaleFactor,
+                pixmap.height() * scaleFactor,
+                Qt::KeepAspectRatio,
+                Qt::SmoothTransformation);
+
+            // 计算居中裁剪的起始位置
+            int x = (scaledPixmap.width() - size) / 2;
+            int y = (scaledPixmap.height() - size) / 2;
+
+            // 裁剪为正方形
+            QPixmap squarePixmap = scaledPixmap.copy(x, y, size, size);
 
             // 创建圆形遮罩
             QPixmap roundedPixmap(size, size);
@@ -657,12 +676,8 @@ void Setting::uploadAvatar()
             path.addEllipse(0, 0, size, size);
             painter.setClipPath(path);
 
-            // 计算居中绘制的位置
-            int x = (size - squarePixmap.width()) / 2;
-            int y = (size - squarePixmap.height()) / 2;
-
             // 绘制头像
-            painter.drawPixmap(x, y, squarePixmap);
+            painter.drawPixmap(targetRect, squarePixmap);
             painter.end();
 
             // 保存原始圆形头像以便旋转
@@ -701,13 +716,33 @@ void Setting::loadAvatar()
             // 确保头像尺寸与容器尺寸一致
             int size = qMin(avatarLabel->width(), avatarLabel->height());
 
-            // 先将图像缩放为正方形，保持宽高比
-            QPixmap squarePixmap = pixmap.scaled(size, size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            // 创建一个正方形的目标矩形
+            QRect targetRect(0, 0, size, size);
+
+            // 计算源图像的缩放比例，确保完全覆盖目标区域
+            double widthRatio = (double)size / pixmap.width();
+            double heightRatio = (double)size / pixmap.height();
+            double scaleFactor = qMax(widthRatio, heightRatio);
+
+            // 缩放图像，确保覆盖整个目标区域
+            QPixmap scaledPixmap = pixmap.scaled(
+                pixmap.width() * scaleFactor,
+                pixmap.height() * scaleFactor,
+                Qt::KeepAspectRatio,
+                Qt::SmoothTransformation);
+
+            // 计算居中裁剪的起始位置
+            int x = (scaledPixmap.width() - size) / 2;
+            int y = (scaledPixmap.height() - size) / 2;
+
+            // 裁剪为正方形
+            QPixmap squarePixmap = scaledPixmap.copy(x, y, size, size);
 
             // 创建圆形遮罩
             QPixmap roundedPixmap(size, size);
             roundedPixmap.fill(Qt::transparent);
 
+            // 绑定到一个 QPixmap 对象，创建一个离屏绘图环境
             QPainter painter(&roundedPixmap);
             painter.setRenderHint(QPainter::Antialiasing);
 
@@ -716,12 +751,8 @@ void Setting::loadAvatar()
             path.addEllipse(0, 0, size, size);
             painter.setClipPath(path);
 
-            // 计算居中绘制的位置
-            int x = (size - squarePixmap.width()) / 2;
-            int y = (size - squarePixmap.height()) / 2;
-
             // 绘制头像
-            painter.drawPixmap(x, y, squarePixmap);
+            painter.drawPixmap(targetRect, squarePixmap);
             painter.end();
 
             // 保存原始圆形头像以便旋转
