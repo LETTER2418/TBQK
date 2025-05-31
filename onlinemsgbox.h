@@ -37,9 +37,8 @@ public:
     void changeipInputEnabled(bool enabled);
 
 signals:
-    void enterLevelMode();     // 进入关卡模式的信号，同时设置在线模式
-    void clientConnected();    // 客户端成功连接到服务器
-    void clientDisconnected(); // 客户端断开连接
+    void enterLevelMode(bool isServer); // 进入关卡模式的信号，同时设置在线模式
+    void clientConnected();             // 客户端成功连接到服务器
 
 protected:
     void paintEvent(QPaintEvent *event) override;

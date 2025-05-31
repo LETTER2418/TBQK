@@ -23,7 +23,6 @@ public:
     void StartClient(const QString &serverAddress = "127.0.0.1");
     void SendChatMessage(const QString &message, const QString &sender = "User");
     void SendGameState(const MapData &mapData);                         // 发送游戏状态
-    void SendLeaveRoomMessage();                                        // 发送退出房间消息
     void SendAvatarImage(const QPixmap &avatar, const QString &userId); // 发送头像图像数据
     void closeConnection();                                             // 关闭连接
     bool isServerMode() const;                                          // 用于检查当前是否为服务器模式

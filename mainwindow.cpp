@@ -127,17 +127,15 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
             }
         pageStack->setCurrentWidget(menuPage); });
 
-    connect(onlineModePage->msgBox, &OnlineMsgBox::enterLevelMode, this, [this]()
+    connect(onlineModePage->msgBox, &OnlineMsgBox::enterLevelMode, this, [this](bool isServer)
             {
         pageStack->setCurrentWidget(levelModePage);
-        gamePage->setOnlineMode(true, socketManager); });
+          gamePage->setOnlineMode(isServer, socketManager); });
 
     connect(onlineModePage->msgBox, &OnlineMsgBox::clientConnected, this, [this]()
             { 
                 qDebug() << "客户端成功连接到服务器";
-                gamePage->setOnlineMode(true, socketManager); });
-
-    connect(onlineModePage->msgBox, &OnlineMsgBox::clientDisconnected, socketManager, &SocketManager::handleClientDisconnected);
+                gamePage->setOnlineMode(false, socketManager); });
 
     connect(levelEditorPage->backButton, &QPushButton::clicked, this, [this]()
             { pageStack->setCurrentWidget(menuPage); });

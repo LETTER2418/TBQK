@@ -83,7 +83,7 @@ OnlineMsgBox::OnlineMsgBox(QWidget *parent, SocketManager *manager)
                 if(startServer())
                     {
                         hide();
-                        emit enterLevelMode();
+                        emit enterLevelMode(true);
                     }
             }
         else
@@ -321,7 +321,7 @@ void OnlineMsgBox::handleNavigateRequest(const QString &pageName)
     {
         // 客户端收到指令，切换到levelModePage
         // 它通过发出 enterLevelMode 信号，让 MainWindow 处理页面切换
-        emit enterLevelMode();
+        emit enterLevelMode(false);
         hide();
     }
 }
@@ -355,7 +355,6 @@ void OnlineMsgBox::handleNewClientConnected()
 void OnlineMsgBox::handleRoomLeft()
 {
     // 显示对方退出房间的提示
-    emit clientDisconnected();
     msgBox->setMessage("对方已退出房间！");
     msgBox->exec();
 }
