@@ -44,6 +44,8 @@ signals:
     void avatarImageReceived(const QString &userId, const QPixmap &avatar); // 接收到头像图像的信号
     void newClientConnected();                                              // 新的客户端连接到服务器的信号
     void duplicateIdDetected();                                             // 检测到重复ID的信号
+    void levelCompleted(int timeUsed);                                      // 对方完成关卡的信号
+
 public slots:
     void handleClientDisconnected();
 

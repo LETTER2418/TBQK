@@ -75,6 +75,8 @@ public:
 signals:
     // 返回关卡模式的信号，携带完成信息
     void returnToLevelMode(bool completed = false, int timeUsed = 0, int steps = 0, int levelId = 0);
+    // 通知对方完成关卡的信号
+    void levelCompleted(int timeUsed);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -86,6 +88,7 @@ private slots:
     void onRadiusAdjustButtonClicked();               // 处理半径调整按钮点击事件
     void onRadiusSpinBoxChanged(int value);           // 处理半径调整输入框变化事件
     void resetCurrentLevel();                         // 重置关卡
+    void onOpponentLevelCompleted(int timeUsed);      // 处理对方完成关卡的消息
 
     // 六边形粒子特效相关槽函数
     void updateParticles();

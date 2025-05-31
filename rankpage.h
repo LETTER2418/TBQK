@@ -18,7 +18,7 @@ public:
     explicit RankPage(QWidget *parent = nullptr, DataManager *dataManager_ = nullptr);
     ~RankPage();
 
-    void refreshRankingList(const QVector<Ranking>& rankings);
+    void refreshRankingList(const QVector<Ranking> &rankings);
     Lbutton *backButton;
 
 protected:
@@ -43,4 +43,4 @@ private:
     QString formatTime(int seconds) const;
 };
 
-#endif // RANKPAGE_H 
+#endif // RANKPAGE_H

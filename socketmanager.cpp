@@ -186,13 +186,13 @@ void SocketManager::SendGameState(const MapData &mapData)
             ServerAddSendMsgList(clientSocket, jsonMessage);
         }
         ServerProcessSendClientsMsgList();
-        qDebug() << "服务端发送地图数据给" << clientSockets.size() << "个client";
+        // qDebug() << "服务端发送地图数据给" << clientSockets.size() << "个client";
     }
     else if (clientSocket && clientSocket->state() == QAbstractSocket::ConnectedState)
     {
         // 客户端发送游戏状态给服务器
         sendJson(clientSocket, jsonMessage);
-        qDebug() << "客户端发送地图数据";
+        // qDebug() << "客户端发送地图数据";
     }
 }
 
@@ -244,8 +244,6 @@ void SocketManager::handleNewConnection()
     clientSockets.append(clientSocket);
     clientsState[clientSocket] = true;                       // 设置初始状态
     serverSendMsgList[clientSocket] = QQueue<QJsonObject>(); // 初始化消息队列
-
-    qDebug() << "clientSockets.size:" << clientSockets.size();
 }
 
 void SocketManager::handleClientDisconnected()
@@ -571,6 +569,13 @@ void SocketManager::processReceivedData(const QByteArray &data)
                 // 发送头像数据信号
                 emit avatarImageReceived(userId, avatar);
             }
+        }
+        else if (type == "levelCompleted")
+        {
+            // 处理对方完成关卡的消息
+            int timeUsed = json["timeUsed"].toInt();
+            emit levelCompleted(timeUsed);
+            qDebug() << "收到对方完成关卡的消息";
         }
     }
 }

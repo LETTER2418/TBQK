@@ -6,6 +6,8 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QResizeEvent>
+#include <QJsonObject>
+#include <QDateTime>
 #include "game.h"
 
 Game::Game(QWidget *parent, DataManager *dataManager_) : QWidget(parent), dataManager(dataManager_)
@@ -218,20 +220,19 @@ void Game::handleGameCompletion()
     // 停止计时器
     stopTimer();
 
-    // 仅在非联机模式或服务器模式下发送带有完成信息的信号
-    // 客户端模式下不更新排行榜数据
-    if (!isOnlineMode || isServer)
-    {
-        emit returnToLevelMode(true, penaltySeconds, stepCount, currentLevelId);
-    }
-    else
-    {
-        // 客户端模式也应发送游戏完成的信号 (true)
-        emit returnToLevelMode(false, penaltySeconds, stepCount, currentLevelId);
-    }
-
     if (isOnlineMode)
     {
+        // 发送完成关卡的消息给对方
+        if (socketManager)
+        {
+            QJsonObject jsonMessage;
+            jsonMessage["type"] = "levelCompleted";
+            jsonMessage["timeUsed"] = penaltySeconds;
+            jsonMessage["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
+            socketManager->sendJson(socketManager->isServerMode() ? socketManager->getClientSockets().first() : socketManager->getClientSocket(), jsonMessage);
+            qDebug() << "发送完成关卡的消息";
+        }
+
         hintButton->setEnabled(false);
         withdrawButton->setEnabled(false);
         pathToggleButton->setEnabled(false);
@@ -239,9 +240,11 @@ void Game::handleGameCompletion()
         radiusSpinBox->setEnabled(false);
     }
 
-    QString message = QString("恭喜完成！用时：%1").arg(timeText);
+    QString message = QString("恭喜通关！用时：%1").arg(timeText);
     messageBox->setMessage(message);
     messageBox->exec();
+
+    emit returnToLevelMode(true, penaltySeconds, stepCount, currentLevelId);
 }
 
 // === 六边形操作 ===
@@ -420,15 +423,6 @@ void Game::paintEvent(QPaintEvent *event)
 
 void Game::mousePressEvent(QMouseEvent *event)
 {
-    static int clickCount = -1;
-    clickCount++;
-
-    // 在联机模式下，如果游戏已完成，则不处理点击事件
-    if (clickCount && isOnlineMode && checkGameComplete())
-    {
-        return;
-    }
-
     // 如果正在显示提示，忽略点击事件
     if (isShowingHint)
     {
@@ -768,12 +762,21 @@ void Game::setCurrentLevelId(int id)
 
 void Game::setSocketManager(SocketManager *manager)
 {
+    if (socketManager)
+    {
+        // 断开之前的连接，否则会重复connect
+        disconnect(socketManager, &SocketManager::gameStateReceived, this, &Game::onGameStateReceived);
+        disconnect(socketManager, &SocketManager::levelCompleted, this, &Game::onOpponentLevelCompleted);
+    }
+
     socketManager = manager;
 
     if (socketManager)
     {
         // 连接游戏状态接收信号
         connect(socketManager, &SocketManager::gameStateReceived, this, &Game::onGameStateReceived);
+        // 连接处理对方完成关卡的信号
+        connect(socketManager, &SocketManager::levelCompleted, this, &Game::onOpponentLevelCompleted);
     }
 }
 
@@ -796,6 +799,15 @@ void Game::onGameStateReceived(const MapData &mapData)
         setMap(mapData);
         update();
     }
+}
+
+void Game::onOpponentLevelCompleted(int timeUsed)
+{
+    // 显示对方完成关卡的提示消息
+    qDebug() << "调用onOpponentLevelCompleted";
+    QString message = QString("对方已通关！用时：%1秒").arg(timeUsed);
+    messageBox->setMessage(message);
+    messageBox->exec();
 }
 
 void Game::onRadiusAdjustButtonClicked()
