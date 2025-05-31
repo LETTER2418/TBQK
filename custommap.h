@@ -4,6 +4,8 @@
 #include "lbutton.h"
 #include "mapdata.h"
 #include <QWidget>
+#include "messagebox.h"
+#include <QSpinBox>
 
 class CustomMap : public QWidget
 {
@@ -23,20 +25,27 @@ protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void drawHexagon(QPainter &painter, const QPointF &center, int radius);
+    void resizeEvent(QResizeEvent *event) override;
 
 private:
-    // 计算路径的得分（访问的边数）
-    double calculatePathScore(const QVector<int> &path, const QVector<QVector<int>> &graph);
-    // 模拟退火算法判断是否能一笔联通，并返回最佳路径
-    bool simulatedAnnealing(const QVector<QVector<int>> &graph, QVector<int> &bestPath);
-
+    QVector<QPoint> path;
+    MessageBox *messageBox;
     QVector<HexCell> hexagons;
     int radius = 50;
     QPointF center = QPointF(850, 440);
     QColor color1, color2, color3;
-    QVector<QPoint> path;
     int id;
-    int rings;
+    int rings = 3;
+
+    bool isAutoRadius = false;
+    Lbutton *radiusAdjustButton;
+    QSpinBox *radiusSpinBox;
+    void onRadiusAdjustButtonClicked();
+    void onRadiusSpinBoxChanged(int value);
+    void resetHexagons(const QVector<HexCell> &currentHexagons, int oldRadius, int newRadius);
+
+    double calculatePathScore(const QVector<int> &path, const QVector<QVector<int>> &graph);
+    bool simulatedAnnealing(const QVector<QVector<int>> &graph, QVector<int> &bestPath);
 };
 
 #endif // CUSTOMMAP_H
