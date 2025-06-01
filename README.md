@@ -42,22 +42,6 @@
 4. 使用提示系统获取帮助
 5. 尝试获得最高分数
 
-## 📝 开发计划
-
-- [ ] 添加音效系统
-- [ ] 实现多人模式
-- [ ] 添加动画效果
-
-## 🤝 贡献指南
-
-欢迎提交问题和功能请求！如果您想贡献代码，请遵循以下步骤：
-
-1. Fork 项目
-2. 创建您的特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交您的更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启一个 Pull Request
-
 ## 👥 作者
 
 - LETTTER - 初始开发者
@@ -65,5 +49,5 @@
 ## 🙏 致谢
 
 - Qt 框架
-- 所有参与此项目的AI以及相关博客撰写者
+- AI
 - 测试用户
