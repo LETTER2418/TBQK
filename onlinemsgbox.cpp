@@ -302,11 +302,11 @@ void OnlineMsgBox::setMode(Mode mode)
     currentMode = mode;
     if (mode == CreateMode)
     {
-        actionButton->setText("创建");
+        actionButton->setText("🏠 创建");
     }
     else
     {
-        actionButton->setText("加入");
+        actionButton->setText("🚪 加入");
     }
 }
 

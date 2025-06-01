@@ -14,6 +14,9 @@
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMenu>
+#include <QGridLayout>
+#include <QWidgetAction>
 #include "socketmanager.h"
 #include "lbutton.h"
 #include "datamanager.h"
@@ -113,6 +116,8 @@ private slots:
     void sendImage();
     // 接收头像图片
     void onAvatarImageReceived(const QString &userId, const QPixmap &avatar);
+    void showEmojiMenu();                   // 显示emoji菜单
+    void insertEmoji(const QString &emoji); // 插入emoji到输入框
 
 private:
     // 添加水平分隔线
@@ -146,6 +151,12 @@ private:
     QMap<QString, QPixmap> userAvatars;
     QPixmap defaultAvatar;
     const QString avatarPath = ":/avatar/"; // 头像路径
+
+    // Emoji相关成员
+    Lbutton *emojiButton;
+    QMenu *emojiMenu;
+    void initEmojiMenu();     // 初始化emoji菜单
+    QStringList commonEmojis; // 常用emoji列表
 };
 
 #endif // ONLINECHAT_H

@@ -165,18 +165,19 @@ OnlineChat::OnlineChat(SocketManager *manager, DataManager *dm, QWidget *parent)
     buttonLayout = new QHBoxLayout();
     buttonLayout->setContentsMargins(0, 5, 0, 5);
 
-    // 发送按钮
-    sendButton = new Lbutton(bottomPanel, "📤 发送");
-    sendButton->setStyleSheet("QPushButton {"
-                              "color:black"
-                              "}");
+    // 添加emoji按钮
+    emojiButton = new Lbutton(bottomPanel, "😊");
+    emojiButton->setStyleSheet("QPushButton { color: black; }");
 
     // 添加图片按钮
     imageButton = new Lbutton(bottomPanel, "📷 图片");
-    imageButton->setStyleSheet("QPushButton {"
-                               "color:black"
-                               "}");
+    imageButton->setStyleSheet("QPushButton { color: black; }");
 
+    // 发送按钮
+    sendButton = new Lbutton(bottomPanel, "📤 发送");
+    sendButton->setStyleSheet("QPushButton { color: black; }");
+
+    buttonLayout->addWidget(emojiButton);
     buttonLayout->addStretch();
     buttonLayout->addWidget(imageButton);
     buttonLayout->addWidget(sendButton);
@@ -189,12 +190,16 @@ OnlineChat::OnlineChat(SocketManager *manager, DataManager *dm, QWidget *parent)
 
     setLayout(mainLayout);
 
-    // Connections
+    // 初始化emoji菜单
+    initEmojiMenu();
+
+    // 连接信号槽
     connect(socketManager, &SocketManager::newMessageReceived, this, &OnlineChat::displayMessage);
     connect(socketManager, &SocketManager::avatarImageReceived, this, &OnlineChat::onAvatarImageReceived);
     connect(socketManager, &SocketManager::imageReceived, this, &OnlineChat::displayImage);
     connect(sendButton, &QPushButton::clicked, this, &OnlineChat::sendMessage);
     connect(imageButton, &QPushButton::clicked, this, &OnlineChat::sendImage);
+    connect(emojiButton, &QPushButton::clicked, this, &OnlineChat::showEmojiMenu);
 
     // 安装事件过滤器以捕获messageInput中的按键事件
     messageInput->installEventFilter(this);
@@ -699,4 +704,91 @@ void OnlineChat::sendImage()
             socketManager->SendAvatarImage(image, localUserId, "image_data");
         }
     }
+}
+
+// 初始化emoji菜单
+void OnlineChat::initEmojiMenu()
+{
+    emojiMenu = new QMenu(this);
+    emojiMenu->setStyleSheet(
+        "QMenu {"
+        "    background-color: white;"
+        "    border: 1px solid #CCCCCC;"
+        "    border-radius: 5px;"
+        "    padding: 5px;"
+        "}"
+        "QMenu::item {"
+        "    padding: 5px;"
+        "    border-radius: 3px;"
+        "}"
+        "QMenu::item:selected {"
+        "    background-color: #E6E6E6;"
+        "}");
+
+    // 初始化常用emoji列表
+    commonEmojis = {
+        "😊", "😂", "🤣", "❤️", "😍",
+        "👍", "😒", "😘", "🙄", "😭",
+        "😉", "😎", "🤔", "😢", "😡",
+        "🎉", "✨", "🌟", "💕", "🤗",
+        "👋", "🙏", "💪", "👏", "🤝"};
+
+    // 创建网格布局
+    QWidget *emojiWidget = new QWidget;
+    QGridLayout *gridLayout = new QGridLayout(emojiWidget);
+    gridLayout->setSpacing(5);
+
+    // 将emoji添加到网格布局中
+    int row = 0;
+    int col = 0;
+    const int COLS = 5;
+
+    for (const QString &emoji : commonEmojis)
+    {
+        QPushButton *emojiBtn = new QPushButton(emoji);
+        emojiBtn->setFixedSize(30, 30);
+        emojiBtn->setStyleSheet(
+            "QPushButton {"
+            "    background-color: transparent;"
+            "    border: none;"
+            "    font-size: 16px;"
+            "}"
+            "QPushButton:hover {"
+            "    background-color: #E6E6E6;"
+            "    border-radius: 3px;"
+            "}");
+
+        connect(emojiBtn, &QPushButton::clicked, this, [this, emoji]()
+                {
+            insertEmoji(emoji);
+            emojiMenu->hide(); });
+
+        gridLayout->addWidget(emojiBtn, row, col);
+        col++;
+        if (col >= COLS)
+        {
+            col = 0;
+            row++;
+        }
+    }
+
+    QWidgetAction *widgetAction = new QWidgetAction(emojiMenu);
+    widgetAction->setDefaultWidget(emojiWidget);
+    emojiMenu->addAction(widgetAction);
+}
+
+// 显示emoji菜单
+void OnlineChat::showEmojiMenu()
+{
+    if (emojiMenu)
+    {
+        QPoint pos = emojiButton->mapToGlobal(QPoint(0, -emojiMenu->sizeHint().height()));
+        emojiMenu->popup(pos);
+    }
+}
+
+// 插入emoji到输入框
+void OnlineChat::insertEmoji(const QString &emoji)
+{
+    messageInput->insertPlainText(emoji);
 }
