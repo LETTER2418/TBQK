@@ -19,13 +19,19 @@ Start::Start(QWidget *parent, DataManager *dataManager_, SocketManager *socketMa
     accountLineEdit = new QLineEdit(this);
     accountLineEdit->setPlaceholderText("请输入账号");
     accountLineEdit->setText("1"); // 设置默认文本为"1"
-    accountLineEdit->setFixedSize(200, 50);
+    accountLineEdit->setFixedSize(180, 40);
 
     passwordLineEdit = new QLineEdit(this);
     passwordLineEdit->setPlaceholderText("请输入密码");
     passwordLineEdit->setEchoMode(QLineEdit::Password); // 设置密码框隐藏输入的文字
     passwordLineEdit->setText("1");                     // 设置默认文本为"1"
-    passwordLineEdit->setFixedSize(200, 50);
+    passwordLineEdit->setFixedSize(180, 40);
+
+    // 创建标签
+    QLabel *accountLabel = new QLabel("账号", this);
+    accountLabel->setStyleSheet("QLabel { color: white; font-size: 16px; }");
+    QLabel *passwordLabel = new QLabel("密码", this);
+    passwordLabel->setStyleSheet("QLabel { color: white; font-size: 16px; }");
 
     // 创建主布局
     QHBoxLayout *mainLayout = new QHBoxLayout(this);
@@ -47,8 +53,19 @@ Start::Start(QWidget *parent, DataManager *dataManager_, SocketManager *socketMa
     groupBoxLayout->setAlignment(Qt::AlignHCenter);
 
     groupBoxLayout->addStretch(1);
-    groupBoxLayout->addWidget(accountLineEdit, 0, Qt::AlignHCenter);
-    groupBoxLayout->addWidget(passwordLineEdit, 0, Qt::AlignHCenter);
+
+    // 创建水平布局来放置账号标签和输入框
+    QHBoxLayout *accountLayout = new QHBoxLayout();
+    accountLayout->addWidget(accountLabel);
+    accountLayout->addWidget(accountLineEdit);
+    groupBoxLayout->addLayout(accountLayout);
+
+    // 创建水平布局来放置密码标签和输入框
+    QHBoxLayout *passwordLayout = new QHBoxLayout();
+    passwordLayout->addWidget(passwordLabel);
+    passwordLayout->addWidget(passwordLineEdit);
+    groupBoxLayout->addLayout(passwordLayout);
+
     groupBoxLayout->addWidget(showPasswordButton, 0, Qt::AlignHCenter);
     groupBoxLayout->addStretch(1);
 
