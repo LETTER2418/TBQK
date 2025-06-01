@@ -19,10 +19,10 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     // 创建 mainPage，并将四个按钮放入
     mainPage = new QWidget(this);
 
-    startButton = new Lbutton(mainPage, "开始游戏");
-    aboutButton = new Lbutton(mainPage, "关于");
-    settingButton = new Lbutton(mainPage, "设置");
-    exitButton = new Lbutton(mainPage, "退出");
+    startButton = new Lbutton(mainPage, "🚀 开始游戏");
+    aboutButton = new Lbutton(mainPage, "📖 关于");
+    settingButton = new Lbutton(mainPage, "⚙️ 设置");
+    exitButton = new Lbutton(mainPage, "👋 退出");
 
     // 退出按钮连接到窗口关闭
     QObject::connect(exitButton, &QPushButton::clicked, this, &QWidget::close);

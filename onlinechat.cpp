@@ -51,14 +51,14 @@ ChatBubble::ChatBubble(const QString &text, bool isSelf, QPixmap avatar, QWidget
     int textWidth = fm.horizontalAdvance(text);
 
     if (textWidth > maxWidth)
-        {
-            messageLabel->setFixedWidth(maxWidth);
-        }
+    {
+        messageLabel->setFixedWidth(maxWidth);
+    }
     else
-        {
-            // 增加边距确保文本完全显示
-            messageLabel->setMinimumWidth(textWidth + 30);
-        }
+    {
+        // 增加边距确保文本完全显示
+        messageLabel->setMinimumWidth(textWidth + 30);
+    }
 
     // 添加时间标签
     timeLabel = new QLabel(this);
@@ -75,17 +75,17 @@ ChatBubble::ChatBubble(const QString &text, bool isSelf, QPixmap avatar, QWidget
 
     // 根据是否是自己的消息来布局
     if (isSelf)
-        {
-            layout->addStretch();
-            layout->addLayout(messageWithTimeLayout);
-            layout->addWidget(avatarLabel);
-        }
+    {
+        layout->addStretch();
+        layout->addLayout(messageWithTimeLayout);
+        layout->addWidget(avatarLabel);
+    }
     else
-        {
-            layout->addWidget(avatarLabel);
-            layout->addLayout(messageWithTimeLayout);
-            layout->addStretch();
-        }
+    {
+        layout->addWidget(avatarLabel);
+        layout->addLayout(messageWithTimeLayout);
+        layout->addStretch();
+    }
 
     setLayout(layout);
 }
@@ -161,7 +161,7 @@ OnlineChat::OnlineChat(SocketManager *manager, DataManager *dm, QWidget *parent)
     buttonLayout->setContentsMargins(0, 5, 0, 5);
 
     // 发送按钮
-    sendButton = new Lbutton(bottomPanel, "发送");
+    sendButton = new Lbutton(bottomPanel, "📤 发送");
     sendButton->setStyleSheet("QPushButton {"
                               "color:black"
                               "}");
@@ -206,21 +206,21 @@ QPixmap OnlineChat::loadAvatar(const QString &userId)
 {
     // 检查是否已缓存头像
     if (userAvatars.contains(userId))
-        {
-            return userAvatars[userId];
-        }
+    {
+        return userAvatars[userId];
+    }
 
     // 如果dataManager可用，使用它加载头像
     if (dataManager)
+    {
+        QPixmap avatar = dataManager->loadAvatarFile(userId);
+        if (!avatar.isNull())
         {
-            QPixmap avatar = dataManager->loadAvatarFile(userId);
-            if (!avatar.isNull())
-                {
-                    // 缓存并返回加载的头像
-                    userAvatars[userId] = avatar.scaled(40, 40, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-                    return userAvatars[userId];
-                }
+            // 缓存并返回加载的头像
+            userAvatars[userId] = avatar.scaled(40, 40, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            return userAvatars[userId];
         }
+    }
 
     // 使用默认白色头像
     userAvatars[userId] = defaultAvatar;
@@ -232,18 +232,18 @@ QPixmap OnlineChat::loadAvatarFromSettings()
 {
     // 如果DataManager可用，从DataManager获取头像文件
     if (dataManager)
+    {
+        QString userId = socketManager->getLocalUserId();
+        if (!userId.isEmpty())
         {
-            QString userId = socketManager->getLocalUserId();
-            if (!userId.isEmpty())
-                {
-                    // 直接从文件加载头像
-                    QPixmap avatar = dataManager->loadAvatarFile(userId);
-                    if (!avatar.isNull())
-                        {
-                            return avatar.scaled(40, 40, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-                        }
-                }
+            // 直接从文件加载头像
+            QPixmap avatar = dataManager->loadAvatarFile(userId);
+            if (!avatar.isNull())
+            {
+                return avatar.scaled(40, 40, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            }
         }
+    }
 
     // 无法加载头像，返回默认白色头像
     return defaultAvatar;
@@ -255,23 +255,23 @@ void OnlineChat::setUserAvatar(const QString &userId)
     // 从设置中加载
     QPixmap settingsAvatar = loadAvatarFromSettings();
     if (!settingsAvatar.isNull())
+    {
+        userAvatars[userId] = settingsAvatar;
+        // 如果设置的是当前用户的头像，发送给对方
+        if (socketManager && userId == socketManager->getLocalUserId())
         {
-            userAvatars[userId] = settingsAvatar;
-            // 如果设置的是当前用户的头像，发送给对方
-            if (socketManager && userId == socketManager->getLocalUserId())
-                {
-                    socketManager->SendAvatarImage(userAvatars[userId], userId);
-                }
+            socketManager->SendAvatarImage(userAvatars[userId], userId);
         }
+    }
     else
+    {
+        // 设置为默认白色头像
+        userAvatars[userId] = defaultAvatar;
+        if (socketManager && userId == socketManager->getLocalUserId())
         {
-            // 设置为默认白色头像
-            userAvatars[userId] = defaultAvatar;
-            if (socketManager && userId == socketManager->getLocalUserId())
-                {
-                    socketManager->SendAvatarImage(defaultAvatar, userId);
-                }
+            socketManager->SendAvatarImage(defaultAvatar, userId);
         }
+    }
 }
 
 void OnlineChat::displayMessage(const QString &userId, const QString &message, bool isSelfMessage)
@@ -280,14 +280,14 @@ void OnlineChat::displayMessage(const QString &userId, const QString &message, b
 
     // 处理空消息 - 用于用户ID交换
     if (message.isEmpty())
+    {
+        // 如果不是自己的ID，则更新对方用户名
+        if (userId != localUserId && socketManager)
         {
-            // 如果不是自己的ID，则更新对方用户名
-            if (userId != localUserId && socketManager)
-                {
-                    remoteUserLabel->setText(userId);
-                }
-            return;
+            remoteUserLabel->setText(userId);
         }
+        return;
+    }
 
     // 处理非空消息 - 正常聊天内容
     // 使用传入的isSelfMessage参数确定消息来源
@@ -296,15 +296,15 @@ void OnlineChat::displayMessage(const QString &userId, const QString &message, b
     // 加载合适的头像 - 确保使用正确的头像
     QPixmap avatar;
     if (isSelf)
-        {
-            // 如果是自己发送的消息，使用自己的头像
-            avatar = loadAvatar(localUserId);
-        }
+    {
+        // 如果是自己发送的消息，使用自己的头像
+        avatar = loadAvatar(localUserId);
+    }
     else
-        {
-            // 如果是对方发送的消息，使用对方的头像
-            avatar = loadAvatar(userId);
-        }
+    {
+        // 如果是对方发送的消息，使用对方的头像
+        avatar = loadAvatar(userId);
+    }
 
     // 创建聊天气泡，确保isSelf状态正确
     ChatBubble *bubble = new ChatBubble(message, isSelf, avatar, chatContentWidget);
@@ -337,83 +337,83 @@ void OnlineChat::sendMessage()
 {
     QString message = messageInput->toPlainText().trimmed();
     if (!message.isEmpty())
+    {
+        // 获取本地用户ID
+        QString localUserId = socketManager->getLocalUserId();
+        if (localUserId.isEmpty())
         {
-            // 获取本地用户ID
-            QString localUserId = socketManager->getLocalUserId();
-            if (localUserId.isEmpty())
-                {
-                    localUserId = "User"; // 如果获取不到 UserId，使用默认值
-                }
-
-            // 先发送网络消息
-            socketManager->SendChatMessage(message, localUserId);
-
-            // 检查本地用户头像是否存在，如果不存在则加载
-            if (!userAvatars.contains(localUserId))
-                {
-                    QPixmap avatar = loadAvatarFromSettings();
-                    if (avatar.isNull())
-                        {
-                            avatar = defaultAvatar;
-                        }
-                    userAvatars[localUserId] = avatar;
-
-                    // 发送头像给对方
-                    socketManager->SendAvatarImage(avatar, localUserId);
-                }
-
-            // 立即在本地显示自己发送的消息 - 注意：这里不通过信号触发，而是直接调用displayMessage
-            // 这样sender()就不是socketManager，可以在displayMessage中区分出本地发出的消息
-            displayMessage(localUserId, message, true);
-            messageInput->clear();
+            localUserId = "User"; // 如果获取不到 UserId，使用默认值
         }
+
+        // 先发送网络消息
+        socketManager->SendChatMessage(message, localUserId);
+
+        // 检查本地用户头像是否存在，如果不存在则加载
+        if (!userAvatars.contains(localUserId))
+        {
+            QPixmap avatar = loadAvatarFromSettings();
+            if (avatar.isNull())
+            {
+                avatar = defaultAvatar;
+            }
+            userAvatars[localUserId] = avatar;
+
+            // 发送头像给对方
+            socketManager->SendAvatarImage(avatar, localUserId);
+        }
+
+        // 立即在本地显示自己发送的消息 - 注意：这里不通过信号触发，而是直接调用displayMessage
+        // 这样sender()就不是socketManager，可以在displayMessage中区分出本地发出的消息
+        displayMessage(localUserId, message, true);
+        messageInput->clear();
+    }
 }
 
 // 发送当前用户的头像
 void OnlineChat::sendCurrentUserAvatar()
 {
     if (!socketManager)
-        {
-            return;
-        }
+    {
+        return;
+    }
 
     QString localUserId = socketManager->getLocalUserId();
     if (localUserId.isEmpty())
-        {
-            return;
-        }
+    {
+        return;
+    }
 
     // 检查是否已有当前用户的头像
     if (userAvatars.contains(localUserId))
-        {
-            // 发送已有头像给对方
-            socketManager->SendAvatarImage(userAvatars[localUserId], localUserId);
-        }
+    {
+        // 发送已有头像给对方
+        socketManager->SendAvatarImage(userAvatars[localUserId], localUserId);
+    }
     else
+    {
+        // 尝试从设置中加载头像
+        QPixmap avatar = loadAvatarFromSettings();
+        if (!avatar.isNull())
         {
-            // 尝试从设置中加载头像
-            QPixmap avatar = loadAvatarFromSettings();
-            if (!avatar.isNull())
-                {
-                    userAvatars[localUserId] = avatar;
-                    socketManager->SendAvatarImage(avatar, localUserId);
-                }
-            else
-                {
-                    // 使用默认头像
-                    userAvatars[localUserId] = defaultAvatar;
-                    socketManager->SendAvatarImage(defaultAvatar, localUserId);
-                }
+            userAvatars[localUserId] = avatar;
+            socketManager->SendAvatarImage(avatar, localUserId);
         }
+        else
+        {
+            // 使用默认头像
+            userAvatars[localUserId] = defaultAvatar;
+            socketManager->SendAvatarImage(defaultAvatar, localUserId);
+        }
+    }
 }
 
 // 接收头像图片
 void OnlineChat::onAvatarImageReceived(const QString &userId, const QPixmap &avatar)
 {
     if (userId.isEmpty() || avatar.isNull())
-        {
-            return;
-        }
+    {
+        return;
+    }
 
     QString localUserId = socketManager->getLocalUserId();
 
@@ -422,20 +422,20 @@ void OnlineChat::onAvatarImageReceived(const QString &userId, const QPixmap &ava
 
     // 只在接收头像且有活跃连接时更新对方的用户名显示
     if (socketManager && userId != localUserId && socketManager && !socketManager->getClientSockets().isEmpty())
-        {
-            remoteUserLabel->setText(userId);
-        }
+    {
+        remoteUserLabel->setText(userId);
+    }
 
     // 更新所有相关聊天气泡的头像
     for (int i = 0; i < chatContentLayout->count(); ++i)
+    {
+        QWidget *widget = chatContentLayout->itemAt(i)->widget();
+        ChatBubble *bubble = qobject_cast<ChatBubble *>(widget);
+        if (bubble && bubble->getUserId() == userId)
         {
-            QWidget *widget = chatContentLayout->itemAt(i)->widget();
-            ChatBubble *bubble = qobject_cast<ChatBubble *>(widget);
-            if (bubble && bubble->getUserId() == userId)
-                {
-                    bubble->updateAvatar(avatar);
-                }
+            bubble->updateAvatar(avatar);
         }
+    }
 }
 
 // 清空聊天历史记录
@@ -444,22 +444,22 @@ void OnlineChat::clearChatHistory()
     // 删除所有聊天气泡
     QLayoutItem *child;
     while ((child = chatContentLayout->takeAt(0)) != nullptr)
+    {
+        if (child->widget())
         {
-            if (child->widget())
-                {
-                    delete child->widget();
-                }
-            delete child;
+            delete child->widget();
         }
+        delete child;
+    }
 }
 
 // 更新头像
 void ChatBubble::updateAvatar(const QPixmap &newAvatar)
 {
     if (newAvatar.isNull())
-        {
-            return;
-        }
+    {
+        return;
+    }
 
     avatar = newAvatar;
     avatarLabel->setPixmap(newAvatar);
@@ -469,15 +469,15 @@ void ChatBubble::updateAvatar(const QPixmap &newAvatar)
 void OnlineChat::announceUserPresence()
 {
     if (!socketManager)
-        {
-            return;
-        }
+    {
+        return;
+    }
 
     QString localUserId = socketManager->getLocalUserId();
     if (localUserId.isEmpty())
-        {
-            return;
-        }
+    {
+        return;
+    }
 
     // 无论是服务端还是客户端，都发送自己的用户ID（空消息）
     socketManager->SendChatMessage("", localUserId);
@@ -509,39 +509,39 @@ QString ChatBubble::insertLineBreaks(const QString &text, int maxWidth, const QF
     // 处理中文和非空格分隔的语言
     // 按字符处理
     for (int i = 0; i < text.length(); ++i)
+    {
+        QChar ch = text.at(i);
+        QString testLine = currentLine + ch;
+
+        // 如果字符是换行符，直接添加并重置当前行
+        if (ch == '\n')
         {
-            QChar ch = text.at(i);
-            QString testLine = currentLine + ch;
-
-            // 如果字符是换行符，直接添加并重置当前行
-            if (ch == '\n')
-                {
-                    result += currentLine + '\n';
-                    currentLine.clear();
-                    continue;
-                }
-
-            // 测量当前行加上新字符的宽度
-            int lineWidth = fm.horizontalAdvance(testLine);
-
-            if (lineWidth <= safeWidth)
-                {
-                    // 如果宽度不超过安全宽度，添加字符到当前行
-                    currentLine = testLine;
-                }
-            else
-                {
-                    // 宽度超过安全宽度，将当前行添加到结果，并将当前字符作为新行的开始
-                    result += currentLine + '\n';
-                    currentLine = ch;
-                }
+            result += currentLine + '\n';
+            currentLine.clear();
+            continue;
         }
+
+        // 测量当前行加上新字符的宽度
+        int lineWidth = fm.horizontalAdvance(testLine);
+
+        if (lineWidth <= safeWidth)
+        {
+            // 如果宽度不超过安全宽度，添加字符到当前行
+            currentLine = testLine;
+        }
+        else
+        {
+            // 宽度超过安全宽度，将当前行添加到结果，并将当前字符作为新行的开始
+            result += currentLine + '\n';
+            currentLine = ch;
+        }
+    }
 
     // 添加最后一行
     if (!currentLine.isEmpty())
-        {
-            result += currentLine;
-        }
+    {
+        result += currentLine;
+    }
 
     return result;
 }
@@ -559,20 +559,20 @@ void ChatBubble::setTimestamp(const QDateTime &timestamp)
     QString timeText;
 
     if (msgDate == today)
-        {
-            // 如果是今天的消息，只显示时间
-            timeText = timestamp.toString("HH:mm");
-        }
+    {
+        // 如果是今天的消息，只显示时间
+        timeText = timestamp.toString("HH:mm");
+    }
     else if (msgDate.year() == today.year())
-        {
-            // 如果是今年的消息，显示月-日 时:分
-            timeText = timestamp.toString("MM-dd HH:mm");
-        }
+    {
+        // 如果是今年的消息，显示月-日 时:分
+        timeText = timestamp.toString("MM-dd HH:mm");
+    }
     else
-        {
-            // 如果是往年的消息，显示完整年-月-日 时:分
-            timeText = timestamp.toString("yyyy-MM-dd HH:mm");
-        }
+    {
+        // 如果是往年的消息，显示完整年-月-日 时:分
+        timeText = timestamp.toString("yyyy-MM-dd HH:mm");
+    }
 
     // 设置时间标签文本
     timeLabel->setText(timeText);
@@ -589,20 +589,20 @@ bool OnlineChat::eventFilter(QObject *watched, QEvent *event)
 {
     // 监控messageInput的键盘事件
     if (watched == messageInput && event->type() == QEvent::KeyPress)
-        {
-            QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+    {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 
-            // 检查是否按下Enter键且没有按Shift键（Shift+Enter用于换行）
-            if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter)
-                {
-                    // 如果没有按Shift键，则发送消息
-                    if (!(keyEvent->modifiers() & Qt::ShiftModifier))
-                        {
-                            sendMessage();
-                            return true; // 事件已处理
-                        }
-                }
+        // 检查是否按下Enter键且没有按Shift键（Shift+Enter用于换行）
+        if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter)
+        {
+            // 如果没有按Shift键，则发送消息
+            if (!(keyEvent->modifiers() & Qt::ShiftModifier))
+            {
+                sendMessage();
+                return true; // 事件已处理
+            }
         }
+    }
 
     // 对于其他所有事件，调用基类方法
     return QWidget::eventFilter(watched, event);

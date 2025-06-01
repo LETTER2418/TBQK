@@ -15,12 +15,12 @@ MessageBox::MessageBox(QWidget *parent, bool showCancelButton)
     this->setFixedSize(300, 400);
 
     // 创建closeButton
-    closeButton = new Lbutton(this, "确认");
+    closeButton = new Lbutton(this, "✅ 确认");
 
     // 只有在showCancelButton为true时才创建取消按钮
     if (showCancelButton)
     {
-        cancelButton = new Lbutton(this, "取消");
+        cancelButton = new Lbutton(this, "❌ 取消");
 
         // 当有两个按钮时，左右对称放置
         int centerX = width() / 2;

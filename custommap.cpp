@@ -14,13 +14,13 @@
 CustomMap::CustomMap(QWidget *parent) : QWidget(parent)
 {
     id = 0;
-    backButton = new Lbutton(this, "返回");
+    backButton = new Lbutton(this, "↩️ 返回");
     backButton->move(0, 0);
-    saveButton = new Lbutton(this, "保存");
+    saveButton = new Lbutton(this, "💾 保存");
     saveButton->enableClickEffect(true);
 
     // 创建半径调整按钮和SpinBox
-    radiusAdjustButton = new Lbutton(this, "自动调整半径");
+    radiusAdjustButton = new Lbutton(this, "🔄 自动调整半径");
     radiusAdjustButton->enableClickEffect(true);
 
     radiusSpinBox = new QSpinBox(this);
@@ -545,7 +545,7 @@ bool CustomMap::simulatedAnnealing(const QVector<QVector<int>> &graph, QVector<i
 void CustomMap::onRadiusAdjustButtonClicked()
 {
     isAutoRadius = !isAutoRadius;
-    radiusAdjustButton->setText(isAutoRadius ? "手动调整半径" : "自动调整半径");
+    radiusAdjustButton->setText(isAutoRadius ? "🔄 手动调整半径" : "🔄 自动调整半径");
     radiusSpinBox->setEnabled(!isAutoRadius);
 
     if (isAutoRadius)

@@ -39,11 +39,11 @@ void RankPage::setupUI()
     this->setWindowIcon(appIcon);
 
     // 创建返回按钮
-    backButton = new Lbutton(this, "返回");
+    backButton = new Lbutton(this, "↩️ 返回");
     backButton->move(0, 0);
 
     // 创建标题标签
-    titleLabel = new QLabel("游戏排行榜", this);
+    titleLabel = new QLabel("🏆 游戏排行榜", this);
     titleLabel->setStyleSheet("color: white;");
     QFont titleFont;
     titleFont.setPointSize(24);
@@ -64,7 +64,7 @@ void RankPage::setupUI()
     levelSelector->setFont(comboFont);
 
     // 创建清除按钮
-    clearButton = new Lbutton(this, "清除本关数据");
+    clearButton = new Lbutton(this, "🧹 清除本关数据");
     clearButton->setFixedWidth(140);
 
     // 创建排行榜表格

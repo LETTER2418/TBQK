@@ -30,7 +30,7 @@ TimeLimitMsgBox::TimeLimitMsgBox(QWidget *parent) : QWidget(parent)
 
     // Create Close Button as Lbutton
     int buttonFontSize = 14; // Example font size for Lbutton
-    closeButton = new Lbutton(this, "确认", "white", buttonFontSize);
+    closeButton = new Lbutton(this, "✅ 确认", "white", buttonFontSize);
 
     // Calculate centered positions (adjust vertical spacing as needed)
     int promptHeight = 30;

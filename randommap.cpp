@@ -8,14 +8,14 @@
 
 RandomMap::RandomMap(QWidget *parent) : QWidget(parent)
 {
-    backButton = new Lbutton(this, "返回");
+    backButton = new Lbutton(this, "↩️ 返回");
     backButton->move(0, 0);
-    saveButton = new Lbutton(this, "保存");
+    saveButton = new Lbutton(this, "💾 保存");
     saveButton->enableClickEffect(true);
     id = 0;
 
     // 创建半径调整按钮和SpinBox
-    radiusAdjustButton = new Lbutton(this, "自动调整半径");
+    radiusAdjustButton = new Lbutton(this, "🔄 自动调整半径");
     radiusAdjustButton->enableClickEffect(true);
 
     radiusSpinBox = new QSpinBox(this);

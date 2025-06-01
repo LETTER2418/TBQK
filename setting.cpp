@@ -9,7 +9,7 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     this->setWindowIcon(appIcon);
 
     // 创建返回按钮
-    backButton = new Lbutton(this, "返回");
+    backButton = new Lbutton(this, "↩️ 返回");
     backButton->move(0, 0);
 
     // 创建清除数据按钮
@@ -108,9 +108,9 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     nextButton->setFixedSize(50, 50);
     nextButton->installEventFilter(this);
 
-    openFileButton = new Lbutton(this, "打开音乐");
+    openFileButton = new Lbutton(this, "🎵 打开音乐");
     openFileButton->enableClickEffect(true);
-    removeSongButton = new Lbutton(this, "删除选中歌曲");
+    removeSongButton = new Lbutton(this, "🗑️ 删除歌曲");
     removeSongButton->enableClickEffect(true);
 
     playModeComboBox = new QComboBox(this);
@@ -148,7 +148,7 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
         avatarRotationAngle = value.toDouble();
         updateAvatarRotation(); });
 
-    uploadAvatarButton = new Lbutton(this, "更换头像");
+    uploadAvatarButton = new Lbutton(this, "🖼️ 更换头像");
     uploadAvatarButton->enableClickEffect(true);
 
     // 创建头像布局
@@ -160,14 +160,14 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     QFont groupBoxFont;
     groupBoxFont.setPointSize(16);
 
-    QGroupBox *avatarBox = new QGroupBox("用户头像", this);
+    QGroupBox *avatarBox = new QGroupBox("👤 用户头像", this);
     avatarBox->setFont(groupBoxFont);
     avatarBox->setStyleSheet("QGroupBox { color: white; border: 1px solid white; border-radius: 5px; margin-top: 15px; } QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 10px 0 10px; }");
     avatarBox->setLayout(avatarLayout);
     avatarBox->setFixedWidth(200);
 
     // 创建音乐播放器布局
-    QGroupBox *musicPlayerBox = new QGroupBox("音乐播放器", this);
+    QGroupBox *musicPlayerBox = new QGroupBox("🎧 音乐播放器", this);
     musicPlayerBox->setFont(groupBoxFont);
     musicPlayerBox->setStyleSheet("QGroupBox { color: white; border: 1px solid white; border-radius: 5px; margin-top: 15px; } QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 10px 0 10px; }");
 

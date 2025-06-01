@@ -13,7 +13,7 @@ LevelMode::LevelMode(QWidget *parent)
     mainLayout->setHorizontalSpacing(0);        // 设置主布局内水平间距为0 (影响第一行 backButton 和右侧空间的间距)
 
     // 返回按钮
-    backButton = new Lbutton(this, "返回");
+    backButton = new Lbutton(this, "↩️ 返回");
     backButton->move(0, 0);
 
     // 关卡按钮布局

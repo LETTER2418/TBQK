@@ -66,11 +66,11 @@ void MapMsgBox::setupUI()
 
     // 创建按钮 - 使用带颜色参数的构造函数
     int fontSize = 13;
-    radiusButton = new Lbutton(this, "选择环数", "white", fontSize);
-    color1Button = new Lbutton(this, "选择六边形正色", "white", fontSize);
-    color2Button = new Lbutton(this, "选择六边形反色", "white", fontSize);
-    color3Button = new Lbutton(this, "选择路径颜色", "white", fontSize);
-    closeButton = new Lbutton(this, "确认", "white", fontSize);
+    radiusButton = new Lbutton(this, "📏 选择环数", "white", fontSize);
+    color1Button = new Lbutton(this, "🎨 选择六边形正色", "white", fontSize);
+    color2Button = new Lbutton(this, "🖌️ 选择六边形反色", "white", fontSize);
+    color3Button = new Lbutton(this, "🔍 选择路径颜色", "white", fontSize);
+    closeButton = new Lbutton(this, "✅ 确认", "white", fontSize);
 
     // 设置按钮位置
     int buttonPositionX = 50;

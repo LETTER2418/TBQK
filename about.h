@@ -5,6 +5,8 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QScrollArea>
+#include <QGroupBox>
+#include <QFont>
 #include "lbutton.h"
 
 class About : public QWidget
@@ -16,6 +18,7 @@ public:
     ~About();
 
     Lbutton *backButton;
+
 private:
     QVBoxLayout *mainLayout;
     QScrollArea *scrollArea;
@@ -29,6 +32,7 @@ private:
     QLabel *featuresContentLabel;
     QLabel *rankingTitleLabel;
     QLabel *rankingContentLabel;
+    QGroupBox *aboutGroupBox;
 };
 
 #endif // ABOUT_H

@@ -7,13 +7,13 @@
 Start::Start(QWidget *parent, DataManager *dataManager_, SocketManager *socketManager_) : QWidget(parent), dataManager(dataManager_), socketManager(socketManager_)
 {
     // 创建按钮和输入框
-    backButton = new Lbutton(this, "返回");
-    loginButton = new Lbutton(this, "登录");
+    backButton = new Lbutton(this, "↩️ 返回");
+    loginButton = new Lbutton(this, "🔑 登录");
     loginButton->enableClickEffect(true);
-    registerButton = new Lbutton(this, "注册");
+    registerButton = new Lbutton(this, "📝 注册");
     registerButton->enableClickEffect(true);
-    guestButton = new Lbutton(this, "游客模式");
-    showPasswordButton = new Lbutton(this, "显示密码");
+    guestButton = new Lbutton(this, "👻 游客模式");
+    showPasswordButton = new Lbutton(this, "👁️ 显示密码");
     showPasswordButton->enableClickEffect(true);
 
     accountLineEdit = new QLineEdit(this);
@@ -35,10 +35,10 @@ Start::Start(QWidget *parent, DataManager *dataManager_, SocketManager *socketMa
     QFont groupBoxFont;
     groupBoxFont.setPointSize(16);
 
-    QGroupBox *inputGroupBox = new QGroupBox("注册登录面板", this);
+    QGroupBox *inputGroupBox = new QGroupBox("✍️", this);
     inputGroupBox->setFont(groupBoxFont);
     inputGroupBox->setStyleSheet("QGroupBox { color: white; border: 1px solid white; border-radius: 5px; margin-top: 15px; } QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 10px 0 10px; }");
-    inputGroupBox->setFixedSize(300, 400);
+    inputGroupBox->setFixedSize(280, 400);
 
     // GroupBox内部布局
     QVBoxLayout *groupBoxLayout = new QVBoxLayout(inputGroupBox);
@@ -66,7 +66,7 @@ Start::Start(QWidget *parent, DataManager *dataManager_, SocketManager *socketMa
     mainLayout->addLayout(buttonLayout);
     mainLayout->addStretch(10);
     mainLayout->addWidget(inputGroupBox, 0, Qt::AlignCenter);
-    mainLayout->addStretch(12);
+    mainLayout->addStretch(13);
 
     // 连接按钮的点击事件到槽函数
     connect(showPasswordButton, &Lbutton::clicked, this, [this]()
@@ -75,12 +75,12 @@ Start::Start(QWidget *parent, DataManager *dataManager_, SocketManager *socketMa
         if (passwordLineEdit->echoMode() == QLineEdit::Password)
             {
                 passwordLineEdit->setEchoMode(QLineEdit::Normal); // 显示密码
-                showPasswordButton->setText("隐藏密码");
+                showPasswordButton->setText("🔒 隐藏密码");
             }
         else
             {
                 passwordLineEdit->setEchoMode(QLineEdit::Password); // 隐藏密码
-                showPasswordButton->setText("显示密码");
+                showPasswordButton->setText("👁️ 显示密码");
             } });
 
     connect(loginButton, &QPushButton::clicked, this, &Start::onLoginClicked);
@@ -141,7 +141,7 @@ void Start::onRegisterClicked()
     QString username = accountLineEdit->text();
     QString password = passwordLineEdit->text();
 
-    if (username == "系统")
+    if (username == "游客")
     {
         NOmessageBox->setMessage("账号不符合规范！");
         NOmessageBox->exec();

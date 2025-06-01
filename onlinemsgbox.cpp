@@ -38,8 +38,8 @@ OnlineMsgBox::OnlineMsgBox(QWidget *parent, SocketManager *manager)
     portInput->setFont(labelFont);
 
     // 创建按钮
-    cancelButton = new Lbutton(this, "取消", "black");
-    actionButton = new Lbutton(this, "创建", "black"); // 默认显示"创建"
+    cancelButton = new Lbutton(this, "❌ 取消", "black");
+    actionButton = new Lbutton(this, "🏠 创建", "black"); // 默认显示"创建"
 
     // 布局
     QGridLayout *topLayout = new QGridLayout();

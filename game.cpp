@@ -24,19 +24,19 @@ Game::~Game()
 // === UI初始化和更新 ===
 void Game::initializeUI()
 {
-    backButton = new Lbutton(this, "返回");
+    backButton = new Lbutton(this, "↩️ 返回");
     backButton->enableClickEffect(true);
-    hintButton = new Lbutton(this, "提示");
+    hintButton = new Lbutton(this, "💡 提示");
     hintButton->enableClickEffect(true);
-    withdrawButton = new Lbutton(this, "撤销");
+    withdrawButton = new Lbutton(this, "⏪ 撤销");
     withdrawButton->enableClickEffect(true);
-    pathToggleButton = new Lbutton(this, "显示路径");
+    pathToggleButton = new Lbutton(this, "👣 显示路径");
     pathToggleButton->enableClickEffect(true);
-    radiusAdjustButton = new Lbutton(this, isAutoRadius ? "手动调整半径" : "自动调整半径");
+    radiusAdjustButton = new Lbutton(this, isAutoRadius ? "🔄 手动调整半径" : "🔄 自动调整半径");
     radiusAdjustButton->enableClickEffect(true);
-    resetButton = new Lbutton(this, "重置");
+    resetButton = new Lbutton(this, "🔁 重置");
     resetButton->enableClickEffect(true);
-    chatButton = new Lbutton(this, "聊天");
+    chatButton = new Lbutton(this, "💬 聊天");
     chatButton->enableClickEffect(true);
 
     // 初始时聊天按钮为禁用状态，只有在联机模式下才启用
@@ -813,7 +813,7 @@ void Game::onOpponentLevelCompleted(int timeUsed)
 void Game::onRadiusAdjustButtonClicked()
 {
     isAutoRadius = !isAutoRadius;
-    radiusAdjustButton->setText(isAutoRadius ? "手动调整半径" : "自动调整半径");
+    radiusAdjustButton->setText(isAutoRadius ? "🔄 手动调整半径" : "🔄 自动调整半径");
     radiusSpinBox->setEnabled(!isAutoRadius);
 
     if (isAutoRadius)
