@@ -27,7 +27,7 @@ public:
     ChatBubble(const QString &text, bool isSelf, QPixmap avatar, QWidget *parent = nullptr);
 
     // 更新头像
-    void updateAvatar(const QPixmap& newAvatar);
+    void updateAvatar(const QPixmap &newAvatar);
 
     // 获取是否为自己的消息
     bool isSelfMessage() const
@@ -42,7 +42,7 @@ public:
     }
 
     // 设置关联的用户ID
-    void setUserId(const QString& id)
+    void setUserId(const QString &id)
     {
         userId = id;
     }
@@ -51,7 +51,7 @@ public:
     static QString insertLineBreaks(const QString &text, int maxWidth, const QFont &font);
 
     // 添加设置时间戳的方法
-    void setTimestamp(const QDateTime& timestamp);
+    void setTimestamp(const QDateTime &timestamp);
 
     // 获取消息时间戳
     QDateTime getTimestamp() const
@@ -68,10 +68,10 @@ protected:
 private:
     QLabel *messageLabel;
     QLabel *avatarLabel;
-    QLabel *timeLabel;    // 添加时间标签
+    QLabel *timeLabel; // 添加时间标签
     bool isSelf;
     QPixmap avatar;
-    QString userId; // 存储关联的用户ID
+    QString userId;      // 存储关联的用户ID
     QDateTime timestamp; // 消息时间戳
 };
 
@@ -79,7 +79,7 @@ class OnlineChat : public QWidget
 {
     Q_OBJECT
 public:
-    explicit OnlineChat(SocketManager* manager, DataManager* dm, QWidget *parent = nullptr);
+    explicit OnlineChat(SocketManager *manager, DataManager *dm, QWidget *parent = nullptr);
     ~OnlineChat();
 
     // 发送当前用户头像
@@ -91,11 +91,13 @@ public:
     // 通知用户存在
     void announceUserPresence();
 
+    void displayImage(const QString &userId, const QPixmap &image, bool isSelfImage); // 新增
+
 public slots:
-    void displayMessage(const QString& userId, const QString& message, bool isSelfMessage = false);
+    void displayMessage(const QString &userId, const QString &message, bool isSelfMessage = false);
 
     // 加载用户自定义头像
-    void setUserAvatar(const QString& userId);
+    void setUserAvatar(const QString &userId);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -108,35 +110,37 @@ protected:
 
 private slots:
     void sendMessage();
+    void sendImage();
     // 接收头像图片
-    void onAvatarImageReceived(const QString& userId, const QPixmap& avatar);
+    void onAvatarImageReceived(const QString &userId, const QPixmap &avatar);
 
 private:
     // 添加水平分隔线
-    QFrame* createHLine();
+    QFrame *createHLine();
     // 加载用户头像
-    QPixmap loadAvatar(const QString& userId);
+    QPixmap loadAvatar(const QString &userId);
     // 加载头像配置文件
     QPixmap loadAvatarFromSettings();
 
-    SocketManager* socketManager;
-    DataManager* dataManager;    // 添加对DataManager的引用
+    SocketManager *socketManager;
+    DataManager *dataManager; // 添加对DataManager的引用
 
     // 顶部用户信息区域
-    QWidget* topPanel;
-    QLabel* remoteUserLabel;
+    QWidget *topPanel;
+    QLabel *remoteUserLabel;
 
     // 中间聊天内容区域
-    QScrollArea* chatScrollArea;
-    QWidget* chatContentWidget;
-    QVBoxLayout* chatContentLayout;
+    QScrollArea *chatScrollArea;
+    QWidget *chatContentWidget;
+    QVBoxLayout *chatContentLayout;
 
     // 底部输入区域
-    QWidget* bottomPanel;
-    QTextEdit* messageInput;
-    Lbutton* sendButton;
-    QVBoxLayout* mainLayout;
-    QHBoxLayout* buttonLayout;
+    QWidget *bottomPanel;
+    QTextEdit *messageInput;
+    Lbutton *sendButton;
+    Lbutton *imageButton;
+    QVBoxLayout *mainLayout;
+    QHBoxLayout *buttonLayout;
 
     // 存储用户头像
     QMap<QString, QPixmap> userAvatars;

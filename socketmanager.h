@@ -22,10 +22,10 @@ public:
     bool StartServer();
     void StartClient(const QString &serverAddress = "127.0.0.1");
     void SendChatMessage(const QString &message, const QString &sender = "User");
-    void SendGameState(const MapData &mapData);                         // 发送游戏状态
-    void SendAvatarImage(const QPixmap &avatar, const QString &userId); // 发送头像图像数据
-    void closeConnection();                                             // 关闭连接
-    bool isServerMode() const;                                          // 用于检查当前是否为服务器模式
+    void SendGameState(const MapData &mapData);                                                              // 发送游戏状态
+    void SendAvatarImage(const QPixmap &avatar, const QString &userId, const QString &type = "avatar_data"); // 修改
+    void closeConnection();                                                                                  // 关闭连接
+    bool isServerMode() const;                                                                               // 用于检查当前是否为服务器模式
     void setLocalUserId(const QString &userId);
     QString getLocalUserId() const;
     QList<QTcpSocket *> getClientSockets() const { return clientSockets; }  // 获取客户端连接列表
@@ -38,13 +38,14 @@ signals:
     void clientConnected();
     void clientDisconnected();
     void connectionError(const QString &error);
-    void gameStateReceived(const MapData &mapData);                         // 接收游戏状态的信号
-    void navigateToPageRequest(const QString &pageName);                    // 请求页面导航
-    void roomLeft();                                                        // 对方退出房间的信号
-    void avatarImageReceived(const QString &userId, const QPixmap &avatar); // 接收到头像图像的信号
-    void newClientConnected();                                              // 新的客户端连接到服务器的信号
-    void duplicateIdDetected();                                             // 检测到重复ID的信号
-    void levelCompleted(int timeUsed);                                      // 对方完成关卡的信号
+    void gameStateReceived(const MapData &mapData);                                    // 接收游戏状态的信号
+    void navigateToPageRequest(const QString &pageName);                               // 请求页面导航
+    void roomLeft();                                                                   // 对方退出房间的信号
+    void avatarImageReceived(const QString &userId, const QPixmap &avatar);            // 接收到头像图像的信号
+    void imageReceived(const QString &userId, const QPixmap &image, bool isSelfImage); // 接收到图像的信号
+    void newClientConnected();                                                         // 新的客户端连接到服务器的信号
+    void duplicateIdDetected();                                                        // 检测到重复ID的信号
+    void levelCompleted(int timeUsed);                                                 // 对方完成关卡的信号
 
 public slots:
     void handleClientDisconnected();

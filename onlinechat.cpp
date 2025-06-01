@@ -14,6 +14,7 @@
 #include <QShowEvent>
 #include <QTcpSocket>
 #include <QKeyEvent>
+#include <QFileDialog>
 
 // ChatBubble 实现
 ChatBubble::ChatBubble(const QString &text, bool isSelf, QPixmap avatar, QWidget *parent)
@@ -31,47 +32,51 @@ ChatBubble::ChatBubble(const QString &text, bool isSelf, QPixmap avatar, QWidget
     avatarLabel->setScaledContents(true);
     avatarLabel->setPixmap(avatar);
 
-    // 设置最大气泡宽度
-    int maxWidth = 250; // 增加气泡最大宽度
-
-    // 使用静态方法处理文本
-    QString processedText = insertLineBreaks(text, maxWidth, font());
-
-    // 创建消息标签
-    messageLabel = new QLabel(processedText, this);
-    messageLabel->setWordWrap(true);
-    messageLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
-
-    // 设置气泡样式
-    QString bgColor = isSelf ? "#95EC69" : "#FFFFFF"; // 自己的消息是绿色，他人的是白色
-    messageLabel->setStyleSheet(QString("QLabel { background-color: %1; border-radius: 10px; padding: 10px; font-size: 16px;}").arg(bgColor));
-
-    // 设置最大宽度
-    QFontMetrics fm(messageLabel->font());
-    int textWidth = fm.horizontalAdvance(text);
-
-    if (textWidth > maxWidth)
-    {
-        messageLabel->setFixedWidth(maxWidth);
-    }
-    else
-    {
-        // 增加边距确保文本完全显示
-        messageLabel->setMinimumWidth(textWidth + 30);
-    }
+    // 创建垂直布局来放置时间标签和消息/图片
+    QVBoxLayout *messageWithTimeLayout = new QVBoxLayout();
+    messageWithTimeLayout->setContentsMargins(0, 0, 0, 0);
+    messageWithTimeLayout->setSpacing(3);
 
     // 添加时间标签
     timeLabel = new QLabel(this);
     timeLabel->setAlignment(Qt::AlignCenter);
     timeLabel->setStyleSheet("QLabel { color: #999999; font-size: 12px; background: transparent; padding: 5px; margin-bottom: 2px; }");
     timeLabel->setVisible(false); // 默认不可见，等待setTimestamp时设置
-
-    // 创建垂直布局来放置时间标签和消息标签
-    QVBoxLayout *messageWithTimeLayout = new QVBoxLayout();
-    messageWithTimeLayout->setContentsMargins(0, 0, 0, 0);
-    messageWithTimeLayout->setSpacing(3);
     messageWithTimeLayout->addWidget(timeLabel, 0, Qt::AlignCenter);
-    messageWithTimeLayout->addWidget(messageLabel);
+
+    // 如果有文本消息，创建消息标签
+    if (!text.isEmpty())
+    {
+        // 设置最大气泡宽度
+        int maxWidth = 250;
+
+        // 使用静态方法处理文本
+        QString processedText = insertLineBreaks(text, maxWidth, font());
+
+        // 创建消息标签
+        messageLabel = new QLabel(processedText, this);
+        messageLabel->setWordWrap(true);
+        messageLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+        // 设置气泡样式
+        QString bgColor = isSelf ? "#95EC69" : "#FFFFFF";
+        messageLabel->setStyleSheet(QString("QLabel { background-color: %1; border-radius: 10px; padding: 10px; font-size: 16px;}").arg(bgColor));
+
+        // 设置最大宽度
+        QFontMetrics fm(messageLabel->font());
+        int textWidth = fm.horizontalAdvance(text);
+
+        if (textWidth > maxWidth)
+        {
+            messageLabel->setFixedWidth(maxWidth);
+        }
+        else
+        {
+            messageLabel->setMinimumWidth(textWidth + 30);
+        }
+
+        messageWithTimeLayout->addWidget(messageLabel);
+    }
 
     // 根据是否是自己的消息来布局
     if (isSelf)
@@ -166,7 +171,14 @@ OnlineChat::OnlineChat(SocketManager *manager, DataManager *dm, QWidget *parent)
                               "color:black"
                               "}");
 
+    // 添加图片按钮
+    imageButton = new Lbutton(bottomPanel, "📷 图片");
+    imageButton->setStyleSheet("QPushButton {"
+                               "color:black"
+                               "}");
+
     buttonLayout->addStretch();
+    buttonLayout->addWidget(imageButton);
     buttonLayout->addWidget(sendButton);
 
     bottomLayout->addWidget(messageInput);
@@ -180,7 +192,9 @@ OnlineChat::OnlineChat(SocketManager *manager, DataManager *dm, QWidget *parent)
     // Connections
     connect(socketManager, &SocketManager::newMessageReceived, this, &OnlineChat::displayMessage);
     connect(socketManager, &SocketManager::avatarImageReceived, this, &OnlineChat::onAvatarImageReceived);
+    connect(socketManager, &SocketManager::imageReceived, this, &OnlineChat::displayImage);
     connect(sendButton, &QPushButton::clicked, this, &OnlineChat::sendMessage);
+    connect(imageButton, &QPushButton::clicked, this, &OnlineChat::sendImage);
 
     // 安装事件过滤器以捕获messageInput中的按键事件
     messageInput->installEventFilter(this);
@@ -606,4 +620,83 @@ bool OnlineChat::eventFilter(QObject *watched, QEvent *event)
 
     // 对于其他所有事件，调用基类方法
     return QWidget::eventFilter(watched, event);
+}
+
+// 添加新的函数实现
+void OnlineChat::displayImage(const QString &userId, const QPixmap &image, bool isSelfImage)
+{
+    // 加载用户头像
+    QPixmap avatar = loadAvatar(userId);
+
+    // 创建聊天气泡（使用空文本）
+    ChatBubble *bubble = new ChatBubble("", isSelfImage, avatar, chatContentWidget);
+    bubble->setUserId(userId);
+
+    // 创建图片标签
+    QLabel *imageLabel = new QLabel(bubble);
+    imageLabel->setScaledContents(true);
+
+    // 计算图片的显示大小（最大宽度250，保持纵横比）
+    QSize originalSize = image.size();
+    int maxWidth = 250;
+    int maxHeight = 400;
+    QSize scaledSize = originalSize;
+
+    if (originalSize.width() > maxWidth || originalSize.height() > maxHeight)
+    {
+        scaledSize = originalSize.scaled(maxWidth, maxHeight, Qt::KeepAspectRatio);
+    }
+
+    imageLabel->setFixedSize(scaledSize);
+    imageLabel->setPixmap(image.scaled(scaledSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+    // 将图片标签添加到气泡的消息布局中
+    QVBoxLayout *messageLayout = bubble->findChild<QVBoxLayout *>();
+    if (messageLayout)
+    {
+        messageLayout->addWidget(imageLabel, 0, Qt::AlignCenter);
+    }
+
+    // 设置当前时间戳
+    QDateTime currentTime = QDateTime::currentDateTime();
+    bubble->setTimestamp(currentTime);
+    bubble->setTimeVisible(true);
+
+    // 添加到布局
+    chatContentLayout->addWidget(bubble);
+
+    // 使用QTimer确保在布局更新后滚动到底部
+    QTimer::singleShot(300, this, [this]()
+                       {
+        chatContentWidget->updateGeometry();
+        chatScrollArea->updateGeometry();
+        QScrollBar *scrollBar = chatScrollArea->verticalScrollBar();
+        scrollBar->setValue(scrollBar->maximum()); });
+}
+
+void OnlineChat::sendImage()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("选择图片"), "",
+                                                    tr("图片文件 (*.png *.jpg *.jpeg *.bmp *.gif)"));
+
+    if (!fileName.isEmpty())
+    {
+        QPixmap image(fileName);
+        if (!image.isNull())
+        {
+            // 获取本地用户ID
+            QString localUserId = socketManager->getLocalUserId();
+            if (localUserId.isEmpty())
+            {
+                localUserId = "User";
+            }
+
+            // 先在本地显示图片
+            displayImage(localUserId, image, true);
+
+            // 通过socket发送图片
+            socketManager->SendAvatarImage(image, localUserId, "image_data");
+        }
+    }
 }

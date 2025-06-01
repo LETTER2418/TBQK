@@ -196,7 +196,7 @@ void SocketManager::SendGameState(const MapData &mapData)
     }
 }
 
-void SocketManager::SendAvatarImage(const QPixmap &avatar, const QString &userId)
+void SocketManager::SendAvatarImage(const QPixmap &avatar, const QString &userId, const QString &type)
 {
     // 将QPixmap转换为字节数组
     QByteArray byteArray;
@@ -207,7 +207,7 @@ void SocketManager::SendAvatarImage(const QPixmap &avatar, const QString &userId
 
     // 创建JSON消息对象
     QJsonObject jsonMessage;
-    jsonMessage["type"] = "avatar_data";
+    jsonMessage["type"] = type;
     jsonMessage["userId"] = userId;
     jsonMessage["avatar_data"] = QString(byteArray.toBase64()); // Base64编码图片数据
     jsonMessage["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
@@ -252,7 +252,7 @@ void SocketManager::handleClientDisconnected()
 
     if (isServer)
     {
-        qDebug() << "Server handleClientDisconnected";
+        // qDebug() << "Server handleClientDisconnected";
         // 服务器模式：处理客户端断开连接
         if (socket && clientSockets.contains(socket))
         {
@@ -423,39 +423,90 @@ bool SocketManager::sendJson(QTcpSocket *socket, const QJsonObject &json)
     QJsonDocument doc(json);
     QByteArray data = doc.toJson(QJsonDocument::Compact);
 
-    // 添加消息结束标记（可选，但建议）
+    // 添加消息结束标记
     data.append('\n');
 
     // 写入数据
+    qint64 totalBytes = data.size();
     qint64 bytesWritten = socket->write(data);
     socket->flush();
 
-    return (bytesWritten == data.size());
+    if (bytesWritten != totalBytes)
+    {
+        qWarning() << "Failed to send complete data. Sent:" << bytesWritten << "Total:" << totalBytes;
+        return false;
+    }
+
+    return true;
 }
 
 void SocketManager::processReceivedData(const QByteArray &data)
 {
-    // 分割可能的多条JSON消息（假设以 '\n' 分隔）
-    QList<QByteArray> jsonMessages = data.split('\n');
+    static QByteArray buffer; // 静态缓冲区，用于存储不完整的数据
+    buffer.append(data);
 
-    for (const QByteArray &jsonData : jsonMessages)
+    // 尝试从缓冲区中提取完整的JSON消息
+    while (!buffer.isEmpty())
     {
-        if (jsonData.trimmed().isEmpty())
+        // 查找消息结束标记
+        int endIndex = buffer.indexOf('\n');
+        if (endIndex == -1)
+        {
+            // 没有找到结束标记，说明数据还不完整
+            return;
+        }
+
+        // 提取一条完整的消息
+        QByteArray jsonData = buffer.left(endIndex).trimmed();
+        buffer = buffer.mid(endIndex + 1);
+
+        if (jsonData.isEmpty())
         {
             continue;
         }
 
-        QJsonDocument doc = QJsonDocument::fromJson(jsonData.trimmed());
+        // 如果数据被额外转义，进行处理
+        if (jsonData.startsWith('\"') && jsonData.endsWith('\"'))
+        {
+            jsonData = jsonData.mid(1, jsonData.length() - 2);
+            // 替换转义字符
+            jsonData.replace("\\\"", "\"");
+            jsonData.replace("\\\\", "\\");
+            jsonData.replace("\\n", "\n");
+            jsonData.replace("\\r", "\r");
+            jsonData.replace("\\t", "\t");
+        }
+
+        QJsonParseError parseError;
+        QJsonDocument doc = QJsonDocument::fromJson(jsonData, &parseError);
+
+        if (parseError.error != QJsonParseError::NoError)
+        {
+            qWarning() << "JSON parsing error:" << parseError.errorString()
+                       << "\nOffset:" << parseError.offset
+                       << "\nData:" << jsonData;
+            continue;
+        }
+
         if (!doc.isObject())
         {
-            qWarning() << "Received non-JSON object data:" << jsonData.trimmed();
+            qWarning() << "Received non-JSON object data:" << jsonData;
             continue;
         }
 
         QJsonObject json = doc.object();
-        QString type = json["type"].toString();
 
-        // 检查是否是ID检查消息
+        // 验证必要的字段
+        if (!json.contains("type"))
+        {
+            qWarning() << "Missing 'type' field in JSON data";
+            continue;
+        }
+
+        QString type = json["type"].toString();
+        // qDebug() << "Processing message of type:" << type;
+
+        // 处理不同类型的消息
         if (type == "id_check" && isServer)
         {
             QString clientId = json["userId"].toString();
@@ -531,10 +582,13 @@ void SocketManager::processReceivedData(const QByteArray &data)
         }
         else if (type == "chat")
         {
+            if (!json.contains("sender") || !json.contains("message"))
+            {
+                qWarning() << "Missing required fields in chat message";
+                continue;
+            }
             QString sender = json["sender"].toString();
             QString message = json["message"].toString();
-
-            // 如果是空消息，就只更新用户名，否则显示正常聊天消息
             emit newMessageReceived(sender, message, false);
         }
         else if (type == "gameState")
@@ -553,21 +607,44 @@ void SocketManager::processReceivedData(const QByteArray &data)
                 emit navigateToPageRequest(pageName);
             }
         }
-        else if (type == "avatar_data")
+        else if (type == "avatar_data" || type == "image_data")
         {
-            // 处理头像数据
+            if (!json.contains("userId") || !json.contains("avatar_data"))
+            {
+                qWarning() << "Missing required fields in image data";
+                continue;
+            }
+
             QString userId = json["userId"].toString();
             QString base64Data = json["avatar_data"].toString();
 
-            if (!userId.isEmpty() && !base64Data.isEmpty())
+            if (userId.isEmpty() || base64Data.isEmpty())
             {
-                // 将Base64数据转换为QByteArray
-                QByteArray imageData = QByteArray::fromBase64(base64Data.toLatin1());
-                QPixmap avatar;
-                avatar.loadFromData(imageData);
+                qWarning() << "Empty userId or image data";
+                continue;
+            }
 
-                // 发送头像数据信号
-                emit avatarImageReceived(userId, avatar);
+            QByteArray imageData = QByteArray::fromBase64(base64Data.toLatin1());
+            if (imageData.isEmpty())
+            {
+                qWarning() << "Failed to decode base64 image data";
+                continue;
+            }
+
+            QPixmap image;
+            if (!image.loadFromData(imageData))
+            {
+                qWarning() << "Failed to load image from data";
+                continue;
+            }
+
+            if (type == "avatar_data")
+            {
+                emit avatarImageReceived(userId, image);
+            }
+            else
+            {
+                emit imageReceived(userId, image, false);
             }
         }
         else if (type == "levelCompleted")
