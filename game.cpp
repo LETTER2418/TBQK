@@ -189,7 +189,7 @@ void Game::resetGameState(bool fromResetButton)
         chatButton->setEnabled(isOnlineMode);
         showPath = true;
         penaltySeconds = 0;
-        pathToggleButton->setText("隐藏路径");
+        pathToggleButton->setText("🙈 隐藏路径");
         startTimer();
     }
 }

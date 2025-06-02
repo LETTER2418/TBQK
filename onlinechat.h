@@ -54,6 +54,8 @@ public:
     // 设置时间标签可见性
     void setTimeVisible(bool visible);
 
+    QString insertZeroWidthSpace(const QString &text, int chunkSize);
+
 protected:
     void paintEvent(QPaintEvent *event) override;
 

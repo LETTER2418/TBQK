@@ -46,33 +46,42 @@ ChatBubble::ChatBubble(const QString &text, bool isSelf, QPixmap avatar, QWidget
     // 如果有文本消息，创建消息标签
     if (!text.isEmpty())
     {
-        // 设置最大气泡宽度
+        // // 设置最大气泡宽度
+        // int maxWidth = 250;
+
+        // // 创建消息标签
+        // messageLabel = new QLabel(text, this);
+        // messageLabel->setWordWrap(true);
+        // messageLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+
+        // // 设置气泡样式
+        // QString bgColor = isSelf ? "#95EC69" : "#FFFFFF";
+        // messageLabel->setStyleSheet(QString("QLabel { background-color: %1; border-radius: 10px; padding: 10px; font-size: 16px;}").arg(bgColor));
+
+        // // 尝试设置固定宽度为最大宽度（让QLabel自动处理换行）
+        // messageLabel->setFixedWidth(maxWidth);
+
+        // // 不需要手动计算宽度和插入换行符，QLabel会自动处理
+        // // 移除 insertLineBreaks 相关的逻辑
+
+        // messageWithTimeLayout->addWidget(messageLabel);
+
         int maxWidth = 250;
 
-        // 使用静态方法处理文本
-        QString processedText = insertLineBreaks(text, maxWidth, font());
-
-        // 创建消息标签
-        messageLabel = new QLabel(processedText, this);
+        messageLabel = new QLabel(this);
         messageLabel->setWordWrap(true);
         messageLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
-        // 设置气泡样式
         QString bgColor = isSelf ? "#95EC69" : "#FFFFFF";
         messageLabel->setStyleSheet(QString("QLabel { background-color: %1; border-radius: 10px; padding: 10px; font-size: 16px;}").arg(bgColor));
 
-        // 设置最大宽度
-        QFontMetrics fm(messageLabel->font());
-        int textWidth = fm.horizontalAdvance(text);
+        // 处理长数字串，插入零宽度空格
+        QString processedText = insertZeroWidthSpace(text, 5); // 每5个字符插入一个零宽度空格
+        QString htmlText = QString("<div style='white-space: pre-wrap;'>%1</div>").arg(processedText);
+        messageLabel->setText(htmlText);
 
-        if (textWidth > maxWidth)
-        {
-            messageLabel->setFixedWidth(maxWidth);
-        }
-        else
-        {
-            messageLabel->setMinimumWidth(textWidth + 30);
-        }
+        // 设置固定宽度为最大宽度
+        messageLabel->setFixedWidth(maxWidth);
 
         messageWithTimeLayout->addWidget(messageLabel);
     }
@@ -82,11 +91,11 @@ ChatBubble::ChatBubble(const QString &text, bool isSelf, QPixmap avatar, QWidget
     {
         layout->addStretch();
         layout->addLayout(messageWithTimeLayout);
-        layout->addWidget(avatarLabel, 0, Qt::AlignTop); // 设置头像顶部对齐
+        layout->addWidget(avatarLabel);
     }
     else
     {
-        layout->addWidget(avatarLabel, 0, Qt::AlignTop); // 设置头像顶部对齐
+        layout->addWidget(avatarLabel);
         layout->addLayout(messageWithTimeLayout);
         layout->addStretch();
     }
@@ -98,6 +107,20 @@ void ChatBubble::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
     QFrame::paintEvent(event);
+}
+
+QString ChatBubble::insertZeroWidthSpace(const QString &text, int chunkSize)
+{
+    QString result;
+    for (int i = 0; i < text.length(); ++i)
+    {
+        if (i > 0 && i % chunkSize == 0 && text[i - 1].isDigit() && (i < text.length() && text[i].isDigit()))
+        {
+            result.append("&#8203;"); // 插入零宽度空格
+        }
+        result.append(text[i]);
+    }
+    return result;
 }
 
 OnlineChat::OnlineChat(SocketManager *manager, DataManager *dm, QWidget *parent)
