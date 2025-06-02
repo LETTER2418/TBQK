@@ -82,11 +82,11 @@ ChatBubble::ChatBubble(const QString &text, bool isSelf, QPixmap avatar, QWidget
     {
         layout->addStretch();
         layout->addLayout(messageWithTimeLayout);
-        layout->addWidget(avatarLabel);
+        layout->addWidget(avatarLabel, 0, Qt::AlignTop); // 设置头像顶部对齐
     }
     else
     {
-        layout->addWidget(avatarLabel);
+        layout->addWidget(avatarLabel, 0, Qt::AlignTop); // 设置头像顶部对齐
         layout->addLayout(messageWithTimeLayout);
         layout->addStretch();
     }
@@ -675,7 +675,7 @@ void OnlineChat::displayImage(const QString &userId, const QPixmap &image, bool 
     QVBoxLayout *messageLayout = bubble->findChild<QVBoxLayout *>();
     if (messageLayout)
     {
-        messageLayout->addWidget(imageLabel, 0, Qt::AlignCenter);
+        messageLayout->addWidget(imageLabel, 0, Qt::AlignTop); // 设置图片顶部对齐
     }
 
     // 设置当前时间戳

@@ -30,7 +30,7 @@ void Game::initializeUI()
     hintButton->enableClickEffect(true);
     withdrawButton = new Lbutton(this, "⏪ 撤销");
     withdrawButton->enableClickEffect(true);
-    pathToggleButton = new Lbutton(this, "👣 显示路径");
+    pathToggleButton = new Lbutton(this, "🛣 显示路径");
     pathToggleButton->enableClickEffect(true);
     radiusAdjustButton = new Lbutton(this, isAutoRadius ? "🔄 手动调整半径" : "🔄 自动调整半径");
     radiusAdjustButton->enableClickEffect(true);
@@ -382,7 +382,7 @@ bool Game::areNeighbors(const QPoint &coord1, const QPoint &coord2)
 void Game::togglePathVisibility()
 {
     showPath = !showPath;
-    pathToggleButton->setText(showPath ? "隐藏路径" : "显示路径");
+    pathToggleButton->setText(showPath ? "🙈 隐藏路径" : "🛣 显示路径");
     update();
 }
 
