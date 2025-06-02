@@ -17,6 +17,7 @@
 #include <QMenu>
 #include <QGridLayout>
 #include <QWidgetAction>
+#include <QToolButton>
 #include "socketmanager.h"
 #include "lbutton.h"
 #include "datamanager.h"
@@ -33,22 +34,13 @@ public:
     void updateAvatar(const QPixmap &newAvatar);
 
     // 获取是否为自己的消息
-    bool isSelfMessage() const
-    {
-        return isSelf;
-    }
+    bool isSelfMessage() const { return isSelf; }
 
     // 获取关联的用户ID
-    QString getUserId() const
-    {
-        return userId;
-    }
+    QString getUserId() const { return userId; }
 
     // 设置关联的用户ID
-    void setUserId(const QString &id)
-    {
-        userId = id;
-    }
+    void setUserId(const QString &id) { userId = id; }
 
     // 静态方法：根据文本内容和最大宽度插入换行符
     static QString insertLineBreaks(const QString &text, int maxWidth, const QFont &font);
@@ -57,10 +49,7 @@ public:
     void setTimestamp(const QDateTime &timestamp);
 
     // 获取消息时间戳
-    QDateTime getTimestamp() const
-    {
-        return timestamp;
-    }
+    QDateTime getTimestamp() const { return timestamp; }
 
     // 设置时间标签可见性
     void setTimeVisible(bool visible);
@@ -143,7 +132,7 @@ private:
     QWidget *bottomPanel;
     QTextEdit *messageInput;
     Lbutton *sendButton;
-    Lbutton *imageButton;
+    QToolButton *imageButton;
     QVBoxLayout *mainLayout;
     QHBoxLayout *buttonLayout;
 
@@ -153,7 +142,7 @@ private:
     const QString avatarPath = ":/avatar/"; // 头像路径
 
     // Emoji相关成员
-    Lbutton *emojiButton;
+    QToolButton *emojiButton;
     QMenu *emojiMenu;
     void initEmojiMenu();     // 初始化emoji菜单
     QStringList commonEmojis; // 常用emoji列表

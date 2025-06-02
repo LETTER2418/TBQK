@@ -1,12 +1,11 @@
 #include "onlinechat.h"
-#include <QDateTime> // For timestamping messages
+#include <QDateTime>
 #include <QFileInfo>
 #include <QPainter>
 #include <QScrollBar>
 #include <QStyle>
 #include <QDesktopServices>
 #include <QFontMetrics>
-#include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDebug>
@@ -151,10 +150,36 @@ OnlineChat::OnlineChat(SocketManager *manager, DataManager *dm, QWidget *parent)
 
     // 创建底部面板 - 输入区
     bottomPanel = new QWidget(this);
-    bottomPanel->setFixedHeight(150);
+    bottomPanel->setFixedHeight(200);
     bottomPanel->setStyleSheet("background-color: #F5F5F5;");
 
     QVBoxLayout *bottomLayout = new QVBoxLayout(bottomPanel);
+    bottomLayout->setSpacing(5);
+
+    // 创建工具栏
+    QHBoxLayout *toolbarLayout = new QHBoxLayout();
+    toolbarLayout->setContentsMargins(5, 0, 5, 0);
+    toolbarLayout->setSpacing(2); // 设置按钮之间的间距
+
+    // 创建emoji工具按钮
+    emojiButton = new QToolButton(bottomPanel);
+    emojiButton->setIcon(QIcon(":/image/emoji.png"));
+    emojiButton->setIconSize(QSize(24, 24));
+    emojiButton->setToolTip("插入表情");
+    emojiButton->setStyleSheet("QToolButton { background-color: transparent; border: none; }");
+    emojiButton->setFixedSize(30, 30);
+
+    // 创建图片工具按钮
+    imageButton = new QToolButton(bottomPanel);
+    imageButton->setIcon(QIcon(":/image/image.png"));
+    imageButton->setIconSize(QSize(24, 24));
+    imageButton->setToolTip("发送图片");
+    imageButton->setStyleSheet("QToolButton { background-color: transparent; border: none; }");
+    imageButton->setFixedSize(30, 30);
+
+    toolbarLayout->addWidget(emojiButton);
+    toolbarLayout->addWidget(imageButton);
+    toolbarLayout->addStretch();
 
     // 输入框
     messageInput = new QTextEdit(bottomPanel);
@@ -165,23 +190,14 @@ OnlineChat::OnlineChat(SocketManager *manager, DataManager *dm, QWidget *parent)
     buttonLayout = new QHBoxLayout();
     buttonLayout->setContentsMargins(0, 5, 0, 5);
 
-    // 添加emoji按钮
-    emojiButton = new Lbutton(bottomPanel, "😊");
-    emojiButton->setStyleSheet("QPushButton { color: black; }");
-
-    // 添加图片按钮
-    imageButton = new Lbutton(bottomPanel, "📷 图片");
-    imageButton->setStyleSheet("QPushButton { color: black; }");
-
     // 发送按钮
     sendButton = new Lbutton(bottomPanel, "📤 发送");
     sendButton->setStyleSheet("QPushButton { color: black; }");
 
-    buttonLayout->addWidget(emojiButton);
     buttonLayout->addStretch();
-    buttonLayout->addWidget(imageButton);
     buttonLayout->addWidget(sendButton);
 
+    bottomLayout->addLayout(toolbarLayout);
     bottomLayout->addWidget(messageInput);
     bottomLayout->addLayout(buttonLayout);
 

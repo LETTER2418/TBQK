@@ -10,5 +10,7 @@
         <file>image/next.png</file>
         <file>image/pause.png</file>
         <file>image/play.png</file>
+        <file>image/emoji.png</file>
+        <file>image/image.png</file>
     </qresource>
 </RCC>

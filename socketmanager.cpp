@@ -652,7 +652,6 @@ void SocketManager::processReceivedData(const QByteArray &data)
             // 处理对方完成关卡的消息
             int timeUsed = json["timeUsed"].toInt();
             emit levelCompleted(timeUsed);
-            qDebug() << "收到对方完成关卡的消息";
         }
     }
 }

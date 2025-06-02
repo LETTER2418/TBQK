@@ -804,7 +804,6 @@ void Game::onGameStateReceived(const MapData &mapData)
 void Game::onOpponentLevelCompleted(int timeUsed)
 {
     // 显示对方完成关卡的提示消息
-    qDebug() << "调用onOpponentLevelCompleted";
     QString message = QString("对方已通关！用时：%1秒").arg(timeUsed);
     messageBox->setMessage(message);
     messageBox->exec();
