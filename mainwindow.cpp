@@ -90,46 +90,46 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     settingPage = new Setting(this, dataManager);
     onlineModePage = new OnlineMode(this, socketManager);
 
-    // 连接信号与槽
+    // 修改所有页面切换的连接，使用switchPage替代setCurrentWidget
     connect(startPage->backButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(mainPage); });
+            { switchPage(mainPage); });
 
     connect(aboutPage->backButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(mainPage); });
+            { switchPage(mainPage); });
 
     connect(settingPage->backButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(mainPage); });
+            { switchPage(mainPage); });
 
     connect(startButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(startPage); });
+            { switchPage(startPage); });
 
     connect(aboutButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(aboutPage); });
+            { switchPage(aboutPage); });
 
     connect(settingButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(settingPage); });
+            { switchPage(settingPage); });
 
     connect(startPage->YESmessageBox->closeButton, &QPushButton::clicked, this, [this]()
             {
         startPage->YESmessageBox->accept();
-        pageStack->setCurrentWidget(menuPage); });
+        switchPage(menuPage); });
 
     connect(menuPage->logoutButton, &QPushButton::clicked, this, [this]()
             {
         startPage->currentUserId.clear();  // 清除当前用户ID
-        pageStack->setCurrentWidget(startPage); });
+        switchPage(startPage); });
 
     connect(menuPage->levelEditorButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(levelEditorPage); });
+            { switchPage(levelEditorPage); });
 
     connect(menuPage->levelModeButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(levelModePage); });
+            { switchPage(levelModePage); });
 
     connect(menuPage->rankButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(rankPage); });
+            { switchPage(rankPage); });
 
     connect(menuPage->onlineButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(onlineModePage); });
+            { switchPage(onlineModePage); });
 
     connect(onlineModePage->cancelButton, &QPushButton::clicked, this, [this]()
             {
@@ -138,11 +138,11 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
             {
                 gamePage->setOnlineMode(false, nullptr);  // 重置游戏页面的联机模式
             }
-        pageStack->setCurrentWidget(menuPage); });
+        switchPage(menuPage); });
 
     connect(onlineModePage->msgBox, &OnlineMsgBox::enterLevelMode, this, [this](bool isServer)
             {
-        pageStack->setCurrentWidget(levelModePage);
+        switchPage(levelModePage);
           gamePage->setOnlineMode(isServer, socketManager); });
 
     connect(onlineModePage->msgBox, &OnlineMsgBox::clientConnected, this, [this]()
@@ -151,19 +151,19 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
                 gamePage->setOnlineMode(false, socketManager); });
 
     connect(levelEditorPage->backButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(menuPage); });
+            { switchPage(menuPage); });
 
     connect(randomMapMsgBox, &MapMsgBox::sendMsg, this, [this](int rings, QColor color1, QColor color2, QColor color3)
             {
         randomMapPage->generateHexagons(rings, color1, color2, color3);
         randomMapMsgBox->hide();
-        pageStack->setCurrentWidget(randomMapPage); });
+        switchPage(randomMapPage); });
 
     connect(customMapMsgBox, &MapMsgBox::sendMsg, this, [this](int rings, QColor color1, QColor color2, QColor color3)
             {
         customMapPage->generateHexagons(rings, color1, color2, color3);
         customMapMsgBox->hide();
-        pageStack->setCurrentWidget(customMapPage); });
+        switchPage(customMapPage); });
 
     connect(socketManager, &SocketManager::gameStateReceived, this, &MainWindow::onClientReceivedGameState);
 
@@ -190,7 +190,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
                                 gamePage->setOnlineMode(true, socketManager);
                                 socketManager->SendGameState(mapData);
                                 gamePage->setMap(mapData);
-                                pageStack->setCurrentWidget(gamePage);
+                                switchPage(gamePage);
                                 gamePage->triggerAllHexEffects();
                             }
                     }
@@ -209,7 +209,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
                                 return;
                             }
                         gamePage->setMap(mapData);
-                        pageStack->setCurrentWidget(gamePage);
+                        switchPage(gamePage);
                         gamePage->triggerAllHexEffects();
                     } });
     }
@@ -221,10 +221,10 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
             { customMapMsgBox->show(); });
 
     connect(randomMapPage->backButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(levelEditorPage); });
+            { switchPage(levelEditorPage); });
 
     connect(customMapPage->backButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(levelEditorPage); });
+            { switchPage(levelEditorPage); });
 
     connect(randomMapPage->saveButton, &QPushButton::clicked, this, [this]()
             { saveRandomMapMsgBox->show(); });
@@ -351,21 +351,21 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
                         qDebug() << "用户确认退出房间";
                         socketManager->closeConnection();  // 函数内部会发送退出消息
                         gamePage->setOnlineMode(false, nullptr);
-                        pageStack->setCurrentWidget(onlineModePage);
+                        switchPage(onlineModePage);
                     }
                 // 如果用户取消，则不执行后续操作
                 return;
             }
         else
             {
-                pageStack->setCurrentWidget(menuPage);
+                switchPage(menuPage);
             } });
 
     connect(gamePage->backButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(levelModePage); });
+            { switchPage(levelModePage); });
 
     connect(rankPage->backButton, &QPushButton::clicked, this, [this]()
-            { pageStack->setCurrentWidget(menuPage); });
+            { switchPage(menuPage); });
 
     // 连接游戏完成时返回关卡模式的信号
     connect(gamePage, &Game::returnToLevelMode, this, [this](bool completed, int penaltySeconds, int steps, int levelId)
@@ -378,7 +378,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
                     {
                         dataManager->updateRanking(levelId, startPage->currentUserId, penaltySeconds, steps);
                     }
-                pageStack->setCurrentWidget(levelModePage);
+                switchPage(levelModePage);
             } });
 
     // 将页面添加到 QStackedWidget
@@ -408,9 +408,64 @@ void MainWindow::onClientReceivedGameState(const MapData &mapData)
     if (socketManager && !socketManager->isServerMode()) // 确保是客户端
     {
         // gamePage->setOnlineMode(true, socketManager); // 配置gamePage为客户端模式
-        gamePage->setMap(mapData);             // 设置地图
-        pageStack->setCurrentWidget(gamePage); // 切换到游戏页面
+        gamePage->setMap(mapData); // 设置地图
+        switchPage(gamePage);      // 切换到游戏页面
     }
+}
+
+void MainWindow::switchPage(QWidget *nextPage)
+{
+    if (currentPage == nextPage)
+        return;
+
+    if (currentPage)
+    {
+        fadeOutPage(currentPage, nextPage);
+    }
+    else
+    {
+        fadeInPage(nextPage);
+    }
+    currentPage = nextPage;
+}
+
+void MainWindow::fadeInPage(QWidget *page)
+{
+    // 创建不透明度效果
+    QGraphicsOpacityEffect *effect = new QGraphicsOpacityEffect(page);
+    page->setGraphicsEffect(effect);
+
+    // 创建动画
+    QPropertyAnimation *animation = new QPropertyAnimation(effect, "opacity");
+    animation->setDuration(animationDuration);
+    animation->setStartValue(0.0);
+    animation->setEndValue(1.0);
+    animation->setEasingCurve(QEasingCurve::InOutQuad);
+
+    // 显示页面并开始动画
+    pageStack->setCurrentWidget(page);
+    animation->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
+void MainWindow::fadeOutPage(QWidget *currentPage, QWidget *nextPage)
+{
+    // 创建不透明度效果
+    QGraphicsOpacityEffect *effect = new QGraphicsOpacityEffect(currentPage);
+    currentPage->setGraphicsEffect(effect);
+
+    // 创建动画
+    QPropertyAnimation *animation = new QPropertyAnimation(effect, "opacity");
+    animation->setDuration(animationDuration);
+    animation->setStartValue(1.0);
+    animation->setEndValue(0.0);
+    animation->setEasingCurve(QEasingCurve::InOutQuad);
+
+    // 连接动画完成信号，切换到下一个页面
+    connect(animation, &QPropertyAnimation::finished, this, [this, nextPage]()
+            { fadeInPage(nextPage); });
+
+    // 开始动画
+    animation->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
 MainWindow::~MainWindow()

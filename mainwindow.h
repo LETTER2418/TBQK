@@ -72,6 +72,13 @@ private:
     // Manager
     DataManager *dataManager;
     SocketManager *socketManager;
+
+    void switchPage(QWidget *nextPage);
+    void fadeInPage(QWidget *page);
+    void fadeOutPage(QWidget *page, QWidget *nextPage);
+
+    const int animationDuration = 300; // 动画持续时间(ms)
+    QWidget *currentPage = nullptr;    // 当前显示的页面
 };
 
 #endif // MAINWINDOW_H
