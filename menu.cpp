@@ -5,10 +5,10 @@ Menu::Menu(QWidget *parent) : QWidget(parent)
 {
     logoutButton = new Lbutton(this, "↩️ 注销");
     logoutButton->move(0, 0);
-    levelEditorButton = new Lbutton(this, "✏️ 关卡编辑");
-    levelModeButton = new Lbutton(this, "🎮 关卡模式");
-    rankButton = new Lbutton(this, "🏆 排行榜");
-    onlineButton = new Lbutton(this, "🌐 联机模式");
+    levelEditorButton = new Lbutton(this, "✏️ 关卡编辑", "black");
+    levelModeButton = new Lbutton(this, "🎮 关卡模式", "black");
+    rankButton = new Lbutton(this, "🏆 排行榜", "black");
+    onlineButton = new Lbutton(this, "🌐 联机模式", "black");
 
     // 创建按钮的网格布局
     QGridLayout *layout = new QGridLayout(this);

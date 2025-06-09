@@ -25,7 +25,6 @@ struct Operation
 {
     int hexagonIndex; // 操作的六边形索引
     QColor oldColor;  // 操作前的颜色
-    QPoint hexCoord;  // 六边形的轴向坐标
 };
 
 // 六边形状态枚举
@@ -40,16 +39,15 @@ enum class HexState
 // 粒子结构体
 struct HexParticle
 {
-    QPointF pos;           // 当前位置
-    QPointF velocity;      // 移动速度
-    QPointF startPos;      // 起始位置(重构用)
-    QPointF targetPos;     // 目标位置(重构用)
-    QColor color;          // 颜色
-    float size;            // 大小
-    float alpha;           // 透明度
-    float life;            // 生命周期
-    float maxLife;         // 最大生命周期
-    bool isReconstructing; // 是否处于重构状态
+    QPointF pos;       // 当前位置
+    QPointF velocity;  // 移动速度
+    QPointF startPos;  // 起始位置
+    QPointF targetPos; // 目标位置
+    QColor color;      // 颜色
+    float size;        // 大小
+    float alpha;       // 透明度
+    float life;        // 生命周期
+    float maxLife;     // 最大生命周期
 };
 
 class Game : public QWidget
@@ -139,6 +137,15 @@ private:
     // === 偏移量 ===
     QPointF getOffset();
 
+    // === 六边形粒子特效相关方法 ===
+    void initParticleSystem();
+    void createDissolveParticles(int hexIndex);
+    void updateDissolveEffect(int hexIndex);
+    void updateReconstructEffect(int hexIndex);
+    void generateHexOutline(int hexIndex, QVector<QPointF> &outlinePoints);
+    QPointF getRandomPointAround(const QPointF &center, float radius);
+    void drawParticles(QPainter &painter);
+
     Lbutton *hintButton;
     Lbutton *withdrawButton;
     Lbutton *pathToggleButton;
@@ -165,17 +172,15 @@ private:
     QString timeText;       // 时间显示文本
     int rings = 3;          // 游戏的环数
     int stepCount = 0;      // 记录步数
-
-    // 添加关卡ID成员变量
     int currentLevelId = 0;
 
     // 网络同步相关
-    SocketManager *socketManager = nullptr; // SocketManager指针
-    bool isServer = false;                  // 是否是服务器, 由setOnlineMode设置
-    OnlineChat *onlineChat = nullptr;       // 联机聊天窗口
-    bool isOnlineMode = false;              // 是否为联机模式，用于设置聊天窗口是否显示
+    SocketManager *socketManager = nullptr;
+    bool isServer = false;            // 是否是服务器, 由setOnlineMode设置
+    OnlineChat *onlineChat = nullptr; // 联机聊天窗口
+    bool isOnlineMode = false;        // 是否为联机模式，用于设置聊天窗口是否显示
 
-    DataManager *dataManager; // 添加 DataManager 指针
+    DataManager *dataManager;
 
     // 粒子系统相关
     QTimer *particleTimer;                        // 粒子更新定时器
@@ -186,15 +191,7 @@ private:
     QMap<int, float> reconstructProgress;         // 每个六边形的重构进度
     QMap<int, QVector<QPointF>> hexOutlinePoints; // 每个六边形的轮廓点
     int effectDuration = 400;                     // 特效持续时间(毫秒)
-
-    // 六边形粒子特效相关方法
-    void initParticleSystem();
-    void createDissolveParticles(int hexIndex);
-    void updateDissolveEffect(int hexIndex);
-    void updateReconstructEffect(int hexIndex);
-    void generateHexOutline(int hexIndex, QVector<QPointF> &outlinePoints);
-    QPointF getRandomPointAround(const QPointF &center, float radius);
-    void drawParticles(QPainter &painter);
+    const int frameInterval = 16;                 // 帧间隔(ms)，约60帧每秒
 };
 
 #endif // GAME_H

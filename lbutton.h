@@ -16,6 +16,7 @@
 #include <QSequentialAnimationGroup>
 #include <QParallelAnimationGroup>
 #include <QGraphicsOpacityEffect>
+#include <QSet>
 
 const int BUTTON_WIDTH = 150;
 const int BUTTON_HEIGHT = 50;
@@ -51,13 +52,10 @@ class Lbutton : public QPushButton
 
 public:
     // 构造函数，接收按钮文字
-    explicit Lbutton(QWidget *parent = nullptr, const QString &text = "Lbutton");
-    explicit Lbutton(QWidget *parent, const QString &text, QString color, int fontSize = 12);
+    Lbutton(QWidget *parent = nullptr, const QString &text = "");
+    Lbutton(QWidget *parent, const QString &text, QString color, int fontSize = FONT_SIZE);
+    ~Lbutton();
 
-    // 设置按钮音量
-    void setButtonVolume(float volume);
-
-    // 设为public成员，以便外部访问
     QAudioOutput *audioOutput; // 音频输出
 
     // 粒子特效开关
@@ -68,6 +66,9 @@ public:
 
     // 触发按钮分解效果
     void triggerDissolveEffect();
+
+    // 设置所有按钮的音量
+    static void setGlobalButtonVolume(float volume);
 
 protected:
     // 重写paintEvent实现自定义绘制
@@ -124,6 +125,9 @@ private:
     void updateDissolveEffect();
     void updateReconstructEffect();
     QPointF getRandomPointAround(const QPointF &center, float radius);
+
+    static QSet<Lbutton *> allButtons; // 跟踪所有按钮实例
+    static float globalVolume;         // 全局音量设置
 };
 
 #endif // LBUTTON_H

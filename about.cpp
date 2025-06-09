@@ -119,8 +119,8 @@ About::About(QWidget *parent) : QWidget(parent)
     contentWidget->setStyleSheet(
         "QLabel { "
         "    font-size: 20px; "
-        "    line-height: 1.5; " /* 行高调整 */
-        "    color: white; "     /* 设置文字颜色为白色 */
+        "    line-height: 1.5; "    /* 行高调整 */
+        "    color: rgb(0, 0, 0); " /* 设置文字颜色为rgba(1,1,1,1) */
         "}"
         "QLabel h1 { font-size: 22px; font-weight: bold; }" /* H1 标题样式 */
         "QLabel h2 { font-size: 18px; font-weight: bold; }" /* H2 标题样式 */

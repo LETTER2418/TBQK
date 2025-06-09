@@ -258,7 +258,6 @@ void Game::flipHexagon(int index)
     Operation op;
     op.hexagonIndex = index;
     op.oldColor = hexagons[index].color;
-    op.hexCoord = hexagonIndexToCoord(index);
     operationHistory.append(op);
 
     // 触发分解效果
@@ -323,7 +322,6 @@ void Game::resetHexagons(const QVector<HexCell> &currentHexagons, int radius1, i
     QVector<HexCell> newHexagons;
 
     double scaleFactor = static_cast<double>(radius2) / static_cast<double>(radius1);
-    QPointF pivotCenter = center; // 使用 this->center 作为缩放的中心点
 
     newHexagons.reserve(currentHexagons.size()); // 预分配内存以提高效率
 
@@ -332,14 +330,14 @@ void Game::resetHexagons(const QVector<HexCell> &currentHexagons, int radius1, i
         HexCell newCell;
         newCell.color = oldCell.color; // 保持颜色不变
 
-        // 计算六边形中心相对于 pivotCenter 的位置
-        QPointF relativePos = oldCell.center - pivotCenter;
+        // 计算六边形中心相对于 center 的位置
+        QPointF relativePos = oldCell.center - center;
 
         // 根据缩放因子调整相对位置
         QPointF newRelativePos = relativePos * scaleFactor;
 
         // 计算新的绝对中心位置
-        newCell.center = pivotCenter + newRelativePos;
+        newCell.center = center + newRelativePos;
 
         newHexagons.append(newCell);
     }
@@ -394,7 +392,7 @@ void Game::paintEvent(QPaintEvent *event)
     painter.setRenderHint(QPainter::Antialiasing);
 
     // 绘制六边形
-    painter.setPen(Qt::gray);
+    painter.setPen(Qt::gray); // 设置六边形边框颜色
     for (const HexCell &hex : hexagons)
     {
         painter.setBrush(hex.color);
@@ -944,7 +942,7 @@ void Game::initParticleSystem()
     // 创建粒子更新定时器
     particleTimer = new QTimer(this);
     connect(particleTimer, &QTimer::timeout, this, &Game::updateParticles);
-    particleTimer->start(16); // 约60帧每秒
+    particleTimer->start(frameInterval); // 约60帧每秒
 
     // 创建特效状态转换定时器
     effectTimer = new QTimer(this);
@@ -973,38 +971,8 @@ void Game::updateParticles()
         }
         else if (state == HexState::Normal)
         {
-            // 正常状态下更新粒子 (例如消散效果)
+            // 正常状态下更新粒子
             QVector<HexParticle> &particles = hexParticles[hexIndex];
-
-            for (int i = 0; i < particles.size(); ++i)
-            {
-                HexParticle &p = particles[i];
-
-                // 更新生命周期
-                p.life -= 0.01f;
-
-                // 移除已经死亡的粒子
-                if (p.life <= 0)
-                {
-                    particles.remove(i);
-                    --i;
-                    continue;
-                }
-
-                // 更新位置
-                p.pos += p.velocity;
-
-                // 更新透明度（随生命周期减少）
-                p.alpha = p.life / p.maxLife * 255;
-
-                // 添加一些随机性使粒子运动更自然
-                p.velocity += QPointF(
-                    (QRandomGenerator::global()->generateDouble() * 0.2) - 0.1,
-                    (QRandomGenerator::global()->generateDouble() * 0.2) - 0.1);
-
-                // 重力效果
-                p.velocity.setY(p.velocity.y() + 0.01f);
-            }
 
             // 如果该六边形没有粒子了，从活动列表中移除
             if (particles.isEmpty())
@@ -1047,7 +1015,6 @@ void Game::triggerHexDissolveEffect(int hexIndex)
     QTimer::singleShot(effectDuration, this, [this, hexIndex]()
                        { onDissolveFinished(hexIndex); });
 
-    // 强制更新，确保立即显示粒子效果
     update();
 }
 
@@ -1095,11 +1062,10 @@ void Game::createDissolveParticles(int hexIndex)
 
         p.startPos = p.pos;
         p.targetPos = getRandomPointAround(p.pos, radius * 2.0f); // 分解目标位置
-        p.isReconstructing = false;
-
         // 随机初始速度（方向向外）
         QPointF direction = p.targetPos - p.pos;
         float length = sqrt(direction.x() * direction.x() + direction.y() * direction.y());
+
         if (length > 0)
         {
             direction = QPointF(direction.x() / length, direction.y() / length);
@@ -1117,7 +1083,7 @@ void Game::createDissolveParticles(int hexIndex)
 
         // 其他属性
         p.size = 1 + QRandomGenerator::global()->bounded(3); // 1-3的整数
-        p.life = 1.0f;                                       // 足够长的生命周期
+        p.life = 1.0f;                                       // 生命周期
         p.maxLife = p.life;
         p.alpha = 255;
 
@@ -1134,7 +1100,7 @@ void Game::updateDissolveEffect(int hexIndex)
         return;
     }
 
-    dissolveProgress[hexIndex] += 1.0f / (effectDuration / 16.0f); // 16ms 一帧
+    dissolveProgress[hexIndex] += 1.0f / (effectDuration / static_cast<float>(frameInterval)); // 每帧更新进度
     dissolveProgress[hexIndex] = qMin(dissolveProgress[hexIndex], 1.0f);
 
     QVector<HexParticle> &particles = hexParticles[hexIndex];
@@ -1184,35 +1150,13 @@ void Game::startReconstruction(int hexIndex)
     QColor hexColor = hexagons[hexIndex].color;
 
     // 为粒子设置目标位置（六边形轮廓和内部）
-    QVector<QPointF> &outlinePoints = hexOutlinePoints[hexIndex];
     QVector<HexParticle> &particles = hexParticles[hexIndex];
 
     for (int i = 0; i < particles.size(); ++i)
     {
         HexParticle &p = particles[i];
-        // 将粒子标记为重构状态
-        p.isReconstructing = true;
-        // 记录起始位置
-        p.startPos = p.pos;
-
-        // 设置目标位置
-        if (i < outlinePoints.size())
-        {
-            p.targetPos = outlinePoints[i];
-        }
-        else
-        {
-            // 对于多余的粒子，使用六边形内部的随机点
-            QPointF hexCenter = hexagons[hexIndex].center + getOffset(); // 应用偏移
-            double randomAngle = QRandomGenerator::global()->generateDouble() * 2.0 * M_PI;
-            double randomRadius = QRandomGenerator::global()->generateDouble() * radius * 0.7;
-            p.targetPos = QPointF(
-                hexCenter.x() + randomRadius * cos(randomAngle),
-                hexCenter.y() + randomRadius * sin(randomAngle));
-        }
-
-        // 所有粒子使用六边形颜色
-        p.color = hexColor;
+        std::swap(p.startPos, p.targetPos);
+        p.color = hexColor; // 所有粒子使用六边形颜色
     }
 
     // 设置定时器，在重构完成后触发回调
@@ -1228,7 +1172,7 @@ void Game::updateReconstructEffect(int hexIndex)
         return;
     }
 
-    reconstructProgress[hexIndex] += 1.0f / (effectDuration / 16.0f); // 16ms 一帧
+    reconstructProgress[hexIndex] += 1.0f / (effectDuration / static_cast<float>(frameInterval)); // 每帧更新进度
     reconstructProgress[hexIndex] = qMin(reconstructProgress[hexIndex], 1.0f);
 
     // 使用缓动函数让运动更自然
@@ -1261,13 +1205,8 @@ void Game::onReconstructFinished(int hexIndex)
     // 设置状态为正常
     hexStates[hexIndex] = HexState::Normal;
 
-    // 清除之前的粒子并创建一些新的完成效果粒子
-    QVector<HexParticle> &particles = hexParticles[hexIndex];
-    particles.clear();
+    hexParticles[hexIndex].clear();
 
-    // 可以在这里添加完成效果，如发光粒子等
-
-    // 标记为需要更新UI
     update();
 }
 

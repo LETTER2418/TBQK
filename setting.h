@@ -38,7 +38,6 @@
 class Setting : public QWidget
 {
     Q_OBJECT
-    // 添加旋转角度属性，使动画系统可以访问
     Q_PROPERTY(double avatarRotationAngle READ getAvatarRotationAngle WRITE setAvatarRotationAngle)
 
 public:
@@ -67,8 +66,7 @@ public:
     // 事件过滤器
     bool eventFilter(QObject *watched, QEvent *event) override;
 
-    // 旋转角度的getter和setter
-    double getAvatarRotationAngle() const { return avatarRotationAngle; }
+    double getAvatarRotationAngle() const;
     void setAvatarRotationAngle(double angle);
 
 protected:
@@ -88,6 +86,8 @@ private:
     QToolButton *pauseButton;       // 暂停按钮
     QToolButton *nextButton;        // 下一首按钮
     QToolButton *prevButton;        // 上一首按钮
+    QSlider *progressSlider;        // 进度条
+    QLabel *timeLabel;              // 时间标签
     Lbutton *openFileButton;        // 打开文件按钮
     Lbutton *removeSongButton;      // 删除歌曲按钮
     QLabel *currentSongLabel;       // 当前歌曲标签
@@ -120,8 +120,10 @@ private slots:
     void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
     void openMusicFile();
     void onPlaylistItemDoubleClicked(QListWidgetItem *item);
-    void uploadAvatar();         // 上传头像槽函数
-    void updateAvatarRotation(); // 更新头像旋转
+    void uploadAvatar();                      // 上传头像槽函数
+    void updateAvatarRotation();              // 更新头像旋转
+    void updateProgress();                    // 更新进度条
+    void onProgressSliderMoved(int position); // 处理进度条拖动
 };
 
 #endif // SETTING_H

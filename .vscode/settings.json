@@ -52,6 +52,8 @@
         "qgridlayout": "cpp",
         "qmouseevent": "cpp",
         "qvboxlayout": "cpp",
-        "qshowevent": "cpp"
+        "qshowevent": "cpp",
+        "qmediaplayer": "cpp",
+        "qmap": "cpp"
     }
 }

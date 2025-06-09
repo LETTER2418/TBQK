@@ -19,10 +19,21 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
     // 创建 mainPage，并将四个按钮放入
     mainPage = new QWidget(this);
 
-    startButton = new Lbutton(mainPage, "🚀 开始游戏");
-    aboutButton = new Lbutton(mainPage, "📖 关于");
-    settingButton = new Lbutton(mainPage, "⚙️ 设置");
-    exitButton = new Lbutton(mainPage, "👋 退出");
+    // 创建标题标签
+    QLabel *titleLabel = new QLabel("提笔乾坤", mainPage);
+    QFont titleFont;
+    titleFont.setFamily("华文行楷"); // 设置字体为行楷
+    titleFont.setPointSize(100);     // 增大字体大小
+    titleFont.setBold(true);         // 设置为粗体
+    titleLabel->setFont(titleFont);
+    titleLabel->setAlignment(Qt::AlignCenter);    // 居中对齐
+    titleLabel->setContentsMargins(0, 30, 0, 30); // 设置上下边距
+    titleLabel->setStyleSheet("color: rgb(54,52,72);");
+
+    startButton = new Lbutton(mainPage, "🚀 开始游戏", "black");
+    aboutButton = new Lbutton(mainPage, "📖 关于", "black");
+    settingButton = new Lbutton(mainPage, "⚙️ 设置", "black");
+    exitButton = new Lbutton(mainPage, "👋 退出", "black");
 
     // 退出按钮连接到窗口关闭
     QObject::connect(exitButton, &QPushButton::clicked, this, &QWidget::close);
@@ -49,9 +60,11 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
 
     // 创建一个布局让 buttonWidget 居中
     QVBoxLayout *page1Layout = new QVBoxLayout(mainPage);
-    page1Layout->addStretch(); // 上方弹性空间
+    page1Layout->addStretch(2);         // 上方弹性空间增加
+    page1Layout->addWidget(titleLabel); // 添加标题
+    page1Layout->addSpacing(100);       // 标题和按钮之间添加固定间距
     page1Layout->addWidget(buttonWidget, 0, Qt::AlignCenter);
-    page1Layout->addStretch(); // 下方弹性空间
+    page1Layout->addStretch(3); // 下方弹性空间更大，使整体偏上
     mainPage->setLayout(page1Layout);
 
     // 初始化各页面

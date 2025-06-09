@@ -52,6 +52,28 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     // 设置初始音量
     musicAudioOutput->setVolume(0);
 
+    // 创建进度条
+    progressSlider = new QSlider(Qt::Horizontal, this);
+    progressSlider->setStyleSheet(
+        "QSlider::groove:horizontal {"
+        "    border: 1px solid #ffffff;"
+        "    height: 10px;"
+        "    margin: 2px 0;"
+        "}"
+        "QSlider::handle:horizontal {"
+        "    border: 1px solid #6464FF;"
+        "    background-color: #6464FF;"
+        "    width: 18px;"
+        "    margin: -2px 0;"
+        "    border-radius: 9px;"
+        "}");
+
+    // 创建时间标签
+    timeLabel = new QLabel("00:00 / 00:00", this);
+    timeLabel->setStyleSheet("QLabel { color: white; }");
+    timeLabel->setAlignment(Qt::AlignCenter);
+    timeLabel->setFont(QFont("Arial", 14));
+
     // 创建音乐播放器控件
     QFont labelFont;
     labelFont.setPointSize(14);
@@ -114,15 +136,20 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     removeSongButton->enableClickEffect(true);
 
     playModeComboBox = new QComboBox(this);
-    playModeComboBox->addItem("单曲循环");
-    playModeComboBox->addItem("顺序播放");
-    playModeComboBox->addItem("随机播放");
-    playModeComboBox->setCurrentIndex(1); // 默认顺序播放
-    playModeComboBox->setStyleSheet("QComboBox { color: white; background-color: rgb(100, 100, 255); font-size: 14pt; min-height: 30px; max-width: 105px; padding-left: 10px; }"
-                                    "QComboBox QAbstractItemView { background-color: rgb(40, 40, 40); color: white; }");
+    playModeComboBox->addItem(QIcon(":/image/xh.png"), ""); // 循环播放
+    playModeComboBox->addItem(QIcon(":/image/sx.png"), ""); // 顺序播放
+    playModeComboBox->addItem(QIcon(":/image/sj.png"), ""); // 随机播放
+    playModeComboBox->setCurrentIndex(1);                   // 默认顺序播放
+    playModeComboBox->setIconSize(QSize(24, 24));           // 设置图标大小
+    playModeComboBox->setStyleSheet("QComboBox {text-align: center;min-height: 35px; max-width: 39px; padding: 10px; background-color: rgb(100, 100, 255); }"
+                                    "QComboBox QAbstractItemView { background-color: rgb(40, 40, 40); padding: 5px; }"
+                                    "QComboBox::drop-down { border: none; }"
+                                    "QComboBox::down-arrow { image: none; }"
+                                    "QComboBox::item { min-height: 35px;text-align: center; background-color: rgb(100, 100, 255); }");
 
     // 创建歌单列表
     playlistWidget = new QListWidget(this);
+    // rgb(100, 100, 255);
     playlistWidget->setStyleSheet("QListWidget { color: white; background-color: rgba(40, 40, 40, 150); border: 1px solid rgba(255, 255, 255, 100); border-radius: 5px; font-size: 14pt; }"
                                   "QListWidget::item { padding: 10px; }"
                                   "QListWidget::item:selected { background-color: rgba(100, 100, 255, 100); }");
@@ -224,6 +251,8 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
     musicLayout->addWidget(playlistLabel);
     musicLayout->addWidget(playlistWidget);
     musicLayout->addWidget(currentSongLabel);
+    musicLayout->addWidget(progressSlider);
+    musicLayout->addWidget(timeLabel);
     musicLayout->addLayout(controlButtonLayout);
     musicLayout->addLayout(fileControlLayout);
     musicLayout->addLayout(volumeLayout);
@@ -292,6 +321,12 @@ Setting::Setting(QWidget *parent, DataManager *dataManager_)
                 pauseButton->hide();
                 playButton->show();
             } });
+
+    // 连接进度条相关的信号
+    connect(progressSlider, &QSlider::sliderMoved, this, &Setting::onProgressSliderMoved);
+    connect(musicPlayer, &QMediaPlayer::positionChanged, this, &Setting::updateProgress);
+    connect(musicPlayer, &QMediaPlayer::durationChanged, this, [this](qint64 duration)
+            { progressSlider->setMaximum(duration); });
 }
 
 Setting::~Setting()
@@ -342,11 +377,7 @@ void Setting::setVolume(int volume)
 void Setting::setButtonVolume(int volume)
 {
     // 遍历所有的Lbutton并设置它们的音频输出音量
-    QList<Lbutton *> buttons = this->findChildren<Lbutton *>();
-    for (Lbutton *button : buttons)
-    {
-        button->setButtonVolume(volume / 100.0);
-    }
+    Lbutton::setGlobalButtonVolume(volume / 100.0);
 }
 
 void Setting::nextSong()
@@ -358,9 +389,13 @@ void Setting::nextSong()
 
     if (currentPlayMode == RandomPlay)
     {
-        currentIndex = QRandomGenerator::global()->bounded(playlist.size());
+        int oldIndex = currentIndex;
+        while (oldIndex == currentIndex && playlist.size() > 1)
+        {
+            currentIndex = QRandomGenerator::global()->bounded(playlist.size());
+        }
     }
-    else
+    else if (currentPlayMode == SequentialPlay)
     {
         currentIndex = (currentIndex + 1) % playlist.size();
     }
@@ -383,9 +418,13 @@ void Setting::previousSong()
 
     if (currentPlayMode == RandomPlay)
     {
-        currentIndex = QRandomGenerator::global()->bounded(playlist.size());
+        int oldIndex = currentIndex;
+        while (oldIndex == currentIndex && playlist.size() > 1)
+        {
+            currentIndex = QRandomGenerator::global()->bounded(playlist.size());
+        }
     }
-    else
+    else if (currentPlayMode == SequentialPlay)
     {
         currentIndex = (currentIndex - 1 + playlist.size()) % playlist.size();
     }
@@ -450,7 +489,7 @@ void Setting::openMusicFile()
     QString defaultDir;
     QString username = qgetenv("USERNAME");
 
-    if (username == "LETTER")
+    if (username == "LETTTER")
     {
         defaultDir = QString("D:/Programming/QtProject/TBQK/music");
     }
@@ -527,7 +566,11 @@ void Setting::onMediaStatusChanged(QMediaPlayer::MediaStatus status)
             break;
         case RandomPlay:
             // 随机播放
-            currentIndex = QRandomGenerator::global()->bounded(playlist.size());
+            int oldIndex = currentIndex;
+            while (oldIndex == currentIndex && playlist.size() > 1)
+            {
+                currentIndex = QRandomGenerator::global()->bounded(playlist.size());
+            }
             if (!playlist.isEmpty())
             {
                 musicPlayer->setSource(QUrl::fromLocalFile(playlist.at(currentIndex)));
@@ -819,13 +862,6 @@ bool Setting::eventFilter(QObject *watched, QEvent *event)
     return QWidget::eventFilter(watched, event);
 }
 
-// 设置旋转角度并触发更新
-void Setting::setAvatarRotationAngle(double angle)
-{
-    avatarRotationAngle = angle;
-    updateAvatarRotation();
-}
-
 // 更新头像旋转显示
 void Setting::updateAvatarRotation()
 {
@@ -888,4 +924,45 @@ void Setting::showEvent(QShowEvent *event)
 {
     QWidget::showEvent(event);
     loadAvatar();
+}
+
+// 槽函数实现
+void Setting::updateProgress()
+{
+    if (musicPlayer->playbackState() != QMediaPlayer::StoppedState)
+    {
+        qint64 position = musicPlayer->position();
+        qint64 duration = musicPlayer->duration();
+
+        progressSlider->setValue(position);
+
+        // 更新时间标签
+        QTime currentTime(0, 0);
+        currentTime = currentTime.addMSecs(position);
+
+        QTime totalTime(0, 0);
+        totalTime = totalTime.addMSecs(duration);
+
+        QString format = duration > 3600000 ? "hh:mm:ss" : "mm:ss";
+        timeLabel->setText(currentTime.toString(format) + " / " + totalTime.toString(format));
+    }
+}
+
+void Setting::onProgressSliderMoved(int position)
+{
+    if (musicPlayer->isSeekable())
+    {
+        musicPlayer->setPosition(position);
+    }
+}
+
+double Setting::getAvatarRotationAngle() const
+{
+    return avatarRotationAngle;
+}
+
+void Setting::setAvatarRotationAngle(double angle)
+{
+    avatarRotationAngle = angle;
+    updateAvatarRotation();
 }

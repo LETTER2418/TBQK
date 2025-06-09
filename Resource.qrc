@@ -12,5 +12,8 @@
         <file>image/play.png</file>
         <file>image/emoji.png</file>
         <file>image/image.png</file>
+        <file>image/sj.png</file>
+        <file>image/sx.png</file>
+        <file>image/xh.png</file>
     </qresource>
 </RCC>

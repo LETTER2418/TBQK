@@ -64,7 +64,7 @@ void RankPage::setupUI()
     levelSelector->setFont(comboFont);
 
     // 创建清除按钮
-    clearButton = new Lbutton(this, "🧹 清除本关数据");
+    clearButton = new Lbutton(this, "清除本关数据");
     clearButton->setFixedWidth(140);
 
     // 创建排行榜表格
