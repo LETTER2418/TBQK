@@ -71,7 +71,6 @@ public:
     static void setGlobalButtonVolume(float volume);
 
 protected:
-    // 重写paintEvent实现自定义绘制
     void paintEvent(QPaintEvent *event) override;
     // 鼠标进入事件
     void enterEvent(QEnterEvent *event) override;
@@ -113,6 +112,7 @@ private:
     float dissolveProgress;               // 分解进度
     float reconstructProgress;            // 重构进度
     int effectDuration = 400;             // 分解/重构效果持续时间(毫秒)
+    const int frameInterval = 16;         // 帧间隔(ms)，约60帧每秒
 
     // 粒子系统方法
     void initParticleSystem();

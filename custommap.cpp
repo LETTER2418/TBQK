@@ -575,7 +575,6 @@ void CustomMap::resetHexagons(const QVector<HexCell> &currentHexagons, int radiu
     // radius1是原始半径，radius2是新半径
     QVector<HexCell> newHexagons;
     double scaleFactor = static_cast<double>(radius2) / static_cast<double>(radius1);
-    QPointF pivotCenter = center; // 使用中心点作为缩放的中心点
 
     newHexagons.reserve(currentHexagons.size());
 
@@ -584,14 +583,14 @@ void CustomMap::resetHexagons(const QVector<HexCell> &currentHexagons, int radiu
         HexCell newCell;
         newCell.color = oldCell.color; // 保持颜色不变
 
-        // 计算六边形中心相对于pivotCenter的位置
-        QPointF relativePos = oldCell.center - pivotCenter;
+        // 计算六边形中心相对于center的位置
+        QPointF relativePos = oldCell.center - center;
 
         // 根据缩放因子调整相对位置
         QPointF newRelativePos = relativePos * scaleFactor;
 
         // 计算新的绝对中心位置
-        newCell.center = pivotCenter + newRelativePos;
+        newCell.center = center + newRelativePos;
 
         newHexagons.append(newCell);
     }

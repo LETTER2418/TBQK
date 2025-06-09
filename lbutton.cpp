@@ -221,7 +221,7 @@ void Lbutton::initParticleSystem()
     // 创建粒子更新定时器
     particleTimer = new QTimer(this);
     connect(particleTimer, &QTimer::timeout, this, &Lbutton::updateParticles);
-    particleTimer->start(16); // 约60帧每秒
+    particleTimer->start(frameInterval); // 约60帧每秒
 
     // 初始化粒子容器
     particles.reserve(500); // 预分配空间以提高性能
@@ -620,7 +620,7 @@ void Lbutton::createDissolveParticles()
 // 更新分解效果
 void Lbutton::updateDissolveEffect()
 {
-    dissolveProgress += 1.0f / (effectDuration / 16.0f); // 16ms 一帧
+    dissolveProgress += 1.0f / (effectDuration / static_cast<float>(frameInterval)); // 每帧更新进度
     dissolveProgress = qMin(dissolveProgress, 1.0f);
 
     for (int i = 0; i < particles.size(); ++i)
@@ -640,7 +640,7 @@ void Lbutton::updateDissolveEffect()
 // 更新重构效果
 void Lbutton::updateReconstructEffect()
 {
-    reconstructProgress += 1.0f / (effectDuration / 16.0f); // 16ms 一帧
+    reconstructProgress += 1.0f / (effectDuration / static_cast<float>(frameInterval)); // 每帧更新进度
     reconstructProgress = qMin(reconstructProgress, 1.0f);
 
     float easedProgress = 1.0f - pow(1.0f - reconstructProgress, 3.0f); // 缓动函数
