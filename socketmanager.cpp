@@ -593,7 +593,7 @@ void SocketManager::processReceivedData(const QByteArray &data)
         }
         else if (type == "gameState")
         {
-            qDebug() << "收到地图数据";
+            // qDebug() << "收到地图数据";
             QJsonObject mapDataJson = json["mapData"].toObject();
             MapData mapData;
             mapData.fromJson(mapDataJson);

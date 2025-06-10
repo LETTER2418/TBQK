@@ -8,7 +8,7 @@
 #include <QScreen>
 
 MapMsgBox::MapMsgBox(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent), hasUsedFadeAnimation(false)
 {
     this->setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     this->setWindowModality(Qt::ApplicationModal);
@@ -26,6 +26,7 @@ MapMsgBox::MapMsgBox(QWidget *parent)
     }
 
     setupUI();
+    setupFadeAnimation(); // 初始化透明度动画
 
     color1 = Qt::black;
     color2 = Qt::white;
@@ -50,6 +51,39 @@ MapMsgBox::MapMsgBox(QWidget *parent)
     connect(comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, [this](int index)
             { rings = comboBox->itemData(index).toInt() - 1; });
+}
+
+void MapMsgBox::setupFadeAnimation()
+{
+    // 创建透明度效果
+    opacityEffect = new QGraphicsOpacityEffect(this);
+    this->setGraphicsEffect(opacityEffect);
+    opacityEffect->setOpacity(0.0); // 初始设置为完全透明
+
+    // 创建动画
+    fadeAnimation = new QPropertyAnimation(opacityEffect, "opacity", this);
+    fadeAnimation->setDuration(300); // 动画持续300毫秒
+    fadeAnimation->setStartValue(0.0);
+    fadeAnimation->setEndValue(1.0);
+    fadeAnimation->setEasingCurve(QEasingCurve::InOutQuad);
+}
+
+void MapMsgBox::show()
+{
+    // 只在第一次调用时使用动画
+    if (!hasUsedFadeAnimation)
+    {
+        opacityEffect->setOpacity(0.0);
+        QWidget::show();
+        fadeAnimation->start();
+        hasUsedFadeAnimation = true;
+    }
+    else
+    {
+        // 直接显示窗口，不使用动画
+        opacityEffect->setOpacity(1.0);
+        QWidget::show();
+    }
 }
 
 MapMsgBox::~MapMsgBox()
@@ -163,6 +197,7 @@ void MapMsgBox::showEvent(QShowEvent *event)
         this->move((screenGeometry.width() - this->width()) / 2,
                    (screenGeometry.height() - this->height()) / 2);
     }
+
     QWidget::showEvent(event);
 }
 

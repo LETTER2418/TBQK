@@ -6,13 +6,16 @@
 #include <QDebug>
 
 MessageBox::MessageBox(QWidget *parent, bool showCancelButton)
-    : QWidget(parent), messageLabel(new QLabel(this)), eventLoop(nullptr), dialogCode(0)
+    : QWidget(parent), messageLabel(new QLabel(this)), eventLoop(nullptr), dialogCode(0), hasUsedFadeAnimation(false)
 {
     // 设置窗口标志，包括模态标志
     this->setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     this->setWindowModality(Qt::ApplicationModal); // 设置为应用程序级模态
     this->resize(300, 400);
     this->setFixedSize(300, 400);
+
+    // 初始化透明度效果
+    setupFadeAnimation();
 
     // 创建closeButton
     closeButton = new Lbutton(this, "✅ 确认", "black");
@@ -140,11 +143,6 @@ int MessageBox::exec()
                    (screenGeometry.height() - this->height()) / 2);
     }
 
-    // 显示对话框
-    show();
-    raise();
-    activateWindow();
-
     // 创建一个新的事件循环，确保不重复创建和调用
     if (eventLoop)
     {
@@ -159,6 +157,30 @@ int MessageBox::exec()
 
     eventLoop = new QEventLoop();
 
+    // 只在第一次调用时使用动画
+    if (!hasUsedFadeAnimation)
+    {
+        opacityEffect->setOpacity(0.0);
+
+        // 显示对话框
+        show();
+        raise();
+        activateWindow();
+
+        // 启动动画
+        fadeAnimation->start();
+
+        hasUsedFadeAnimation = true;
+    }
+    else
+    {
+        // 直接显示对话框，不使用动画
+        show();
+        raise();
+        activateWindow();
+        opacityEffect->setOpacity(1.0);
+    }
+
     // 运行事件循环，直到调用accept()或reject()
     return eventLoop->exec();
 }
@@ -167,6 +189,7 @@ void MessageBox::accept()
 {
     // 设置对话框结果为1（类似QDialog::Accepted）并关闭事件循环
     dialogCode = 1;
+    fadeAnimation->stop();
     hide();
     if (eventLoop && eventLoop->isRunning())
     {
@@ -178,6 +201,7 @@ void MessageBox::reject()
 {
     // 设置对话框结果为0（类似QDialog::Rejected）并关闭事件循环
     dialogCode = 0;
+    fadeAnimation->stop();
     hide();
     if (eventLoop && eventLoop->isRunning())
     {
@@ -227,4 +251,24 @@ void MessageBox::resizeEvent(QResizeEvent *event)
         // 只有一个按钮时，居中放置
         closeButton->move((width() - closeButton->width()) / 2, buttonY);
     }
+}
+
+void MessageBox::setupFadeAnimation()
+{
+    // 创建透明度效果
+    opacityEffect = new QGraphicsOpacityEffect(this);
+    this->setGraphicsEffect(opacityEffect);
+    opacityEffect->setOpacity(0.0); // 初始设置为完全透明
+
+    // 创建动画
+    fadeAnimation = new QPropertyAnimation(opacityEffect, "opacity", this);
+    fadeAnimation->setDuration(300); // 动画持续300毫秒
+    fadeAnimation->setStartValue(0.0);
+    fadeAnimation->setEndValue(1.0);
+    fadeAnimation->setEasingCurve(QEasingCurve::InOutQuad);
+}
+
+void MessageBox::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
 }

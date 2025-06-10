@@ -230,7 +230,7 @@ void Game::handleGameCompletion()
             jsonMessage["timeUsed"] = penaltySeconds;
             jsonMessage["timestamp"] = QDateTime::currentDateTime().toString(Qt::ISODate);
             socketManager->sendJson(socketManager->isServerMode() ? socketManager->getClientSockets().first() : socketManager->getClientSocket(), jsonMessage);
-            qDebug() << "发送完成关卡的消息";
+            // qDebug() << "发送完成关卡的消息";
         }
 
         hintButton->setEnabled(false);
@@ -764,7 +764,6 @@ void Game::setSocketManager(SocketManager *manager)
     if (socketManager)
     {
         // 断开之前的连接，否则会重复connect
-        disconnect(socketManager, &SocketManager::gameStateReceived, this, &Game::onGameStateReceived);
         disconnect(socketManager, &SocketManager::levelCompleted, this, &Game::onOpponentLevelCompleted);
     }
 
@@ -772,38 +771,20 @@ void Game::setSocketManager(SocketManager *manager)
 
     if (socketManager)
     {
-        // 连接游戏状态接收信号
-        connect(socketManager, &SocketManager::gameStateReceived, this, &Game::onGameStateReceived);
         // 连接处理对方完成关卡的信号
         connect(socketManager, &SocketManager::levelCompleted, this, &Game::onOpponentLevelCompleted);
-    }
-}
-
-void Game::onGameStateReceived(const MapData &mapData)
-{
-    qDebug() << "onGameStateReceived isServer=" << isServer;
-    qDebug() << "onlineChat=" << (onlineChat != nullptr);
-    // 如果不是服务器，则更新游戏状态
-    if (!isServer)
-    {
-        if (onlineChat)
-        {
-            qDebug() << "客户端clearChathis";
-            onlineChat->clearChatHistory();
-        }
-        else
-        {
-            qDebug() << "onlineChat不存在";
-        }
-        setMap(mapData);
-        update();
     }
 }
 
 void Game::onOpponentLevelCompleted(int timeUsed)
 {
     // 显示对方完成关卡的提示消息
-    QString message = QString("对方已通关！用时：%1秒").arg(timeUsed);
+    int minutes = timeUsed / 60;
+    int seconds = timeUsed % 60;
+    QString timeText = QString("%1:%2")
+                           .arg(minutes, 2, 10, QChar('0'))
+                           .arg(seconds, 2, 10, QChar('0'));
+    QString message = QString("对方已通关！用时：%1").arg(timeText);
     messageBox->setMessage(message);
     messageBox->exec();
 }

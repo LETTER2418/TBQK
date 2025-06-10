@@ -82,11 +82,10 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
 
 private slots:
-    void onGameStateReceived(const MapData &mapData); // 处理接收到的游戏状态
-    void onRadiusAdjustButtonClicked();               // 处理半径调整按钮点击事件
-    void onRadiusSpinBoxChanged(int value);           // 处理半径调整输入框变化事件
-    void resetCurrentLevel();                         // 重置关卡
-    void onOpponentLevelCompleted(int timeUsed);      // 处理对方完成关卡的消息
+    void onRadiusAdjustButtonClicked();          // 处理半径调整按钮点击事件
+    void onRadiusSpinBoxChanged(int value);      // 处理半径调整输入框变化事件
+    void resetCurrentLevel();                    // 重置关卡
+    void onOpponentLevelCompleted(int timeUsed); // 处理对方完成关卡的消息
 
     // 六边形粒子特效相关槽函数
     void updateParticles();

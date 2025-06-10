@@ -147,7 +147,7 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
 
     connect(onlineModePage->msgBox, &OnlineMsgBox::clientConnected, this, [this]()
             { 
-                qDebug() << "客户端成功连接到服务器";
+                //qDebug() << "客户端成功连接到服务器";
                 gamePage->setOnlineMode(false, socketManager); });
 
     connect(levelEditorPage->backButton, &QPushButton::clicked, this, [this]()
@@ -191,7 +191,6 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
                                 socketManager->SendGameState(mapData);
                                 gamePage->setMap(mapData);
                                 switchPage(gamePage);
-                                gamePage->triggerAllHexEffects();
                             }
                     }
                 else
@@ -210,7 +209,6 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
                             }
                         gamePage->setMap(mapData);
                         switchPage(gamePage);
-                        gamePage->triggerAllHexEffects();
                     } });
     }
 
@@ -348,7 +346,6 @@ MainWindow::MainWindow(Widget *parent) : Widget(parent), pageStack(new QStackedW
                 if (result == QDialog::Accepted)
                     {
                         // 用户确认退出房间
-                        qDebug() << "用户确认退出房间";
                         socketManager->closeConnection();  // 函数内部会发送退出消息
                         gamePage->setOnlineMode(false, nullptr);
                         switchPage(onlineModePage);
@@ -415,8 +412,6 @@ void MainWindow::onClientReceivedGameState(const MapData &mapData)
 
 void MainWindow::switchPage(QWidget *nextPage)
 {
-    if (currentPage == nextPage)
-        return;
 
     if (currentPage)
     {
@@ -444,6 +439,14 @@ void MainWindow::fadeInPage(QWidget *page)
 
     // 显示页面并开始动画
     pageStack->setCurrentWidget(page);
+
+    // 如果是切换到游戏页面，在动画完成后触发粒子效果
+    if (page == gamePage)
+    {
+        connect(animation, &QPropertyAnimation::finished, this, [this]()
+                { gamePage->triggerAllHexEffects(); });
+    }
+
     animation->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
